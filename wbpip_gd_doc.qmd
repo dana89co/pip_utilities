@@ -1,0 +1,52 @@
+---
+title: "Group Data Documentation (wbpip)"
+author: "Diana Garcia"
+format: 
+  html:
+    mermaid:
+      theme: sandstone
+---
+
+## Introduction
+
+> ### Objective
+>
+> This document aims to describe the details of the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
+
+I start by presenting the structure of the functions and then there is a description on how each function is built.
+
+## Structure
+
+```{mermaid}
+flowchart TD
+    lz(select_lorenz) --> stats[pip_stats]
+    lq(pip_stats_lq) --> lz
+    lb(pip_stats_lb) --> lz  
+    form_lq(functional_form_lq) --> lq
+
+```
+
+
+## Functions
+
+### 1. pip_stats
+
+*Description*: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)
+
+### 2. select_lorenz
+
+*Description*: Select best Lorenz fit and adjust the returned statistics if needed.
+
+## Appendix: List of functions
+
+- `gd_compute_pip_stats`
+- `gd_select_lorenz`
+- `gd_compute_pip_stats_lq`
+- `gd_compute_pip_stats_lb`
+- `create_functional_form_lq`
+
+
+
+
+
+
