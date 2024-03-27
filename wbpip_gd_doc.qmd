@@ -7,13 +7,11 @@ format:
       theme: sandstone
 ---
 
-## Introduction
-
-> ### Objective
+> ## Objective
 >
-> This document aims to describe the details of the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
+> This document aims to describe the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
 
-I start by presenting the structure of the functions and then there is a description on how each function is built.
+<!-- I start by presenting the structure of the functions and then there is a description on how each function is built. -->
 
 ## Structure
 
@@ -23,17 +21,28 @@ flowchart TD
     lq(pip_stats_lq) --> lz
     lb(pip_stats_lb) --> lz  
     form_lq(functional_form_lq) --> lq
+    derive_lq(derive_lq) --> lq
+    est_lq(estimate_lq) --> lq
+    check_val(check_curve_validity_lq) --> est_lq
 
 ```
 
 
 ## Functions
 
-### 1. pip_stats
+### 1. pip_stats {#sec-pip_stats}
 
 *Description*: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)
 
-### 2. select_lorenz
+::: {#nte-boundary-issue .callout-note}
+#### Issue: Boundary conditions 
+
+At the moment, this is calculated using $(\mu L'(0+),\mu L'(1-)$ (+4 for some reason), but shouldn't we be using the following formula from equation (8) in [1]?
+
+$$ (\mu d/(a+b+d+1), \mu (2a+b+d)/(a+d-1) $$
+:::
+
+### 2. select_lorenz {#sec-select_lorenz}
 
 *Description*: Select best Lorenz fit and adjust the returned statistics if needed.
 
@@ -45,33 +54,108 @@ flowchart TD
 
 *Description*: Compute poverty statistics for grouped data using the beta functional form of the Lorenz qurve.
 
-## xx. functional_form_lq
+### 5. functional_form_lq
 
-*Description*: Prepares data for regression of L(1-L) on (P^2-L), L(P-1) and (P-L). 
+*Description*: Prepares data for regression of $y(1-y)$ on $(x^2-y)$, $y(x-1)$ and $(x-y)$. 
 
-*Note*: The last observation of (p,l), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1). 
+*Note*: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1). 
 
-*References*: 
-1. Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
-
-2. Villasenor, J., B. C. Arnold. 1989. "[Elliptical Lorenz curves](https://doi.org/10.1016/0304-4076(89)90089-4)". *Journal of Econometrics 40* (2): 327-338.
+*References*: [1]
 
 *Relevant equations*:
 
-Equation 15 (Villasenor et al(1989)):
+The general Quadratic Lorenz curve form is: 
 
-$$y(1-y) = a(x^2-y) + by(x-1) + d(x-y)$$
+$$ax^2 + bxy + cy^2 + dx + ey + f = 0$$ {#eq-gen-equation}
 
-where $y$ is the vector of cumulative proportion of income received (L) and $x$ is the cumulative proportions of income units (P). $a$, $b$, and $d$ will be estimated.
+where $y$ is the vector of cumulative proportion of consumption/income (L) and $x$ is the cumulative proportions of population (P). Using the condition $e = -(a+b+d+1)$ the previous equation is rewritten in a linear form as follows (Equation 15 in Villasenor et al, 1989):
 
-## Appendix: List of functions
+$$y(1-y) = a(x^2-y) + by(x-1) + d(x-y)$$ {#eq-linear-form}
 
-- `gd_compute_pip_stats`
-- `gd_select_lorenz`
+This function prepares data to estimate $a$, $b$, and $d$ (*Note*: $d$ is named $C$ in `wbpip`).
+
+### 6. derive_lq 
+
+*Description*: returns the first derivative of the quadratic Lorenz curves with $c = 1$. 
+
+*References*: [1]
+
+*Relevant equations*:
+
+Solving @eq-gen-equation for $y$, and assuming $f=0$ and $e = -(a+b+d+1)$ the density function that better fits income distributions will be (Equation 6b in Villasenor et al, 1989):
+
+$$ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2$$ {#eq-solve-y}
+
+where $\alpha = b^2 -4a$ and $\beta = 2be - 4d$.
+
+This function computes the first derivative of @eq-solve-y:
+
+$$-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2)$$
+
+### 7. estimate_lq
+
+*Description*: Estimates poverty and inequality stats from Quadratic Lorenz fit
+
+### 8. check_curve_validity_lq
+
+*Description*: Check validity of Lorenz Quadratic fit
+
+*References*: [1], [2], [3]
+
+*Relevant equations*:
+
+The function tests for specific assumptions for the Lorenz Quadratic and relies on the formulas from Table 2 in Datt, G (1998) [3]. The nomenclature for some of these formulas differ from Villasenor et al (1989), so this is how they match:
+
+$m = \alpha = b^2 -4a$
+
+$n = \beta = 2be -4c$ ($c=d$ for Villasenor et al, 1989)
+
+$r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$ 
+
+::: {#nte-cond-r-issue .callout-note}
+#### Issue: Rename $r$ 
+
+At the moment, $r$ refers to $(n^2 - 4me^2)$ in `wbpip`. To avoid confusion, it would be better to name it differently from
+$r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$.
+
+:::
+
+The conditions this function tests are the following: 
+
+Normality and Validity
+
+ - $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive.
+ - $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$
+ - $a+d \geq 0.9$ so $L(1,y) = 1$
+
+::: {#nte-cond-ad-issue .callout-note}
+#### Issue: The inequality for $a+d$
+
+At the moment, we still use the old validation $a+d \leq 1$. However, the Corrigendum of the original paper [2] indicates we should use $a+d \geq 1$
+
+:::
+
+
+## References:
+
+1. Villasenor, J., B. C. Arnold. 1989. "[Elliptical Lorenz curves](https://doi.org/10.1016/0304-4076(89)90089-4)". *Journal of Econometrics 40* (2): 327-338.
+
+2. Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
+
+3. Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/cdmref/p15738coll2/id/125673)". FCND Discussion Paper 50. World Bank, Washington, DC.
+
+## Appendix: 
+
+Find function using the following list of functions:
+
+-  @sec-pip_stats: `gd_compute_pip_stats`
+-  @sec-select_lorenz: `gd_select_lorenz`
 - `gd_compute_pip_stats_lq`
 - `gd_compute_pip_stats_lb`
 - `create_functional_form_lq`
 - `derive_lq`
+- `gd_estimate_lq` 
+- `check_curve_validity_lq`
 
 
 

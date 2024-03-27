@@ -34,7 +34,11 @@ ul.task-list li input[type="checkbox"] {
 <script src="wbpip_gd_doc_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="wbpip_gd_doc_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="wbpip_gd_doc_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="wbpip_gd_doc_files/libs/quarto-diagram/mermaid.min.js"></script>
+<script src="wbpip_gd_doc_files/libs/quarto-diagram/mermaid-init.js"></script>
+<link href="wbpip_gd_doc_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -67,16 +71,159 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <blockquote class="blockquote">
-<h3 id="objective" class="anchored">Objective</h3>
-<p>This document aims to describe the details of the functions used in <code>wbpip</code> to calculated the poverty and inequality statistics using group data.</p>
+<h2 id="objective" class="anchored">Objective</h2>
+<p>This document aims to describe the functions used in <code>wbpip</code> to calculated the poverty and inequality statistics using group data.</p>
 </blockquote>
-<p>I start by presenting the structure of the functions and then there is a description on how each function is built.</p>
-</section>
+<!-- I start by presenting the structure of the functions and then there is a description on how each function is built. -->
 <section id="structure" class="level2">
 <h2 class="anchored" data-anchor-id="structure">Structure</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<p>
+</p><pre class="mermaid mermaid-js" data-tooltip-selector="#mermaid-tooltip-1">flowchart TD
+    lz(select_lorenz) --&gt; stats[pip_stats]
+    lq(pip_stats_lq) --&gt; lz
+    lb(pip_stats_lb) --&gt; lz  
+    form_lq(functional_form_lq) --&gt; lq
+    derive_lq(derive_lq) --&gt; lq
+    est_lq(estimate_lq) --&gt; lq
+    check_val(check_curve_validity_lq) --&gt; est_lq
+
+</pre>
+<div id="mermaid-tooltip-1" class="mermaidTooltip">
+
+</div>
+<p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="functions" class="level2">
+<h2 class="anchored" data-anchor-id="functions">Functions</h2>
+<section id="sec-pip_stats" class="level3">
+<h3 class="anchored" data-anchor-id="sec-pip_stats">1. pip_stats</h3>
+<p><em>Description</em>: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)</p>
+<div id="nte-boundary-issue" class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Issue: Boundary conditions
+</div>
+</div>
+<div id="nte-boundary-issue" class="callout-body-container callout-body">
+<p>At the moment, this is calculated using <span class="math inline">\((\mu L'(0+),\mu L'(1-)\)</span> (+4 for some reason), but shouldn’t we be using the following formula from equation (8) in [1]?</p>
+<p><span class="math display">\[ (\mu d/(a+b+d+1), \mu (2a+b+d)/(a+d-1) \]</span></p>
+</div>
+</div>
+</section>
+<section id="sec-select_lorenz" class="level3">
+<h3 class="anchored" data-anchor-id="sec-select_lorenz">2. select_lorenz</h3>
+<p><em>Description</em>: Select best Lorenz fit and adjust the returned statistics if needed.</p>
+</section>
+<section id="pip_stats_lq" class="level3">
+<h3 class="anchored" data-anchor-id="pip_stats_lq">3. pip_stats_lq</h3>
+<p><em>Description</em>: Compute poverty statistics for grouped data using the quadratic functional form of the Lorenz qurve.</p>
+</section>
+<section id="pip_stats_lb" class="level3">
+<h3 class="anchored" data-anchor-id="pip_stats_lb">4. pip_stats_lb</h3>
+<p><em>Description</em>: Compute poverty statistics for grouped data using the beta functional form of the Lorenz qurve.</p>
+</section>
+<section id="functional_form_lq" class="level3">
+<h3 class="anchored" data-anchor-id="functional_form_lq">5. functional_form_lq</h3>
+<p><em>Description</em>: Prepares data for regression of <span class="math inline">\(y(1-y)\)</span> on <span class="math inline">\((x^2-y)\)</span>, <span class="math inline">\(y(x-1)\)</span> and <span class="math inline">\((x-y)\)</span>.</p>
+<p><em>Note</em>: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).</p>
+<p><em>References</em>: [1]</p>
+<p><em>Relevant equations</em>:</p>
+<p>The general Quadratic Lorenz curve form is:</p>
+<p><span id="eq-gen-equation"><span class="math display">\[ax^2 + bxy + cy^2 + dx + ey + f = 0 \tag{1}\]</span></span></p>
+<p>where <span class="math inline">\(y\)</span> is the vector of cumulative proportion of consumption/income (L) and <span class="math inline">\(x\)</span> is the cumulative proportions of population (P). Using the condition <span class="math inline">\(e = -(a+b+d+1)\)</span> the previous equation is rewritten in a linear form as follows (Equation 15 in Villasenor et al, 1989):</p>
+<p><span id="eq-linear-form"><span class="math display">\[y(1-y) = a(x^2-y) + by(x-1) + d(x-y) \tag{2}\]</span></span></p>
+<p>This function prepares data to estimate <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, and <span class="math inline">\(d\)</span> (<em>Note</em>: <span class="math inline">\(d\)</span> is named <span class="math inline">\(C\)</span> in <code>wbpip</code>).</p>
+</section>
+<section id="derive_lq" class="level3">
+<h3 class="anchored" data-anchor-id="derive_lq">6. derive_lq</h3>
+<p><em>Description</em>: returns the first derivative of the quadratic Lorenz curves with <span class="math inline">\(c = 1\)</span>.</p>
+<p><em>References</em>: [1]</p>
+<p><em>Relevant equations</em>:</p>
+<p>Solving <a href="#eq-gen-equation">Equation&nbsp;1</a> for <span class="math inline">\(y\)</span>, and assuming <span class="math inline">\(f=0\)</span> and <span class="math inline">\(e = -(a+b+d+1)\)</span> the density function that better fits income distributions will be (Equation 6b in Villasenor et al, 1989):</p>
+<p><span id="eq-solve-y"><span class="math display">\[ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2 \tag{3}\]</span></span></p>
+<p>where <span class="math inline">\(\alpha = b^2 -4a\)</span> and <span class="math inline">\(\beta = 2be - 4d\)</span>.</p>
+<p>This function computes the first derivative of <a href="#eq-solve-y">Equation&nbsp;3</a>:</p>
+<p><span class="math display">\[-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2)\]</span></p>
+</section>
+<section id="estimate_lq" class="level3">
+<h3 class="anchored" data-anchor-id="estimate_lq">7. estimate_lq</h3>
+<p><em>Description</em>: Estimates poverty and inequality stats from Quadratic Lorenz fit</p>
+</section>
+<section id="check_curve_validity_lq" class="level3">
+<h3 class="anchored" data-anchor-id="check_curve_validity_lq">8. check_curve_validity_lq</h3>
+<p><em>Description</em>: Check validity of Lorenz Quadratic fit</p>
+<p><em>References</em>: [1], [2], [3]</p>
+<p><em>Relevant equations</em>:</p>
+<p>The function tests for specific assumptions for the Lorenz Quadratic and relies on the formulas from Table 2 in Datt, G (1998) [3]. The nomenclature for some of these formulas differ from Villasenor et al (1989), so this is how they match:</p>
+<p><span class="math inline">\(m = \alpha = b^2 -4a\)</span></p>
+<p><span class="math inline">\(n = \beta = 2be -4c\)</span> (<span class="math inline">\(c=d\)</span> for Villasenor et al, 1989)</p>
+<p><span class="math inline">\(r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}\)</span></p>
+<div id="nte-cond-r-issue" class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Issue: Rename <span class="math inline">\(r\)</span>
+</div>
+</div>
+<div id="nte-cond-r-issue" class="callout-body-container callout-body">
+<p>At the moment, <span class="math inline">\(r\)</span> refers to <span class="math inline">\((n^2 - 4me^2)\)</span> in <code>wbpip</code>. To avoid confusion, it would be better to name it differently from <span class="math inline">\(r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}\)</span>.</p>
+</div>
+</div>
+<p>The conditions this function tests are the following:</p>
+<p>Normality and Validity</p>
+<ul>
+<li><span class="math inline">\((n^2 - 4me^2)&gt;0\)</span> so the square root in <span class="math inline">\(r\)</span> to be positive.</li>
+<li><span class="math inline">\(e&lt;0\)</span> or <span class="math inline">\(c&gt;0\)</span> so <span class="math inline">\(L(0,y) = 0\)</span> and <span class="math inline">\(L'(0^{+},y) \geq 0\)</span></li>
+<li><span class="math inline">\(a+d \geq 0.9\)</span> so <span class="math inline">\(L(1,y) = 1\)</span></li>
+</ul>
+<div id="nte-cond-ad-issue" class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Issue: The inequality for <span class="math inline">\(a+d\)</span>
+</div>
+</div>
+<div id="nte-cond-ad-issue" class="callout-body-container callout-body">
+<p>At the moment, we still use the old validation <span class="math inline">\(a+d \leq 1\)</span>. However, the Corrigendum of the original paper [2] indicates we should use <span class="math inline">\(a+d \geq 1\)</span></p>
+</div>
+</div>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References:</h2>
+<ol type="1">
+<li><p>Villasenor, J., B. C. Arnold. 1989. “<a href="https://doi.org/10.1016/0304-4076(89)90089-4">Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 40</em> (2): 327-338.</p></li>
+<li><p>Krause, M. 2013. “<a href="https://doi.org/10.1016/j.jeconom.2013.01.001">Corrigendum to Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 174</em> (1): 44.</p></li>
+<li><p>Datt, G. 1998. “<a href="https://www.ifpri.org/cdmref/p15738coll2/id/125673">Computational Tools For Poverty Measurement And Analysis</a>”. FCND Discussion Paper 50. World Bank, Washington, DC.</p></li>
+</ol>
+</section>
+<section id="appendix" class="level2">
+<h2 class="anchored" data-anchor-id="appendix">Appendix:</h2>
+<p>Find function using the following list of functions:</p>
+<ul>
+<li><a href="#sec-pip_stats">Section&nbsp;3.1</a>: <code>gd_compute_pip_stats</code></li>
+<li><a href="#sec-select_lorenz">Section&nbsp;3.2</a>: <code>gd_select_lorenz</code></li>
+<li><code>gd_compute_pip_stats_lq</code></li>
+<li><code>gd_compute_pip_stats_lb</code></li>
+<li><code>create_functional_form_lq</code></li>
+<li><code>derive_lq</code></li>
+<li><code>gd_estimate_lq</code></li>
+<li><code>check_curve_validity_lq</code></li>
+</ul>
 </section>
 
 </main>
