@@ -90,6 +90,12 @@ ul.task-list li input[type="checkbox"] {
     derive_lq(derive_lq) --&gt; lq
     est_lq(estimate_lq) --&gt; lq
     check_val(check_curve_validity_lq) --&gt; est_lq
+    dist_lq(dist_stats_lq) --&gt; est_lq
+    gini_lq(gini_lq) --&gt; dist_lq
+    value_at_lq(value_at_lq) --&gt; dist_lq
+    polarization_lq(polarization_lq) --&gt; dist_lq
+    mld_lq(mld_lq) --&gt; dist_lq
+    quantile_lq(quantile_lq) --&gt; dist_lq
 
 </pre>
 <div id="mermaid-tooltip-1" class="mermaidTooltip">
@@ -153,7 +159,7 @@ Issue: Boundary conditions
 <p><span id="eq-solve-y"><span class="math display">\[ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2 \tag{3}\]</span></span></p>
 <p>where <span class="math inline">\(\alpha = b^2 -4a\)</span> and <span class="math inline">\(\beta = 2be - 4d\)</span>.</p>
 <p>This function computes the first derivative of <a href="#eq-solve-y">Equation&nbsp;3</a>:</p>
-<p><span class="math display">\[-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2)\]</span></p>
+<p><span id="eq-first-der"><span class="math display">\[-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2) \tag{4}\]</span></span></p>
 </section>
 <section id="estimate_lq" class="level3">
 <h3 class="anchored" data-anchor-id="estimate_lq">7. estimate_lq</h3>
@@ -181,12 +187,12 @@ Issue: Rename <span class="math inline">\(r\)</span>
 <p>At the moment, <span class="math inline">\(r\)</span> refers to <span class="math inline">\((n^2 - 4me^2)\)</span> in <code>wbpip</code>. To avoid confusion, it would be better to name it differently from <span class="math inline">\(r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}\)</span>.</p>
 </div>
 </div>
-<p>The conditions this function tests are the following:</p>
+<p>The conditions this function tests are presented in Section 4 of Datt (1998):</p>
 <p>Normality and Validity</p>
 <ul>
-<li><span class="math inline">\((n^2 - 4me^2)&gt;0\)</span> so the square root in <span class="math inline">\(r\)</span> to be positive.</li>
-<li><span class="math inline">\(e&lt;0\)</span> or <span class="math inline">\(c&gt;0\)</span> so <span class="math inline">\(L(0,y) = 0\)</span> and <span class="math inline">\(L'(0^{+},y) \geq 0\)</span></li>
-<li><span class="math inline">\(a+d \geq 0.9\)</span> so <span class="math inline">\(L(1,y) = 1\)</span></li>
+<li><span class="math inline">\((n^2 - 4me^2)&gt;0\)</span> so the square root in <span class="math inline">\(r\)</span> to be positive. (Normality and validity)</li>
+<li><span class="math inline">\(e&lt;0\)</span> or <span class="math inline">\(c&gt;0\)</span> so <span class="math inline">\(L(0,y) = 0\)</span> and <span class="math inline">\(L'(0^{+},y) \geq 0\)</span> (Normality and validity)</li>
+<li><span class="math inline">\(a+d \geq 0.9\)</span> so <span class="math inline">\(L(1,y) = 1\)</span> (Validity) <strong>Need checking (see note)</strong></li>
 </ul>
 <div id="nte-cond-ad-issue" class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
@@ -201,6 +207,33 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 <p>At the moment, we still use the old validation <span class="math inline">\(a+d \leq 1\)</span>. However, the Corrigendum of the original paper [2] indicates we should use <span class="math inline">\(a+d \geq 1\)</span></p>
 </div>
 </div>
+<p>And so <span class="math inline">\(L''(x,y) \geq 0\)</span> for <span class="math inline">\(x\)</span> within <span class="math inline">\((0,1)\)</span>:</p>
+<ul>
+<li><span class="math inline">\(m &lt; 0\)</span> (condition on Villasenor et al., 1989)</li>
+<li>if <span class="math inline">\(m &gt; 0\)</span> then <span class="math inline">\(m &lt; n^2/4 e^2\)</span> and <span class="math inline">\(n \leq 0\)</span> (last condition from Datt,1998)</li>
+<li>if <span class="math inline">\(m &gt; 0\)</span> then <span class="math inline">\(m &lt; n^2/4 e^2\)</span> and <span class="math inline">\(m &lt; -n/2\)</span> (last condition from Datt,1998)</li>
+</ul>
+<p><span class="math inline">\(L''(x,y)\)</span> can be calculated using <a href="#eq-first-der">Equation&nbsp;4</a>:</p>
+<p><span class="math display">\[ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} \]</span></p>
+</section>
+<section id="dist_stats_lq" class="level3">
+<h3 class="anchored" data-anchor-id="dist_stats_lq">9. dist_stats_lq</h3>
+<p><em>Description</em>: Computes distributional stats from Lorenz Quadratic fit</p>
+</section>
+<section id="gini_lq" class="level3">
+<h3 class="anchored" data-anchor-id="gini_lq">10. gini_lq</h3>
+</section>
+<section id="value_at_lq" class="level3">
+<h3 class="anchored" data-anchor-id="value_at_lq">11. value_at_lq</h3>
+</section>
+<section id="polarization_lq" class="level3">
+<h3 class="anchored" data-anchor-id="polarization_lq">12. polarization_lq</h3>
+</section>
+<section id="mld_lq" class="level3">
+<h3 class="anchored" data-anchor-id="mld_lq">13. mld_lq</h3>
+</section>
+<section id="quantile_lq" class="level3">
+<h3 class="anchored" data-anchor-id="quantile_lq">14. quantile_lq</h3>
 </section>
 </section>
 <section id="references" class="level2">
@@ -223,6 +256,7 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 <li><code>derive_lq</code></li>
 <li><code>gd_estimate_lq</code></li>
 <li><code>check_curve_validity_lq</code></li>
+<li><code>gd_compute_dist_stats_lq</code></li>
 </ul>
 </section>
 

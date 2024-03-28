@@ -24,6 +24,12 @@ flowchart TD
     derive_lq(derive_lq) --> lq
     est_lq(estimate_lq) --> lq
     check_val(check_curve_validity_lq) --> est_lq
+    dist_lq(dist_stats_lq) --> est_lq
+    gini_lq(gini_lq) --> dist_lq
+    value_at_lq(value_at_lq) --> dist_lq
+    polarization_lq(polarization_lq) --> dist_lq
+    mld_lq(mld_lq) --> dist_lq
+    quantile_lq(quantile_lq) --> dist_lq
 
 ```
 
@@ -90,7 +96,7 @@ where $\alpha = b^2 -4a$ and $\beta = 2be - 4d$.
 
 This function computes the first derivative of @eq-solve-y:
 
-$$-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2)$$
+$$-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2)$$ {#eq-first-der}
 
 ### 7. estimate_lq
 
@@ -120,21 +126,43 @@ $r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$.
 
 :::
 
-The conditions this function tests are the following: 
+The conditions this function tests are presented in Section 4 of Datt (1998):
 
 Normality and Validity
 
- - $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive.
- - $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$
- - $a+d \geq 0.9$ so $L(1,y) = 1$
+ - $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive. (Normality and validity)
+ - $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$ (Normality and validity)
+ - $a+d \geq 0.9$ so $L(1,y) = 1$ (Validity) **Need checking (see note)**
 
 ::: {#nte-cond-ad-issue .callout-note}
 #### Issue: The inequality for $a+d$
 
 At the moment, we still use the old validation $a+d \leq 1$. However, the Corrigendum of the original paper [2] indicates we should use $a+d \geq 1$
-
 :::
 
+And so $L''(x,y) \geq 0$ for $x$ within $(0,1)$:
+
+ - $m < 0$ (condition on Villasenor et al., 1989)
+ - if $m > 0$ then $m < n^2/4 e^2$ and $n \leq 0$ (last condition from Datt,1998)
+ - if $m > 0$ then $m < n^2/4 e^2$ and $m < -n/2$ (last condition from Datt,1998)
+ 
+$L''(x,y)$ can be calculated using @eq-first-der:
+
+$$ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} $$
+
+### 9. dist_stats_lq
+
+*Description*: Computes distributional stats from Lorenz Quadratic fit
+
+### 10. gini_lq
+
+### 11. value_at_lq
+
+### 12. polarization_lq
+
+### 13. mld_lq
+
+### 14. quantile_lq
 
 ## References:
 
@@ -156,6 +184,7 @@ Find function using the following list of functions:
 - `derive_lq`
 - `gd_estimate_lq` 
 - `check_curve_validity_lq`
+- `gd_compute_dist_stats_lq`
 
 
 
