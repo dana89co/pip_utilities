@@ -90,12 +90,17 @@ ul.task-list li input[type="checkbox"] {
     derive_lq(derive_lq) --&gt; lq
     est_lq(estimate_lq) --&gt; lq
     check_val(check_curve_validity_lq) --&gt; est_lq
-    dist_lq(dist_stats_lq) --&gt; est_lq
-    gini_lq(gini_lq) --&gt; dist_lq
-    value_at_lq(value_at_lq) --&gt; dist_lq
-    polarization_lq(polarization_lq) --&gt; dist_lq
-    mld_lq(mld_lq) --&gt; dist_lq
-    quantile_lq(quantile_lq) --&gt; dist_lq
+    comp_dist_lq(compute_dist_stats_lq) --&gt; est_lq
+    polarization_lq(polarization_lq) --&gt; comp_dist_lq
+    gini_lq(gini_lq) --&gt; comp_dist_lq
+    value_at_lq --&gt; polarization_lq
+    value_at_lq(value_at_lq) --&gt; comp_dist_lq
+    mld_lq(mld_lq) --&gt; comp_dist_lq
+    quantile_lq(quantile_lq) --&gt; comp_dist_lq
+    derive_lq --&gt; comp_dist_lq
+    derive_lq --&gt; mld_lq
+    derive_lq --&gt; polarization_lq
+    value_at_lq --&gt; quantile_lq
 
 </pre>
 <div id="mermaid-tooltip-1" class="mermaidTooltip">
@@ -184,7 +189,7 @@ Issue: Rename <span class="math inline">\(r\)</span>
 </div>
 </div>
 <div id="nte-cond-r-issue" class="callout-body-container callout-body">
-<p>At the moment, <span class="math inline">\(r\)</span> refers to <span class="math inline">\((n^2 - 4me^2)\)</span> in <code>wbpip</code>. To avoid confusion, it would be better to name it differently from <span class="math inline">\(r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}\)</span>.</p>
+<p>At the moment, <span class="math inline">\(r\)</span> refers to <span class="math inline">\((n^2 - 4me^2)\)</span> in <code>wbpip</code>. This is already fixed on commit <code>47852c</code> in branch <code>fix_key_values</code> by Zander (Waiting for merge). We should maybe rename this within this function.</p>
 </div>
 </div>
 <p>The conditions this function tests are presented in Section 4 of Datt (1998):</p>
@@ -216,24 +221,52 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 <p><span class="math inline">\(L''(x,y)\)</span> can be calculated using <a href="#eq-first-der">Equation&nbsp;4</a>:</p>
 <p><span class="math display">\[ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} \]</span></p>
 </section>
-<section id="dist_stats_lq" class="level3">
-<h3 class="anchored" data-anchor-id="dist_stats_lq">9. dist_stats_lq</h3>
+<section id="compute_dist_stats_lq" class="level3">
+<h3 class="anchored" data-anchor-id="compute_dist_stats_lq">9. compute_dist_stats_lq</h3>
 <p><em>Description</em>: Computes distributional stats from Lorenz Quadratic fit</p>
+<div id="nte-check1" class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Check:
+</div>
+</div>
+<div id="nte-check1" class="callout-body-container callout-body">
+<p>What is the difference with <code>gd_estimate_dist_stats_lq</code>?</p>
+</div>
+</div>
 </section>
 <section id="gini_lq" class="level3">
 <h3 class="anchored" data-anchor-id="gini_lq">10. gini_lq</h3>
+<p><em>Description</em>: Compute Gini index from Lorenz Quadratic fit.</p>
+<p><em>References</em>: [3]</p>
+<p><em>Relevant equations</em>: …</p>
 </section>
 <section id="value_at_lq" class="level3">
-<h3 class="anchored" data-anchor-id="value_at_lq">11. value_at_lq</h3>
+<h3 class="anchored" data-anchor-id="value_at_lq">11. value_at_lq:</h3>
+<p><em>Description</em>: Solves for quadratic Lorenz curves with c = 1.</p>
+<p><em>References</em>: [1]</p>
+<p><em>Relevant equations</em>: …</p>
 </section>
 <section id="polarization_lq" class="level3">
 <h3 class="anchored" data-anchor-id="polarization_lq">12. polarization_lq</h3>
+<p><em>Description</em>: Computes polarization index from parametric Lorenz fit</p>
+<p><em>References</em>: …</p>
+<p><em>Relevant equations</em>: …</p>
 </section>
 <section id="mld_lq" class="level3">
 <h3 class="anchored" data-anchor-id="mld_lq">13. mld_lq</h3>
+<p><em>Description</em>: Computes MLD from Lorenz Quadratic fit</p>
+<p><em>References</em>: …</p>
+<p><em>Relevant equations</em>: …</p>
 </section>
 <section id="quantile_lq" class="level3">
 <h3 class="anchored" data-anchor-id="quantile_lq">14. quantile_lq</h3>
+<p><em>Description</em>: Compute quantiles from Lorenz Quandratic fit</p>
+<p><em>References</em>: …</p>
+<p><em>Relevant equations</em>: …</p>
 </section>
 </section>
 <section id="references" class="level2">

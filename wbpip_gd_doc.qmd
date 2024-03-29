@@ -24,12 +24,17 @@ flowchart TD
     derive_lq(derive_lq) --> lq
     est_lq(estimate_lq) --> lq
     check_val(check_curve_validity_lq) --> est_lq
-    dist_lq(dist_stats_lq) --> est_lq
-    gini_lq(gini_lq) --> dist_lq
-    value_at_lq(value_at_lq) --> dist_lq
-    polarization_lq(polarization_lq) --> dist_lq
-    mld_lq(mld_lq) --> dist_lq
-    quantile_lq(quantile_lq) --> dist_lq
+    comp_dist_lq(compute_dist_stats_lq) --> est_lq
+    polarization_lq(polarization_lq) --> comp_dist_lq
+    gini_lq(gini_lq) --> comp_dist_lq
+    value_at_lq --> polarization_lq
+    value_at_lq(value_at_lq) --> comp_dist_lq
+    mld_lq(mld_lq) --> comp_dist_lq
+    quantile_lq(quantile_lq) --> comp_dist_lq
+    derive_lq --> comp_dist_lq
+    derive_lq --> mld_lq
+    derive_lq --> polarization_lq
+    value_at_lq --> quantile_lq
 
 ```
 
@@ -121,8 +126,7 @@ $r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$
 ::: {#nte-cond-r-issue .callout-note}
 #### Issue: Rename $r$ 
 
-At the moment, $r$ refers to $(n^2 - 4me^2)$ in `wbpip`. To avoid confusion, it would be better to name it differently from
-$r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$.
+At the moment, $r$ refers to $(n^2 - 4me^2)$ in `wbpip`. This is already fixed on commit `47852c` in branch `fix_key_values` by Zander (Waiting for merge). We should maybe rename this within this function. 
 
 :::
 
@@ -150,19 +154,56 @@ $L''(x,y)$ can be calculated using @eq-first-der:
 
 $$ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} $$
 
-### 9. dist_stats_lq
+### 9. compute_dist_stats_lq
 
 *Description*: Computes distributional stats from Lorenz Quadratic fit
 
+::: {#nte-check1 .callout-note}
+#### Check: 
+
+What is the difference with `gd_estimate_dist_stats_lq`?
+
+:::
+
 ### 10. gini_lq
 
-### 11. value_at_lq
+*Description*: Compute Gini index from Lorenz Quadratic fit.
+
+*References*: [3]
+
+*Relevant equations*: ...
+
+### 11. value_at_lq: 
+
+*Description*: Solves for quadratic Lorenz curves with c = 1.
+
+*References*: [1]
+
+*Relevant equations*: ...
 
 ### 12. polarization_lq
 
+*Description*: Computes polarization index from parametric Lorenz fit
+
+*References*: ...
+
+*Relevant equations*: ...
+
 ### 13. mld_lq
 
+*Description*: Computes MLD from Lorenz Quadratic fit
+
+*References*: ...
+
+*Relevant equations*: ...
+
 ### 14. quantile_lq
+
+*Description*: Compute quantiles from Lorenz Quandratic fit
+
+*References*: ...
+
+*Relevant equations*: ...
 
 ## References:
 
