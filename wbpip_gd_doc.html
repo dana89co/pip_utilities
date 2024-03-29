@@ -72,12 +72,12 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 <blockquote class="blockquote">
-<h2 id="objective" class="anchored">Objective</h2>
+<h2 id="objective" class="unnumbered anchored">Objective</h2>
 <p>This document aims to describe the functions used in <code>wbpip</code> to calculated the poverty and inequality statistics using group data.</p>
 </blockquote>
 <!-- I start by presenting the structure of the functions and then there is a description on how each function is built. -->
-<section id="structure" class="level2">
-<h2 class="anchored" data-anchor-id="structure">Structure</h2>
+<section id="structure" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="structure">Structure</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -111,10 +111,10 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </section>
-<section id="functions" class="level2">
-<h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<section id="sec-pip_stats" class="level3">
-<h3 class="anchored" data-anchor-id="sec-pip_stats">1. pip_stats</h3>
+<section id="functions" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="functions"><span class="header-section-number">1</span> Functions</h2>
+<section id="sec-pip_stats" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="sec-pip_stats"><span class="header-section-number">1.1</span> pip_stats</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)</p>
 <div id="nte-boundary-issue" class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
@@ -126,25 +126,24 @@ Issue: Boundary conditions
 </div>
 </div>
 <div id="nte-boundary-issue" class="callout-body-container callout-body">
-<p>At the moment, this is calculated using <span class="math inline">\((\mu L'(0+),\mu L'(1-)\)</span> (+4 for some reason), but shouldn’t we be using the following formula from equation (8) in [1]?</p>
-<p><span class="math display">\[ (\mu d/(a+b+d+1), \mu (2a+b+d)/(a+d-1) \]</span></p>
+<p>At the moment, this is calculated using <span class="math inline">\((\mu L'(0.001) + 4,\mu L'(0.98) - 4)\)</span> (<em>Note: Not sure what is the reason of adding and subtracting 4</em>).</p>
 </div>
 </div>
 </section>
-<section id="sec-select_lorenz" class="level3">
-<h3 class="anchored" data-anchor-id="sec-select_lorenz">2. select_lorenz</h3>
+<section id="sec-select_lorenz" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="sec-select_lorenz"><span class="header-section-number">1.2</span> select_lorenz</h3>
 <p><em>Description</em>: Select best Lorenz fit and adjust the returned statistics if needed.</p>
 </section>
-<section id="pip_stats_lq" class="level3">
-<h3 class="anchored" data-anchor-id="pip_stats_lq">3. pip_stats_lq</h3>
+<section id="pip_stats_lq" class="level3" data-number="1.3">
+<h3 data-number="1.3" class="anchored" data-anchor-id="pip_stats_lq"><span class="header-section-number">1.3</span> pip_stats_lq</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data using the quadratic functional form of the Lorenz qurve.</p>
 </section>
-<section id="pip_stats_lb" class="level3">
-<h3 class="anchored" data-anchor-id="pip_stats_lb">4. pip_stats_lb</h3>
+<section id="pip_stats_lb" class="level3" data-number="1.4">
+<h3 data-number="1.4" class="anchored" data-anchor-id="pip_stats_lb"><span class="header-section-number">1.4</span> pip_stats_lb</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data using the beta functional form of the Lorenz qurve.</p>
 </section>
-<section id="functional_form_lq" class="level3">
-<h3 class="anchored" data-anchor-id="functional_form_lq">5. functional_form_lq</h3>
+<section id="functional_form_lq" class="level3" data-number="1.5">
+<h3 data-number="1.5" class="anchored" data-anchor-id="functional_form_lq"><span class="header-section-number">1.5</span> functional_form_lq</h3>
 <p><em>Description</em>: Prepares data for regression of <span class="math inline">\(y(1-y)\)</span> on <span class="math inline">\((x^2-y)\)</span>, <span class="math inline">\(y(x-1)\)</span> and <span class="math inline">\((x-y)\)</span>.</p>
 <p><em>Note</em>: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).</p>
 <p><em>References</em>: [1]</p>
@@ -155,23 +154,29 @@ Issue: Boundary conditions
 <p><span id="eq-linear-form"><span class="math display">\[y(1-y) = a(x^2-y) + by(x-1) + d(x-y) \tag{2}\]</span></span></p>
 <p>This function prepares data to estimate <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, and <span class="math inline">\(d\)</span> (<em>Note</em>: <span class="math inline">\(d\)</span> is named <span class="math inline">\(C\)</span> in <code>wbpip</code>).</p>
 </section>
-<section id="derive_lq" class="level3">
-<h3 class="anchored" data-anchor-id="derive_lq">6. derive_lq</h3>
+<section id="value_at_lq" class="level3" data-number="1.6">
+<h3 data-number="1.6" class="anchored" data-anchor-id="value_at_lq"><span class="header-section-number">1.6</span> value_at_lq:</h3>
+<p><em>Description</em>: Solves for the Quadratic Lorenz curves.</p>
+<p><em>References</em>: [1]</p>
+<p><em>Relevant equations</em>:</p>
+<p>This function calculates the value at the Quadratic Lorenz Curve. Solving <a href="#eq-gen-equation">Equation&nbsp;1</a> for <span class="math inline">\(y\)</span>, and assuming <span class="math inline">\(f=0\)</span> and <span class="math inline">\(e = -(a+b+d+1)\)</span> the density function that better fits income distributions will be (Equation 6b in Villasenor et al, 1989):</p>
+<p><span id="eq-solve-y"><span class="math display">\[ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2 \tag{3}\]</span></span></p>
+<p>where <span class="math inline">\(\alpha = b^2 -4a\)</span> and <span class="math inline">\(\beta = 2be - 4d\)</span>.</p>
+</section>
+<section id="derive_lq" class="level3" data-number="1.7">
+<h3 data-number="1.7" class="anchored" data-anchor-id="derive_lq"><span class="header-section-number">1.7</span> derive_lq</h3>
 <p><em>Description</em>: returns the first derivative of the quadratic Lorenz curves with <span class="math inline">\(c = 1\)</span>.</p>
 <p><em>References</em>: [1]</p>
 <p><em>Relevant equations</em>:</p>
-<p>Solving <a href="#eq-gen-equation">Equation&nbsp;1</a> for <span class="math inline">\(y\)</span>, and assuming <span class="math inline">\(f=0\)</span> and <span class="math inline">\(e = -(a+b+d+1)\)</span> the density function that better fits income distributions will be (Equation 6b in Villasenor et al, 1989):</p>
-<p><span id="eq-solve-y"><span class="math display">\[ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2 \tag{3}\]</span></span></p>
-<p>where <span class="math inline">\(\alpha = b^2 -4a\)</span> and <span class="math inline">\(\beta = 2be - 4d\)</span>.</p>
 <p>This function computes the first derivative of <a href="#eq-solve-y">Equation&nbsp;3</a>:</p>
 <p><span id="eq-first-der"><span class="math display">\[-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2) \tag{4}\]</span></span></p>
 </section>
-<section id="estimate_lq" class="level3">
-<h3 class="anchored" data-anchor-id="estimate_lq">7. estimate_lq</h3>
+<section id="estimate_lq" class="level3" data-number="1.8">
+<h3 data-number="1.8" class="anchored" data-anchor-id="estimate_lq"><span class="header-section-number">1.8</span> estimate_lq</h3>
 <p><em>Description</em>: Estimates poverty and inequality stats from Quadratic Lorenz fit</p>
 </section>
-<section id="check_curve_validity_lq" class="level3">
-<h3 class="anchored" data-anchor-id="check_curve_validity_lq">8. check_curve_validity_lq</h3>
+<section id="check_curve_validity_lq" class="level3" data-number="1.9">
+<h3 data-number="1.9" class="anchored" data-anchor-id="check_curve_validity_lq"><span class="header-section-number">1.9</span> check_curve_validity_lq</h3>
 <p><em>Description</em>: Check validity of Lorenz Quadratic fit</p>
 <p><em>References</em>: [1], [2], [3]</p>
 <p><em>Relevant equations</em>:</p>
@@ -197,9 +202,9 @@ Issue: Rename <span class="math inline">\(r\)</span>
 <ul>
 <li><span class="math inline">\((n^2 - 4me^2)&gt;0\)</span> so the square root in <span class="math inline">\(r\)</span> to be positive. (Normality and validity)</li>
 <li><span class="math inline">\(e&lt;0\)</span> or <span class="math inline">\(c&gt;0\)</span> so <span class="math inline">\(L(0,y) = 0\)</span> and <span class="math inline">\(L'(0^{+},y) \geq 0\)</span> (Normality and validity)</li>
-<li><span class="math inline">\(a+d \geq 0.9\)</span> so <span class="math inline">\(L(1,y) = 1\)</span> (Validity) <strong>Need checking (see note)</strong></li>
+<li><span class="math inline">\(a+d \geq 0.9\)</span> so <span class="math inline">\(L(1,y) = 1\)</span> (Validity)</li>
 </ul>
-<div id="nte-cond-ad-issue" class="callout-note callout callout-style-default callout-captioned">
+<div id="imp-condad" class="callout-important callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
@@ -208,7 +213,7 @@ Issue: Rename <span class="math inline">\(r\)</span>
 Issue: The inequality for <span class="math inline">\(a+d\)</span>
 </div>
 </div>
-<div id="nte-cond-ad-issue" class="callout-body-container callout-body">
+<div id="imp-condad" class="callout-body-container callout-body">
 <p>At the moment, we still use the old validation <span class="math inline">\(a+d \leq 1\)</span>. However, the Corrigendum of the original paper [2] indicates we should use <span class="math inline">\(a+d \geq 1\)</span></p>
 </div>
 </div>
@@ -221,8 +226,8 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 <p><span class="math inline">\(L''(x,y)\)</span> can be calculated using <a href="#eq-first-der">Equation&nbsp;4</a>:</p>
 <p><span class="math display">\[ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} \]</span></p>
 </section>
-<section id="compute_dist_stats_lq" class="level3">
-<h3 class="anchored" data-anchor-id="compute_dist_stats_lq">9. compute_dist_stats_lq</h3>
+<section id="compute_dist_stats_lq" class="level3" data-number="1.10">
+<h3 data-number="1.10" class="anchored" data-anchor-id="compute_dist_stats_lq"><span class="header-section-number">1.10</span> compute_dist_stats_lq</h3>
 <p><em>Description</em>: Computes distributional stats from Lorenz Quadratic fit</p>
 <div id="nte-check1" class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
@@ -238,51 +243,60 @@ Check:
 </div>
 </div>
 </section>
-<section id="gini_lq" class="level3">
-<h3 class="anchored" data-anchor-id="gini_lq">10. gini_lq</h3>
-<p><em>Description</em>: Compute Gini index from Lorenz Quadratic fit.</p>
-<p><em>References</em>: [3]</p>
-<p><em>Relevant equations</em>: …</p>
+<section id="quantile_lq" class="level3" data-number="1.11">
+<h3 data-number="1.11" class="anchored" data-anchor-id="quantile_lq"><span class="header-section-number">1.11</span> quantile_lq</h3>
+<p><em>Description</em>: Compute quantiles from Lorenz Quandratic fit</p>
+<p><em>Note</em>: This function calculates the quantiles for a Lorenz Quadratic with specific values for <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>.</p>
+<div id="imp-quant-gd-issue" class="callout-important callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Issues:
+</div>
+</div>
+<div id="imp-quant-gd-issue" class="callout-body-container callout-body">
+<p>The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>, but it calculates instead the “share” or the value between the deciles (<em>Note: Not sure how this values is used later on in the pipeline</em>).</p>
+<p>Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:</p>
+<p><code>vec[n_quantile] &lt;- 1 - value_at_lq(x[n_quantile-1], A, B, C)</code> where <code>n_quantile = 10</code></p>
+<p>However, my hypothesis is that this is related to <em>Issue: The inequality for <span class="math inline">\(a+d\)</span></em> above. If <span class="math inline">\(A+C \geq 1\)</span> then <code>value_at_lq(1, A, B, C) = 1</code></p>
+</div>
+</div>
 </section>
-<section id="value_at_lq" class="level3">
-<h3 class="anchored" data-anchor-id="value_at_lq">11. value_at_lq:</h3>
-<p><em>Description</em>: Solves for quadratic Lorenz curves with c = 1.</p>
-<p><em>References</em>: [1]</p>
-<p><em>Relevant equations</em>: …</p>
-</section>
-<section id="polarization_lq" class="level3">
-<h3 class="anchored" data-anchor-id="polarization_lq">12. polarization_lq</h3>
-<p><em>Description</em>: Computes polarization index from parametric Lorenz fit</p>
-<p><em>References</em>: …</p>
-<p><em>Relevant equations</em>: …</p>
-</section>
-<section id="mld_lq" class="level3">
-<h3 class="anchored" data-anchor-id="mld_lq">13. mld_lq</h3>
+<section id="mld_lq" class="level3" data-number="1.12">
+<h3 data-number="1.12" class="anchored" data-anchor-id="mld_lq"><span class="header-section-number">1.12</span> mld_lq</h3>
 <p><em>Description</em>: Computes MLD from Lorenz Quadratic fit</p>
 <p><em>References</em>: …</p>
 <p><em>Relevant equations</em>: …</p>
 </section>
-<section id="quantile_lq" class="level3">
-<h3 class="anchored" data-anchor-id="quantile_lq">14. quantile_lq</h3>
-<p><em>Description</em>: Compute quantiles from Lorenz Quandratic fit</p>
+<section id="gini_lq" class="level3" data-number="1.13">
+<h3 data-number="1.13" class="anchored" data-anchor-id="gini_lq"><span class="header-section-number">1.13</span> gini_lq</h3>
+<p><em>Description</em>: Compute Gini index from Lorenz Quadratic fit.</p>
+<p><em>References</em>: [3]</p>
+<p><em>Relevant equations</em>: …</p>
+</section>
+<section id="polarization_lq" class="level3" data-number="1.14">
+<h3 data-number="1.14" class="anchored" data-anchor-id="polarization_lq"><span class="header-section-number">1.14</span> polarization_lq</h3>
+<p><em>Description</em>: Computes polarization index from parametric Lorenz fit</p>
 <p><em>References</em>: …</p>
 <p><em>Relevant equations</em>: …</p>
 </section>
 </section>
-<section id="references" class="level2">
-<h2 class="anchored" data-anchor-id="references">References:</h2>
+<section id="references" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="references"><span class="header-section-number">2</span> References:</h2>
 <ol type="1">
 <li><p>Villasenor, J., B. C. Arnold. 1989. “<a href="https://doi.org/10.1016/0304-4076(89)90089-4">Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 40</em> (2): 327-338.</p></li>
 <li><p>Krause, M. 2013. “<a href="https://doi.org/10.1016/j.jeconom.2013.01.001">Corrigendum to Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 174</em> (1): 44.</p></li>
 <li><p>Datt, G. 1998. “<a href="https://www.ifpri.org/cdmref/p15738coll2/id/125673">Computational Tools For Poverty Measurement And Analysis</a>”. FCND Discussion Paper 50. World Bank, Washington, DC.</p></li>
 </ol>
 </section>
-<section id="appendix" class="level2">
-<h2 class="anchored" data-anchor-id="appendix">Appendix:</h2>
+<section id="appendix" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="appendix"><span class="header-section-number">3</span> Appendix:</h2>
 <p>Find function using the following list of functions:</p>
 <ul>
-<li><a href="#sec-pip_stats">Section&nbsp;3.1</a>: <code>gd_compute_pip_stats</code></li>
-<li><a href="#sec-select_lorenz">Section&nbsp;3.2</a>: <code>gd_select_lorenz</code></li>
+<li><a href="#sec-pip_stats">Section&nbsp;1.1</a>: <code>gd_compute_pip_stats</code></li>
+<li><a href="#sec-select_lorenz">Section&nbsp;1.2</a>: <code>gd_select_lorenz</code></li>
 <li><code>gd_compute_pip_stats_lq</code></li>
 <li><code>gd_compute_pip_stats_lb</code></li>
 <li><code>create_functional_form_lq</code></li>

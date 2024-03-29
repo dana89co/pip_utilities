@@ -3,17 +3,18 @@ title: "Group Data Documentation (wbpip)"
 author: "Diana Garcia"
 format: 
   html:
+    number-sections: true
     mermaid:
       theme: sandstone
 ---
 
-> ## Objective
+> ## Objective {.unnumbered}
 >
 > This document aims to describe the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
 
 <!-- I start by presenting the structure of the functions and then there is a description on how each function is built. -->
 
-## Structure
+## Structure {.unnumbered}
 
 ```{mermaid}
 flowchart TD
@@ -41,31 +42,30 @@ flowchart TD
 
 ## Functions
 
-### 1. pip_stats {#sec-pip_stats}
+### pip_stats {#sec-pip_stats}
 
 *Description*: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)
 
 ::: {#nte-boundary-issue .callout-note}
 #### Issue: Boundary conditions 
 
-At the moment, this is calculated using $(\mu L'(0+),\mu L'(1-)$ (+4 for some reason), but shouldn't we be using the following formula from equation (8) in [1]?
+At the moment, this is calculated using $(\mu L'(0.001) + 4,\mu L'(0.98) - 4)$ (*Note: Not sure what is the reason of adding and subtracting 4*). 
 
-$$ (\mu d/(a+b+d+1), \mu (2a+b+d)/(a+d-1) $$
 :::
 
-### 2. select_lorenz {#sec-select_lorenz}
+### select_lorenz {#sec-select_lorenz}
 
 *Description*: Select best Lorenz fit and adjust the returned statistics if needed.
 
-### 3. pip_stats_lq
+### pip_stats_lq
 
 *Description*: Compute poverty statistics for grouped data using the quadratic functional form of the Lorenz qurve.
 
-### 4. pip_stats_lb
+### pip_stats_lb
 
 *Description*: Compute poverty statistics for grouped data using the beta functional form of the Lorenz qurve.
 
-### 5. functional_form_lq
+### functional_form_lq
 
 *Description*: Prepares data for regression of $y(1-y)$ on $(x^2-y)$, $y(x-1)$ and $(x-y)$. 
 
@@ -85,7 +85,22 @@ $$y(1-y) = a(x^2-y) + by(x-1) + d(x-y)$$ {#eq-linear-form}
 
 This function prepares data to estimate $a$, $b$, and $d$ (*Note*: $d$ is named $C$ in `wbpip`).
 
-### 6. derive_lq 
+
+### value_at_lq: 
+
+*Description*: Solves for the Quadratic Lorenz curves.
+
+*References*: [1]
+
+*Relevant equations*:
+
+This function calculates the value at the Quadratic Lorenz Curve. Solving @eq-gen-equation for $y$, and assuming $f=0$ and $e = -(a+b+d+1)$ the density function that better fits income distributions will be (Equation 6b in Villasenor et al, 1989):
+
+$$ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2$$ {#eq-solve-y}
+
+where $\alpha = b^2 -4a$ and $\beta = 2be - 4d$.
+
+### derive_lq 
 
 *Description*: returns the first derivative of the quadratic Lorenz curves with $c = 1$. 
 
@@ -93,21 +108,15 @@ This function prepares data to estimate $a$, $b$, and $d$ (*Note*: $d$ is named 
 
 *Relevant equations*:
 
-Solving @eq-gen-equation for $y$, and assuming $f=0$ and $e = -(a+b+d+1)$ the density function that better fits income distributions will be (Equation 6b in Villasenor et al, 1989):
-
-$$ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2$$ {#eq-solve-y}
-
-where $\alpha = b^2 -4a$ and $\beta = 2be - 4d$.
-
 This function computes the first derivative of @eq-solve-y:
 
 $$-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2)$$ {#eq-first-der}
 
-### 7. estimate_lq
+### estimate_lq
 
 *Description*: Estimates poverty and inequality stats from Quadratic Lorenz fit
 
-### 8. check_curve_validity_lq
+### check_curve_validity_lq
 
 *Description*: Check validity of Lorenz Quadratic fit
 
@@ -136,9 +145,9 @@ Normality and Validity
 
  - $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive. (Normality and validity)
  - $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$ (Normality and validity)
- - $a+d \geq 0.9$ so $L(1,y) = 1$ (Validity) **Need checking (see note)**
+ - $a+d \geq 0.9$ so $L(1,y) = 1$ (Validity) 
 
-::: {#nte-cond-ad-issue .callout-note}
+::: {#imp-condad .callout-important}
 #### Issue: The inequality for $a+d$
 
 At the moment, we still use the old validation $a+d \leq 1$. However, the Corrigendum of the original paper [2] indicates we should use $a+d \geq 1$
@@ -154,7 +163,7 @@ $L''(x,y)$ can be calculated using @eq-first-der:
 
 $$ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} $$
 
-### 9. compute_dist_stats_lq
+### compute_dist_stats_lq
 
 *Description*: Computes distributional stats from Lorenz Quadratic fit
 
@@ -165,31 +174,26 @@ What is the difference with `gd_estimate_dist_stats_lq`?
 
 :::
 
-### 10. gini_lq
+### quantile_lq
 
-*Description*: Compute Gini index from Lorenz Quadratic fit.
+*Description*: Compute quantiles from Lorenz Quandratic fit
 
-*References*: [3]
+*Note*: This function calculates the quantiles for a Lorenz Quadratic with specific values for $a$, $b$ and $d$.  
 
-*Relevant equations*: ...
+::: {#imp-quant-gd-issue .callout-important}
+#### Issues:  
 
-### 11. value_at_lq: 
+The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of $a$, $b$ and $d$, but it calculates instead the "share" or the value between the deciles (*Note: Not sure how this values is used later on in the pipeline*). 
 
-*Description*: Solves for quadratic Lorenz curves with c = 1.
+Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:
 
-*References*: [1]
+`vec[n_quantile] <- 1 - value_at_lq(x[n_quantile-1], A, B, C)` where `n_quantile = 10`
 
-*Relevant equations*: ...
+However, my hypothesis is that this is related to *Issue: The inequality for $a+d$* above. If $A+C \geq 1$ then `value_at_lq(1, A, B, C) = 1`
 
-### 12. polarization_lq
+:::
 
-*Description*: Computes polarization index from parametric Lorenz fit
-
-*References*: ...
-
-*Relevant equations*: ...
-
-### 13. mld_lq
+### mld_lq
 
 *Description*: Computes MLD from Lorenz Quadratic fit
 
@@ -197,13 +201,22 @@ What is the difference with `gd_estimate_dist_stats_lq`?
 
 *Relevant equations*: ...
 
-### 14. quantile_lq
+### gini_lq
 
-*Description*: Compute quantiles from Lorenz Quandratic fit
+*Description*: Compute Gini index from Lorenz Quadratic fit.
+
+*References*: [3]
+
+*Relevant equations*: ...
+
+### polarization_lq
+
+*Description*: Computes polarization index from parametric Lorenz fit
 
 *References*: ...
 
 *Relevant equations*: ...
+
 
 ## References:
 
