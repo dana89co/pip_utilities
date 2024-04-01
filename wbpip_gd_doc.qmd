@@ -6,8 +6,12 @@ format:
     number-sections: true
     mermaid:
       theme: sandstone
-    code-fold: true
+    code-fold: false
     code-summary: "Show the code"
+    toc: true
+  # pdf: 
+  #   toc: true
+  #   number-sections: true
 ---
 
 > ## Objective {.unnumbered}
