@@ -1,5 +1,7 @@
 project:
   title: "pip_utilities"
+  type: website
+  output-dir: docs
 
 editor: visual
 
