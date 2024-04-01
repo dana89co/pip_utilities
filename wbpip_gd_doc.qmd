@@ -6,6 +6,8 @@ format:
     number-sections: true
     mermaid:
       theme: sandstone
+    code-fold: true
+    code-summary: "Show the code"
 ---
 
 > ## Objective {.unnumbered}
@@ -90,6 +92,27 @@ This function prepares data to estimate $a$, $b$, and $d$ (*Note*: $d$ is named 
 
 *Description*: Solves for the Quadratic Lorenz curves.
 
+```{r}
+value_at_lq <- function(x, A, B, C, key_values) {
+
+  # Check for NA, Inf and negative values in x
+  check_NA_Inf_values(x)
+  check_neg_values(x)
+
+  # Calculations
+  # e <- -(A + B + C + 1)
+  # m <- (B^2) - (4 * A)
+  # n <- (2 * B * e) - (4 * C)
+  temp <- (key_values$m * x^2) + (key_values$n * x) + (key_values$e^2)
+  temp[temp < 0] <- 0
+
+  # Solving the equation of the Lorenz curve
+  estle <- -0.5 * ((B * x) + key_values$e + sqrt(temp))
+
+  return(estle)
+}
+```
+
 *References*: [1]
 
 *Relevant equations*:
@@ -103,6 +126,36 @@ where $\alpha = b^2 -4a$ and $\beta = 2be - 4d$.
 ### derive_lq 
 
 *Description*: returns the first derivative of the quadratic Lorenz curves with $c = 1$. 
+
+```{r}
+derive_lq <- function(x, A, B, C, key_values) {
+
+  if (is.null(key_values)) {
+    key_values <- gd_lq_key_values(A, B, C)
+    # e          <- key_values$e
+    # m          <- key_values$m
+    # n          <- key_values$n
+  }
+
+  if (anyNA(x) == TRUE) {
+    cli::cli_abort("`x' must be a numeric or integer vector")
+  }
+  # note:
+  #   alpha --> m
+  #   beta  --> n
+
+  # e <- -(A + B + C + 1)
+  # m <- (B^2) - (4 * A)
+  # n <- (2 * B * e) - (4 * C) # C is called D in original paper, but C in Datt paper
+  tmp <- (key_values$m * x^2) + (key_values$n * x) + (key_values$e^2)
+  tmp[(!is.na(tmp) & tmp < 0)] <- 0 # If tmp == 0, val = Inf.
+
+  # Formula for first derivative of GQ Lorenz Curve
+  val <- -(B / 2) - ((2 * key_values$m * x + key_values$n) / (4 * sqrt(tmp)))
+
+  return(val)
+}
+```
 
 *References*: [1]
 
@@ -178,6 +231,26 @@ What is the difference with `gd_estimate_dist_stats_lq`?
 
 *Description*: Compute quantiles from Lorenz Quandratic fit
 
+```{r}
+old_gd_compute_quantile_lq <- function(A, B, C, n_quantile = 10) {
+  vec <- vector(mode = "numeric", length = n_quantile)
+  x1 <- 1 / n_quantile
+  q <- 0L
+  lastq <- 0L
+  for (i in seq_len(n_quantile - 1)) {
+    q <- value_at_lq(x1, A, B, C)
+    v <- q - lastq
+    vec[i] <- v
+    lastq <- q
+    x1 <- x1 + 1 / n_quantile
+  }
+  vec[n_quantile] <- 1 - lastq
+
+  return(vec)
+}
+```
+
+
 *Note*: This function calculates the quantiles for a Lorenz Quadratic with specific values for $a$, $b$ and $d$.  
 
 ::: {#imp-quant-gd-issue .callout-important}
@@ -193,9 +266,53 @@ However, my hypothesis is that this is related to *Issue: The inequality for $a+
 
 :::
 
+*My version of the code*:
+
+```{r}
+gd_compute_quantile_lq <- function(A, B, C, n_quantile = 10) {
+
+  x   <- seq(from = 1/n_quantile, to = 1, by = 1/n_quantile)
+
+  vec <- diff(c(0,value_at_lq(x, A, B, C)))
+
+  vec[n_quantile] <- 1- value_at_lq(x[n_quantile-1], A, B, C) # Is this correct?
+
+  return(vec)
+}
+
+```
+
 ### mld_lq
 
 *Description*: Computes Mean Log Deviation from Lorenz Quadratic fit
+
+```{r}
+old_gd_compute_mld_lq <- function(A, B, C) {
+  x1 <- derive_lq(0.0005, A, B, C)
+  gap <- 0L
+  mld <- 0L
+  if (x1 == 0) {
+    gap <- 0.0005
+  } else {
+    mld <- suppressWarnings(log(x1) * 0.001)
+  }
+  x1 <- derive_lq(0, A, B, C)
+  for (xstep in seq(0, 0.998, 0.001)) {
+    x2 <- derive_lq(xstep + 0.001, A, B, C)
+    if ((x1 <= 0) || (x2 <= 0)) {
+      gap <- gap + 0.001
+      if (gap > 0.5) {
+        return(-1)
+      }
+    } else {
+      gap <- 0L
+      mld <- mld + (log(x1) + log(x2)) * 0.0005
+    }
+    x1 <- x2
+  }
+  return(-mld)
+}
+```
 
 *References*: None
 
@@ -219,10 +336,49 @@ $$-\int_0^1 ln(L'(\pi))d\pi= \lim_{n \rightarrow \infty} -\sum_{i=1}^{N}\frac{1}
 ::: {#imp-mld-gd-issue .callout-important}
 #### Issue:  
 
-My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return $-1$ if before the $3\%$ of $y$ we have negative values. 
+My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return $1$ if for the left tail of $y$ we encounter negative values. 
 
 :::
 
+*My version of the code*:
+
+```{r}
+gd_compute_mld_lq <- function(A, B, C) {
+  x1 <- derive_lq(0.0005, A, B, C) # Not sure I understand this condition
+  #gap <- 0L
+  mld <- 0L
+  if (x1 == 0) { # So log is not undefined
+    #gap <- 0.0005
+  } else {
+    mld <- suppressWarnings(log(x1) * 0.001) # Needed to match test
+  }
+
+  xstep <- seq(0, 0.999, 0.001)
+  x <- derive_lq(xstep, A, B, C)
+
+  if (any(x[1:33]<=0)){ # To account for the gap and the stop parameter within the loop.
+    return(-1)
+  }else{
+    mld <- mld + fsum( (log(x[1:999])+log(x[2:1000])) *0.0005) # Not sure why add previous mld
+    return(-mld)
+  }
+
+  # x1 <- derive_lq(0, A, B, C)
+  # for (xstep in seq(0, 0.998, 0.001)) {
+  #   x2 <- derive_lq(xstep + 0.001, A, B, C)
+  #   if ((x1 <= 0) || (x2 <= 0)) {
+  #     gap <- gap + 0.001
+  #     if (gap > 0.5) {
+  #       return(-1)
+  #     }
+  #   } else {
+  #     gap <- 0L
+  #     mld <- mld + (log(x1) + log(x2)) * 0.0005
+  #   }
+  #   x1 <- x2
+  # }
+}
+```
 
 ### gini_lq
 
@@ -249,11 +405,11 @@ My hypothesis is that they used the last formula to calculate the Mean Log Devia
 
 3. Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/cdmref/p15738coll2/id/125673)". FCND Discussion Paper 50. World Bank, Washington, DC.
 
-4. Rohde, N. (2008). Lorenz Curves and Generalised Entropy Inequality Measures. In: Chotikapanich, D. (eds) Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being, vol 5. Springer, New York, NY. https://doi.org/10.1007/978-0-387-72796-7_15
+4. Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY. 
 
 ## Appendix: 
 
-Find function using the following list of functions:
+Find function using the following list:
 
 -  @sec-pip_stats: `gd_compute_pip_stats`
 -  @sec-select_lorenz: `gd_select_lorenz`

@@ -21,6 +21,69 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1.6em;
   vertical-align: middle;
 }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -157,6 +220,29 @@ Issue: Boundary conditions
 <section id="value_at_lq" class="level3" data-number="1.6">
 <h3 data-number="1.6" class="anchored" data-anchor-id="value_at_lq"><span class="header-section-number">1.6</span> value_at_lq:</h3>
 <p><em>Description</em>: Solves for the Quadratic Lorenz curves.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>value_at_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check for NA, Inf and negative values in x</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_NA_Inf_values</span>(x)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_neg_values</span>(x)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculations</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># e &lt;- -(A + B + C + 1)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># m &lt;- (B^2) - (4 * A)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># n &lt;- (2 * B * e) - (4 * C)</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  temp <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>m <span class="sc">*</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> x) <span class="sc">+</span> (key_values<span class="sc">$</span>e<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  temp[temp <span class="sc">&lt;</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Solving the equation of the Lorenz curve</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  estle <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> ((B <span class="sc">*</span> x) <span class="sc">+</span> key_values<span class="sc">$</span>e <span class="sc">+</span> <span class="fu">sqrt</span>(temp))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(estle)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><em>References</em>: [1]</p>
 <p><em>Relevant equations</em>:</p>
 <p>This function calculates the value at the Quadratic Lorenz Curve. Solving <a href="#eq-gen-equation">Equation&nbsp;1</a> for <span class="math inline">\(y\)</span>, and assuming <span class="math inline">\(f=0\)</span> and <span class="math inline">\(e = -(a+b+d+1)\)</span> the density function that better fits income distributions will be (Equation 6b in Villasenor et al, 1989):</p>
@@ -166,6 +252,38 @@ Issue: Boundary conditions
 <section id="derive_lq" class="level3" data-number="1.7">
 <h3 data-number="1.7" class="anchored" data-anchor-id="derive_lq"><span class="header-section-number">1.7</span> derive_lq</h3>
 <p><em>Description</em>: returns the first derivative of the quadratic Lorenz curves with <span class="math inline">\(c = 1\)</span>.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>derive_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(key_values)) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    key_values <span class="ot">&lt;-</span> <span class="fu">gd_lq_key_values</span>(A, B, C)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># e          &lt;- key_values$e</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># m          &lt;- key_values$m</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># n          &lt;- key_values$n</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">anyNA</span>(x) <span class="sc">==</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    cli<span class="sc">::</span><span class="fu">cli_abort</span>(<span class="st">"`x' must be a numeric or integer vector"</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># note:</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   alpha --&gt; m</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   beta  --&gt; n</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># e &lt;- -(A + B + C + 1)</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># m &lt;- (B^2) - (4 * A)</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># n &lt;- (2 * B * e) - (4 * C) # C is called D in original paper, but C in Datt paper</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>m <span class="sc">*</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> x) <span class="sc">+</span> (key_values<span class="sc">$</span>e<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  tmp[(<span class="sc">!</span><span class="fu">is.na</span>(tmp) <span class="sc">&amp;</span> tmp <span class="sc">&lt;</span> <span class="dv">0</span>)] <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># If tmp == 0, val = Inf.</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Formula for first derivative of GQ Lorenz Curve</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  val <span class="ot">&lt;-</span> <span class="sc">-</span>(B <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">-</span> ((<span class="dv">2</span> <span class="sc">*</span> key_values<span class="sc">$</span>m <span class="sc">*</span> x <span class="sc">+</span> key_values<span class="sc">$</span>n) <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fu">sqrt</span>(tmp)))</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(val)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><em>References</em>: [1]</p>
 <p><em>Relevant equations</em>:</p>
 <p>This function computes the first derivative of <a href="#eq-solve-y">Equation&nbsp;3</a>:</p>
@@ -246,6 +364,27 @@ Check:
 <section id="quantile_lq" class="level3" data-number="1.11">
 <h3 data-number="1.11" class="anchored" data-anchor-id="quantile_lq"><span class="header-section-number">1.11</span> quantile_lq</h3>
 <p><em>Description</em>: Compute quantiles from Lorenz Quandratic fit</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  vec <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="at">mode =</span> <span class="st">"numeric"</span>, <span class="at">length =</span> n_quantile)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> n_quantile</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  q <span class="ot">&lt;-</span> 0L</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  lastq <span class="ot">&lt;-</span> 0L</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n_quantile <span class="sc">-</span> <span class="dv">1</span>)) {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">value_at_lq</span>(x1, A, B, C)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    v <span class="ot">&lt;-</span> q <span class="sc">-</span> lastq</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    vec[i] <span class="ot">&lt;-</span> v</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    lastq <span class="ot">&lt;-</span> q</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    x1 <span class="ot">&lt;-</span> x1 <span class="sc">+</span> <span class="dv">1</span> <span class="sc">/</span> n_quantile</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  vec[n_quantile] <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> lastq</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(vec)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><em>Note</em>: This function calculates the quantiles for a Lorenz Quadratic with specific values for <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>.</p>
 <div id="imp-quant-gd-issue" class="callout-important callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
@@ -263,10 +402,56 @@ Issues:
 <p>However, my hypothesis is that this is related to <em>Issue: The inequality for <span class="math inline">\(a+d\)</span></em> above. If <span class="math inline">\(A+C \geq 1\)</span> then <code>value_at_lq(1, A, B, C) = 1</code></p>
 </div>
 </div>
+<p><em>My version of the code</em>:</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  x   <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">1</span><span class="sc">/</span>n_quantile, <span class="at">to =</span> <span class="dv">1</span>, <span class="at">by =</span> <span class="dv">1</span><span class="sc">/</span>n_quantile)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  vec <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="fu">value_at_lq</span>(x, A, B, C)))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  vec[n_quantile] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span> <span class="fu">value_at_lq</span>(x[n_quantile<span class="dv">-1</span>], A, B, C) <span class="co"># Is this correct?</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(vec)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 </section>
 <section id="mld_lq" class="level3" data-number="1.12">
 <h3 data-number="1.12" class="anchored" data-anchor-id="mld_lq"><span class="header-section-number">1.12</span> mld_lq</h3>
 <p><em>Description</em>: Computes Mean Log Deviation from Lorenz Quadratic fit</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  gap <span class="ot">&lt;-</span> 0L</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  mld <span class="ot">&lt;-</span> 0L</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (x1 <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    gap <span class="ot">&lt;-</span> <span class="fl">0.0005</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">log</span>(x1) <span class="sc">*</span> <span class="fl">0.001</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="dv">0</span>, A, B, C)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (xstep <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.998</span>, <span class="fl">0.001</span>)) {</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    x2 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(xstep <span class="sc">+</span> <span class="fl">0.001</span>, A, B, C)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((x1 <span class="sc">&lt;=</span> <span class="dv">0</span>) <span class="sc">||</span> (x2 <span class="sc">&lt;=</span> <span class="dv">0</span>)) {</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>      gap <span class="ot">&lt;-</span> gap <span class="sc">+</span> <span class="fl">0.001</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (gap <span class="sc">&gt;</span> <span class="fl">0.5</span>) {</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>      gap <span class="ot">&lt;-</span> 0L</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>      mld <span class="ot">&lt;-</span> mld <span class="sc">+</span> (<span class="fu">log</span>(x1) <span class="sc">+</span> <span class="fu">log</span>(x2)) <span class="sc">*</span> <span class="fl">0.0005</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    x1 <span class="ot">&lt;-</span> x2</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="sc">-</span>mld)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><em>References</em>: None</p>
 <p><em>Note</em>: In this function, they do not describe how the function is calculated. The following is my hypothesis of what they were trying to accomplish:</p>
 <p><em>Relevant equations</em>:</p>
@@ -276,6 +461,60 @@ Issues:
 <p><span class="math display">\[L'(\pi) = \frac{N y_k}{\sum_{k=1}^N y_k}\]</span></p>
 <p>where <span class="math inline">\(y_k\)</span> is the income accruing to the <span class="math inline">\(k_{th}\)</span> individual if ordered such that <span class="math inline">\(y_1&lt;y_2&lt;...&lt;y_k\)</span> and <span class="math inline">\(\pi= \frac{k}{j}\)</span>. Then the mean log deviation can be rewritten as (Equation 15.21):</p>
 <p><span class="math display">\[-\int_0^1 ln(L'(\pi))d\pi= \lim_{n \rightarrow \infty} -\sum_{i=1}^{N}\frac{1}{N}ln(\frac{N y_k}{\sum_{k=1}^N y_k})\]</span></p>
+<div id="imp-mld-gd-issue" class="callout-important callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Issue:
+</div>
+</div>
+<div id="imp-mld-gd-issue" class="callout-body-container callout-body">
+<p>My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return <span class="math inline">\(1\)</span> if for the left tail of <span class="math inline">\(y\)</span> we encounter negative values.</p>
+</div>
+</div>
+<p><em>My version of the code</em>:</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C) <span class="co"># Not sure I understand this condition</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#gap &lt;- 0L</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  mld <span class="ot">&lt;-</span> 0L</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (x1 <span class="sc">==</span> <span class="dv">0</span>) { <span class="co"># So log is not undefined</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">#gap &lt;- 0.0005</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">log</span>(x1) <span class="sc">*</span> <span class="fl">0.001</span>) <span class="co"># Needed to match test</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  xstep <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.999</span>, <span class="fl">0.001</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(xstep, A, B, C)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(x[<span class="dv">1</span><span class="sc">:</span><span class="dv">33</span>]<span class="sc">&lt;=</span><span class="dv">0</span>)){ <span class="co"># To account for the gap and the stop parameter within the loop.</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  }<span class="cf">else</span>{</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> mld <span class="sc">+</span> <span class="fu">fsum</span>( (<span class="fu">log</span>(x[<span class="dv">1</span><span class="sc">:</span><span class="dv">999</span>])<span class="sc">+</span><span class="fu">log</span>(x[<span class="dv">2</span><span class="sc">:</span><span class="dv">1000</span>])) <span class="sc">*</span><span class="fl">0.0005</span>) <span class="co"># Not sure why add previous mld</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="sc">-</span>mld)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x1 &lt;- derive_lq(0, A, B, C)</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># for (xstep in seq(0, 0.998, 0.001)) {</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   x2 &lt;- derive_lq(xstep + 0.001, A, B, C)</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   if ((x1 &lt;= 0) || (x2 &lt;= 0)) {</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     gap &lt;- gap + 0.001</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     if (gap &gt; 0.5) {</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="co">#       return(-1)</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     }</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   } else {</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     gap &lt;- 0L</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     mld &lt;- mld + (log(x1) + log(x2)) * 0.0005</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   }</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   x1 &lt;- x2</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># }</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 </section>
 <section id="gini_lq" class="level3" data-number="1.13">
 <h3 data-number="1.13" class="anchored" data-anchor-id="gini_lq"><span class="header-section-number">1.13</span> gini_lq</h3>
@@ -296,12 +535,12 @@ Issues:
 <li><p>Villasenor, J., B. C. Arnold. 1989. “<a href="https://doi.org/10.1016/0304-4076(89)90089-4">Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 40</em> (2): 327-338.</p></li>
 <li><p>Krause, M. 2013. “<a href="https://doi.org/10.1016/j.jeconom.2013.01.001">Corrigendum to Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 174</em> (1): 44.</p></li>
 <li><p>Datt, G. 1998. “<a href="https://www.ifpri.org/cdmref/p15738coll2/id/125673">Computational Tools For Poverty Measurement And Analysis</a>”. FCND Discussion Paper 50. World Bank, Washington, DC.</p></li>
-<li><p>Rohde, N. (2008). Lorenz Curves and Generalised Entropy Inequality Measures. In: Chotikapanich, D. (eds) Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being, vol 5. Springer, New York, NY. https://doi.org/10.1007/978-0-387-72796-7_15</p></li>
+<li><p>Rohde, N. (2008). “<a href="https://doi.org/10.1007/978-0-387-72796-7_15">Lorenz Curves and Generalised Entropy Inequality Measures</a>”. In: Chotikapanich, D. (eds) <em>Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being</em>, vol 5. Springer, New York, NY.</p></li>
 </ol>
 </section>
 <section id="appendix" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="appendix"><span class="header-section-number">3</span> Appendix:</h2>
-<p>Find function using the following list of functions:</p>
+<p>Find function using the following list:</p>
 <ul>
 <li><a href="#sec-pip_stats">Section&nbsp;1.1</a>: <code>gd_compute_pip_stats</code></li>
 <li><a href="#sec-select_lorenz">Section&nbsp;1.2</a>: <code>gd_select_lorenz</code></li>
