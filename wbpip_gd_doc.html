@@ -150,7 +150,7 @@ Issue: Boundary conditions
 <p><em>Relevant equations</em>:</p>
 <p>The general Quadratic Lorenz curve form is:</p>
 <p><span id="eq-gen-equation"><span class="math display">\[ax^2 + bxy + cy^2 + dx + ey + f = 0 \tag{1}\]</span></span></p>
-<p>where <span class="math inline">\(y\)</span> is the vector of cumulative proportion of consumption/income (L) and <span class="math inline">\(x\)</span> is the cumulative proportions of population (P). Using the condition <span class="math inline">\(e = -(a+b+d+1)\)</span> the previous equation is rewritten in a linear form as follows (Equation 15 in Villasenor et al, 1989):</p>
+<p>where <span class="math inline">\(y\)</span> is the vector of cumulative proportion of consumption/income (L) and <span class="math inline">\(x\)</span> is the cumulative proportions of population (P). Using the conditions <span class="math inline">\(f=0\)</span> and <span class="math inline">\(e = -(a+b+d+1)\)</span> the previous equation is rewritten in a linear form as follows (Equation 15 in Villasenor et al, 1989):</p>
 <p><span id="eq-linear-form"><span class="math display">\[y(1-y) = a(x^2-y) + by(x-1) + d(x-y) \tag{2}\]</span></span></p>
 <p>This function prepares data to estimate <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, and <span class="math inline">\(d\)</span> (<em>Note</em>: <span class="math inline">\(d\)</span> is named <span class="math inline">\(C\)</span> in <code>wbpip</code>).</p>
 </section>
@@ -257,7 +257,7 @@ Issues:
 </div>
 </div>
 <div id="imp-quant-gd-issue" class="callout-body-container callout-body">
-<p>The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>, but it calculates instead the “share” or the value between the deciles (<em>Note: Not sure how this values is used later on in the pipeline</em>).</p>
+<p>The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>, but it calculates instead the “share” or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the <code>deciles</code> of the welfare vector.</p>
 <p>Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:</p>
 <p><code>vec[n_quantile] &lt;- 1 - value_at_lq(x[n_quantile-1], A, B, C)</code> where <code>n_quantile = 10</code></p>
 <p>However, my hypothesis is that this is related to <em>Issue: The inequality for <span class="math inline">\(a+d\)</span></em> above. If <span class="math inline">\(A+C \geq 1\)</span> then <code>value_at_lq(1, A, B, C) = 1</code></p>
@@ -266,9 +266,16 @@ Issues:
 </section>
 <section id="mld_lq" class="level3" data-number="1.12">
 <h3 data-number="1.12" class="anchored" data-anchor-id="mld_lq"><span class="header-section-number">1.12</span> mld_lq</h3>
-<p><em>Description</em>: Computes MLD from Lorenz Quadratic fit</p>
-<p><em>References</em>: …</p>
-<p><em>Relevant equations</em>: …</p>
+<p><em>Description</em>: Computes Mean Log Deviation from Lorenz Quadratic fit</p>
+<p><em>References</em>: None</p>
+<p><em>Note</em>: In this function, they do not describe how the function is calculated. The following is my hypothesis of what they were trying to accomplish:</p>
+<p><em>Relevant equations</em>:</p>
+<p>The mean log deviation:</p>
+<p><span class="math display">\[-\frac{1}{N} \sum_{i=1}^N ln(\frac{y_i}{\mu})=-\frac{1}{N} \sum_{i=1}^N ln(\frac{y_i}{\frac{1}{N}\sum_{i=1}^N y_i}) \]</span></p>
+<p>Using the derivation from Rohde (2008) (Equation 15.20), we know that:</p>
+<p><span class="math display">\[L'(\pi) = \frac{N y_k}{\sum_{k=1}^N y_k}\]</span></p>
+<p>where <span class="math inline">\(y_k\)</span> is the income accruing to the <span class="math inline">\(k_{th}\)</span> individual if ordered such that <span class="math inline">\(y_1&lt;y_2&lt;...&lt;y_k\)</span> and <span class="math inline">\(\pi= \frac{k}{j}\)</span>. Then the mean log deviation can be rewritten as (Equation 15.21):</p>
+<p><span class="math display">\[-\int_0^1 ln(L'(\pi))d\pi= \lim_{n \rightarrow \infty} -\sum_{i=1}^{N}\frac{1}{N}ln(\frac{N y_k}{\sum_{k=1}^N y_k})\]</span></p>
 </section>
 <section id="gini_lq" class="level3" data-number="1.13">
 <h3 data-number="1.13" class="anchored" data-anchor-id="gini_lq"><span class="header-section-number">1.13</span> gini_lq</h3>
@@ -289,6 +296,7 @@ Issues:
 <li><p>Villasenor, J., B. C. Arnold. 1989. “<a href="https://doi.org/10.1016/0304-4076(89)90089-4">Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 40</em> (2): 327-338.</p></li>
 <li><p>Krause, M. 2013. “<a href="https://doi.org/10.1016/j.jeconom.2013.01.001">Corrigendum to Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 174</em> (1): 44.</p></li>
 <li><p>Datt, G. 1998. “<a href="https://www.ifpri.org/cdmref/p15738coll2/id/125673">Computational Tools For Poverty Measurement And Analysis</a>”. FCND Discussion Paper 50. World Bank, Washington, DC.</p></li>
+<li><p>Rohde, N. (2008). Lorenz Curves and Generalised Entropy Inequality Measures. In: Chotikapanich, D. (eds) Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being, vol 5. Springer, New York, NY. https://doi.org/10.1007/978-0-387-72796-7_15</p></li>
 </ol>
 </section>
 <section id="appendix" class="level2" data-number="3">

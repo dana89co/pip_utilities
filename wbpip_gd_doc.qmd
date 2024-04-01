@@ -79,7 +79,7 @@ The general Quadratic Lorenz curve form is:
 
 $$ax^2 + bxy + cy^2 + dx + ey + f = 0$$ {#eq-gen-equation}
 
-where $y$ is the vector of cumulative proportion of consumption/income (L) and $x$ is the cumulative proportions of population (P). Using the condition $e = -(a+b+d+1)$ the previous equation is rewritten in a linear form as follows (Equation 15 in Villasenor et al, 1989):
+where $y$ is the vector of cumulative proportion of consumption/income (L) and $x$ is the cumulative proportions of population (P). Using the conditions $f=0$ and $e = -(a+b+d+1)$ the previous equation is rewritten in a linear form as follows (Equation 15 in Villasenor et al, 1989):
 
 $$y(1-y) = a(x^2-y) + by(x-1) + d(x-y)$$ {#eq-linear-form}
 
@@ -183,7 +183,7 @@ What is the difference with `gd_estimate_dist_stats_lq`?
 ::: {#imp-quant-gd-issue .callout-important}
 #### Issues:  
 
-The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of $a$, $b$ and $d$, but it calculates instead the "share" or the value between the deciles (*Note: Not sure how this values is used later on in the pipeline*). 
+The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of $a$, $b$ and $d$, but it calculates instead the "share" or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the `deciles` of the welfare vector. 
 
 Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:
 
@@ -195,11 +195,34 @@ However, my hypothesis is that this is related to *Issue: The inequality for $a+
 
 ### mld_lq
 
-*Description*: Computes MLD from Lorenz Quadratic fit
+*Description*: Computes Mean Log Deviation from Lorenz Quadratic fit
 
-*References*: ...
+*References*: None
 
-*Relevant equations*: ...
+*Note*: In this function, they do not describe how the function is calculated. The following is my hypothesis of what they were trying to accomplish:
+
+*Relevant equations*:
+
+The mean log deviation:
+
+$$-\frac{1}{N} \sum_{i=1}^N ln(\frac{y_i}{\mu})=-\frac{1}{N} \sum_{i=1}^N ln(\frac{y_i}{\frac{1}{N}\sum_{i=1}^N y_i}) $$
+
+Using the derivation from Rohde (2008) (Equation 15.20), we know that:
+
+$$L'(\pi) = \frac{N y_k}{\sum_{k=1}^N y_k}$$
+
+
+where $y_k$ is the income accruing to the $k_{th}$ individual if ordered such that $y_1<y_2<...<y_k$ and $\pi= \frac{k}{j}$. Then the mean log deviation can be rewritten as (Equation 15.21):
+
+$$-\int_0^1 ln(L'(\pi))d\pi= \lim_{n \rightarrow \infty} -\sum_{i=1}^{N}\frac{1}{N}ln(\frac{N y_k}{\sum_{k=1}^N y_k})$$
+
+::: {#imp-mld-gd-issue .callout-important}
+#### Issue:  
+
+My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return $-1$ if before the $3\%$ of $y$ we have negative values. 
+
+:::
+
 
 ### gini_lq
 
@@ -225,6 +248,8 @@ However, my hypothesis is that this is related to *Issue: The inequality for $a+
 2. Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
 
 3. Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/cdmref/p15738coll2/id/125673)". FCND Discussion Paper 50. World Bank, Washington, DC.
+
+4. Rohde, N. (2008). Lorenz Curves and Generalised Entropy Inequality Measures. In: Chotikapanich, D. (eds) Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being, vol 5. Springer, New York, NY. https://doi.org/10.1007/978-0-387-72796-7_15
 
 ## Appendix: 
 
