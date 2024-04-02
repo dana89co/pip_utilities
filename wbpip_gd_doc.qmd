@@ -9,18 +9,18 @@ format:
     code-fold: true
     code-summary: "Show the code"
     toc: true
-  # pdf: default
+    link-external-newwindow: true
 ---
 
 > ## Objective {.unnumbered}
 >
 > This document aims to describe the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
 
-<!-- I start by presenting the structure of the functions and then there is a description on how each function is built. -->
 
 ## Structure {.unnumbered}
 
 ```{mermaid}
+
 flowchart TD
     lz(select_lorenz) --> stats[pip_stats]
     lq(pip_stats_lq) --> lz
@@ -28,18 +28,23 @@ flowchart TD
     form_lq(functional_form_lq) --> lq
     derive_lq(derive_lq) --> lq
     est_lq(estimate_lq) --> lq
+    fit_lq(fit_lq) --> lq
     check_val(check_curve_validity_lq) --> est_lq
     comp_dist_lq(compute_dist_stats_lq) --> est_lq
+    comp_pov_lq(compute_pov_stats_lq) --> est_lq
     polarization_lq(polarization_lq) --> comp_dist_lq
     gini_lq(gini_lq) --> comp_dist_lq
     value_at_lq --> polarization_lq
     value_at_lq(value_at_lq) --> comp_dist_lq
-    mld_lq(mld_lq) --> comp_dist_lq
-    quantile_lq(quantile_lq) --> comp_dist_lq
+    mld_lq(<b>mld_lq</b>) --> comp_dist_lq
+    quantile_lq(<b>quantile_lq</b>) --> comp_dist_lq
     derive_lq --> comp_dist_lq
     derive_lq --> mld_lq
     derive_lq --> polarization_lq
     value_at_lq --> quantile_lq
+    
+    style quantile_lq fill:#FFF1A2
+    style mld_lq fill:#FFF1A2
 
 ```
 
@@ -49,6 +54,68 @@ flowchart TD
 ### pip_stats {#sec-pip_stats}
 
 *Description*: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)
+
+```{r}
+gd_compute_pip_stats <- function(welfare,
+                                 povline,
+                                 population,
+                                 requested_mean,
+                                 popshare = NULL,
+                                 default_ppp = 1,
+                                 ppp = NULL,
+                                 p0 = 0.5) {
+
+
+  # Apply Lorenz quadratic fit ----------------------------------------------
+  results_lq <- gd_compute_pip_stats_lq(
+    welfare = welfare,
+    population = population,
+    requested_mean = requested_mean,
+    povline = povline,
+    popshare = popshare,
+    default_ppp = default_ppp,
+    ppp = ppp,
+    p0 = p0
+  )
+
+  # Apply Lorenz beta fit ----------------------------------------------
+  results_lb <- gd_compute_pip_stats_lb(
+    welfare = welfare,
+    population = population,
+    requested_mean = requested_mean,
+    povline = povline,
+    popshare = popshare,
+    default_ppp = default_ppp,
+    ppp = ppp,
+    p0 = p0
+  )
+
+
+  # Apply selection rules ---------------------------------------------------
+  out <- gd_select_lorenz(
+    lq = results_lq,
+    lb = results_lb
+  )
+
+  # Return only subset of variables
+  out <- out[c(
+    "poverty_line",
+    "mean",
+    "median",
+    "headcount",
+    "poverty_gap",
+    "poverty_severity",
+    "watts",
+    "gini",
+    "mld",
+    "polarization",
+    "deciles"
+  )]
+
+
+  return(out)
+}
+```
 
 ::: {#nte-boundary-issue .callout-note}
 #### Issue: Boundary conditions 
@@ -61,9 +128,152 @@ At the moment, this is calculated using $(\mu L'(0.001) + 4,\mu L'(0.98) - 4)$ (
 
 *Description*: Select best Lorenz fit and adjust the returned statistics if needed.
 
+```{r}
+gd_select_lorenz <- function(lq, lb) {
+
+  # Set default value
+  datamean <- lq[["mean"]]
+  is_valid <- lq[["is_valid"]] | lb[["is_valid"]]
+  is_normal <- lq[["is_normal"]] | lb[["is_normal"]]
+
+  # Selection of Lorenz fit for poverty statistics
+  use_lq_for_pov <- use_lq_for_poverty(
+    lq = lq,
+    lb = lb
+  )
+
+  # Selection of Lorenz fit for distributional statistics
+  use_lq_for_dist <- use_lq_for_distributional(
+    lq = lq,
+    lb = lb
+  )
+
+  # Retrieve distributional statistics
+  dist <- retrieve_distributional(
+    lq = lq,
+    lb = lb,
+    is_valid = is_valid,
+    use_lq_for_dist = use_lq_for_dist
+  )
+
+  # Retrieve poverty statistics
+  pov <- retrieve_poverty(
+    lq = lq,
+    lb = lb,
+    is_normal = is_normal,
+    use_lq_for_pov = use_lq_for_pov
+  )
+
+  return(list(
+    mean             = datamean,
+    poverty_line     = pov[["poverty_line"]],
+    z_min            = dist[["z_min"]],
+    z_max            = dist[["z_max"]],
+    # ppp            = lq[["ppp"]],
+    gini             = dist[["gini"]],
+    median           = dist[["median"]],
+    # rmed           = rmed,
+    rmhalf           = dist[["rmhalf"]],
+    polarization     = dist[["polarization"]],
+    ris              = dist[["ris"]],
+    mld              = dist[["mld"]],
+    dcm              = lq[["dcm"]],
+    deciles          = dist[["deciles"]],
+    headcount        = pov[["headcount"]],
+    poverty_gap      = pov[["poverty_gap"]],
+    poverty_severity = pov[["poverty_severity"]],
+    eh               = pov[["eh"]],
+    epg              = pov[["epg"]],
+    ep               = pov[["ep"]],
+    gh               = pov[["gh"]],
+    gpg              = pov[["gpg"]],
+    gp               = pov[["gp"]],
+    watts            = pov[["watts"]],
+    sse              = dist[["sse"]]
+  ))
+}
+
+```
+
 ### pip_stats_lq
 
 *Description*: Compute poverty statistics for grouped data using the quadratic functional form of the Lorenz qurve.
+
+```{r}
+gd_compute_pip_stats_lq <- function(welfare,
+                                    povline,
+                                    population,
+                                    requested_mean,
+                                    popshare = NULL,
+                                    default_ppp,
+                                    ppp = NULL,
+                                    p0 = 0.5) {
+
+  # Adjust mean if different PPP value is provided
+  if (!is.null(ppp)) {
+    requested_mean <- requested_mean * default_ppp / ppp
+  } else {
+    ppp <- default_ppp
+  }
+  # STEP 1: Prep data to fit functional form
+  prepped_data <- create_functional_form_lq(
+    welfare = welfare,
+    population = population
+  )
+
+  # STEP 2: Estimate regression coefficients using LQ parameterization
+  reg_results <- regres(prepped_data, is_lq = TRUE)
+  reg_coef <- reg_results$coef
+
+  A <- reg_coef[1]
+  B <- reg_coef[2]
+  C <- reg_coef[3]
+
+  # Step 2.1: pre-calculate key values
+  kv <- gd_lq_key_values(A, B, C)
+
+  # OPTIONAL: Only when popshare is supplied
+  # return poverty line if share of population living in poverty is supplied
+  # intead of a poverty line
+  if (!is.null(popshare)) {
+    povline <- derive_lq(popshare,
+                         A, B, C,
+                         key_values = kv) * requested_mean
+  }
+
+  # Boundary conditions (Why 4?)
+  z_min <- requested_mean * derive_lq(0.001,
+                                      A, B, C,
+                                      key_values = kv) + 4
+  z_max <- requested_mean * derive_lq(0.980,
+                                      A, B, C,
+                                      key_values = kv) - 4
+  z_min <- if (z_min < 0) 0L else z_min
+
+  results1 <- list(requested_mean, povline, z_min, z_max, ppp)
+  names(results1) <- list("mean", "poverty_line", "z_min", "z_max", "ppp")
+
+  # STEP 3: Estimate poverty measures based on identified parameters
+  results2 <- gd_estimate_lq(requested_mean, povline, p0,
+                             A, B, C, key_values = kv)
+
+  # STEP 4: Compute measure of regression fit
+  results_fit <- gd_compute_fit_lq(welfare,
+                                   population,
+                                   results2$headcount,
+                                   A, B, C,
+                                   key_values = kv)
+
+  res <- c(results1,
+           results2,
+           results_fit,
+           reg_results)
+
+  return(res)
+}
+
+```
+
 
 ### pip_stats_lb
 
@@ -72,6 +282,37 @@ At the moment, this is calculated using $(\mu L'(0.001) + 4,\mu L'(0.98) - 4)$ (
 ### functional_form_lq
 
 *Description*: Prepares data for regression of $y(1-y)$ on $(x^2-y)$, $y(x-1)$ and $(x-y)$. 
+
+```{r}
+create_functional_form_lq <- function(welfare,
+                                      population) {
+  # CHECK inputs
+  # assertthat::assert_that(is.numeric(population))
+  # assertthat::assert_that(is.numeric(welfare))
+  # assertthat::assert_that(length(population) == length(welfare))
+  # assertthat::assert_that(length(population) > 1)
+
+  # Remove last observation (the functional form for the Lorenz curve already forces
+  # it to pass through the point (1, 1)
+  nobs <- length(population) - 1
+  population <- population[1:nobs]
+  welfare <- welfare[1:nobs]
+
+  # L(1-L)
+  y <- welfare * (1 - welfare)
+  # (P^2-L)
+  x1 <- population^2 - welfare
+  # L(P-1)
+  x2 <- welfare * (population - 1)
+  # P-L
+  x3 <- population - welfare
+
+  return(list(y = y, X = cbind(x1, x2, x3)))
+
+}
+
+```
+
 
 *Note*: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1). 
 
@@ -90,7 +331,7 @@ $$y(1-y) = a(x^2-y) + by(x-1) + d(x-y)$$ {#eq-linear-form}
 This function prepares data to estimate $a$, $b$, and $d$ (*Note*: $d$ is named $C$ in `wbpip`).
 
 
-### value_at_lq: 
+### value_at_lq 
 
 *Description*: Solves for the Quadratic Lorenz curves.
 
@@ -171,9 +412,112 @@ $$-(b / 2) - (\beta + 2 \alpha x) / (4\sqrt(\alpha x^2 + \beta x + e^2)$$ {#eq-f
 
 *Description*: Estimates poverty and inequality stats from Quadratic Lorenz fit
 
+```{r}
+gd_estimate_lq <- function(mean, povline, p0, A, B, C, key_values) {
+
+  if (is.null(key_values)) {
+    key_values <- gd_lq_key_values(A, B, C)
+  }
+  e  <- key_values$e
+  m  <- key_values$m
+  n  <- key_values$n
+  r  <- key_values$r
+  s1 <- key_values$s1
+  s2 <- key_values$s2
+
+  validity <- check_curve_validity_lq(A, B, C, key_values = key_values)
+                                      #e, m, n, r^2)
+  if (validity$is_valid == FALSE & validity$is_normal == FALSE) {
+    return(empty_gd_compute_pip_stats_response)
+  }
+
+  # Compute distributional measures -----------------------------------------
+  dist_stats <- gd_compute_dist_stats_lq(mean, p0, A, B, C, key_values = key_values)
+
+  # Compute poverty stats ---------------------------------------------------
+  pov_stats  <- gd_compute_poverty_stats_lq(mean, povline, A, B, C, key_values = key_values)
+
+  out <- list(
+    gini = dist_stats$gini,
+    median = dist_stats$median,
+    rmhalf = dist_stats$rmhalf,
+    polarization = dist_stats$polarization,
+    ris = dist_stats$ris,
+    mld = dist_stats$mld,
+    dcm = dist_stats$dcm,
+    deciles = dist_stats$deciles,
+    headcount = pov_stats$headcount,
+    poverty_gap = pov_stats$pg,
+    poverty_severity = pov_stats$p2,
+    eh = pov_stats$eh,
+    epg = pov_stats$epg,
+    ep = pov_stats$ep,
+    gh = pov_stats$gh,
+    gpg = pov_stats$gpg,
+    gp = pov_stats$gp,
+    watts = pov_stats$watts,
+    dl = pov_stats$dl,
+    ddl = pov_stats$ddl,
+    is_normal = validity$is_normal,
+    is_valid = validity$is_valid
+  )
+
+  return(out)
+}
+
+```
+
+
 ### check_curve_validity_lq
 
 *Description*: Check validity of Lorenz Quadratic fit
+
+```{r}
+check_curve_validity_lq <- function(A, B, C, key_values) {
+  is_normal <- FALSE
+  is_valid <- FALSE
+  r <- (key_values$r)^2 # formerly, the input to the func was r^2
+
+  # r needs to be > 0 because need to extract sq root
+  if (r < 0) { # now that r is squared, this will never be TRUE
+    return(list( # but r^2 was used as input before `key_values` so
+      is_normal = is_normal, # this was already never executed
+      is_valid = is_valid
+    ))
+  }
+
+  if (key_values$e > 0 || C < 0) {
+    return(list(
+      is_normal = is_normal,
+      is_valid = is_valid
+    ))
+  }
+
+  # Failure conditions for checking theoretically valid Lorenz curve
+  # Found in section 4 of Datt computational tools paper
+  cn1 <- key_values$n^2
+  cn3 <- cn1 / (4 * key_values$e^2)
+
+  if (!((key_values$m < 0) |
+    ((key_values$m > 0) & (key_values$m < cn3) & (key_values$n >= 0)) |
+    ((key_values$m > 0) & (key_values$m < -key_values$n / 2) & (key_values$m < cn3)))) {
+    return(list(
+      is_normal = is_normal,
+      is_valid = is_valid
+    ))
+  }
+
+  is_normal <- TRUE
+  is_valid <- (A + C) >= 0.9
+
+  return(list(
+    is_normal = is_normal,
+    is_valid  = is_valid
+  ))
+}
+
+```
+
 
 *References*: [1], [2], [3]
 
@@ -205,7 +549,7 @@ Normality and Validity
 ::: {#imp-condad .callout-important}
 #### Issue: The inequality for $a+d$
 
-At the moment, we still use the old validation $a+d \leq 1$. However, the Corrigendum of the original paper [2] indicates we should use $a+d \geq 1$
+At the moment, most test are design for the old validation $a+d \leq 1$. However, the Corrigendum of the original paper [2] indicates we should use $a+d \geq 1$
 :::
 
 And so $L''(x,y) \geq 0$ for $x$ within $(0,1)$:
@@ -221,6 +565,38 @@ $$ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \fra
 ### compute_dist_stats_lq
 
 *Description*: Computes distributional stats from Lorenz Quadratic fit
+
+```{r}
+gd_compute_dist_stats_lq <- function(mean, p0, A, B, C, key_values = key_values) {
+
+  gini    <- gd_compute_gini_lq(A, B, C,
+                                key_values = key_values)
+  median  <- mean * derive_lq(0.5, A, B, C,
+                              key_values = key_values)
+  rmhalf  <- value_at_lq(p0, A, B, C,
+                         key_values = key_values) * mean / p0 # What is this??
+  dcm     <- (1 - gini) * mean
+  pol     <- gd_compute_polarization_lq(mean, p0, dcm, A, B, C,
+                                        key_values = key_values)
+  ris     <- value_at_lq(0.5, A, B, C,
+                         key_values = key_values)
+  mld     <- gd_compute_mld_lq(A, B, C,
+                               key_values = key_values)
+  deciles <- gd_compute_quantile_lq(A, B, C,
+                                    key_values = key_values)
+
+  return(list(
+    gini         = gini,
+    median       = median,
+    rmhalf       = rmhalf,
+    dcm          = dcm,
+    polarization = pol,
+    ris          = ris,
+    mld          = mld,
+    deciles      = deciles
+  ))
+}
+```
 
 ::: {#nte-check1 .callout-note}
 #### Check: 
@@ -264,7 +640,7 @@ Regarding the last decile, they manually calculated it by subtracting 1 to the s
 
 `vec[n_quantile] <- 1 - value_at_lq(x[n_quantile-1], A, B, C)` where `n_quantile = 10`
 
-However, my hypothesis is that this is related to *Issue: The inequality for $a+d$* above. If $A+C \geq 1$ then `value_at_lq(1, A, B, C) = 1`
+However, my hypothesis is that this is related to *Issue: The inequality for $a+d$* above. If $A+C \geq 1$ then `value_at_lq(1, A, B, C) = 1`. We can see the case in this [Desmos graph](https://www.desmos.com/calculator/g164gdepzk){.external target="_blank"}. 
 
 :::
 
@@ -346,39 +722,21 @@ My hypothesis is that they used the last formula to calculate the Mean Log Devia
 
 ```{r}
 gd_compute_mld_lq <- function(A, B, C) {
-  x1 <- derive_lq(0.0005, A, B, C) # Not sure I understand this condition
-  #gap <- 0L
+  x1 <- derive_lq(0.0005, A, B, C) 
   mld <- 0L
-  if (x1 == 0) { # So log is not undefined
-    #gap <- 0.0005
-  } else {
+  if (x1 != 0) { 
     mld <- suppressWarnings(log(x1) * 0.001) # Needed to match test
   }
 
   xstep <- seq(0, 0.999, 0.001)
   x <- derive_lq(xstep, A, B, C)
 
-  if (any(x[1:33]<=0)){ # To account for the gap and the stop parameter within the loop.
+  if (any(x[1:33]<=0)){ # To account for negative values 
     return(-1)
   }else{
-    mld <- mld + fsum( (log(x[1:999])+log(x[2:1000])) *0.0005) # Not sure why add previous mld
+    mld <- mld + fsum( (log(x[1:999])+log(x[2:1000])) *0.0005) 
     return(-mld)
   }
-
-  # x1 <- derive_lq(0, A, B, C)
-  # for (xstep in seq(0, 0.998, 0.001)) {
-  #   x2 <- derive_lq(xstep + 0.001, A, B, C)
-  #   if ((x1 <= 0) || (x2 <= 0)) {
-  #     gap <- gap + 0.001
-  #     if (gap > 0.5) {
-  #       return(-1)
-  #     }
-  #   } else {
-  #     gap <- 0L
-  #     mld <- mld + (log(x1) + log(x2)) * 0.0005
-  #   }
-  #   x1 <- x2
-  # }
 }
 ```
 
@@ -399,7 +757,7 @@ gd_compute_mld_lq <- function(A, B, C) {
 *Relevant equations*: ...
 
 
-## References:
+## References
 
 1. Villasenor, J., B. C. Arnold. 1989. "[Elliptical Lorenz curves](https://doi.org/10.1016/0304-4076(89)90089-4)". *Journal of Econometrics 40* (2): 327-338.
 
@@ -409,7 +767,7 @@ gd_compute_mld_lq <- function(A, B, C) {
 
 4. Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY. 
 
-## Appendix: 
+## Appendix
 
 Find function using the following list:
 
