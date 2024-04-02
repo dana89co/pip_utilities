@@ -149,7 +149,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#pip_stats_lq" id="toc-pip_stats_lq" class="nav-link" data-scroll-target="#pip_stats_lq"><span class="toc-section-number">1.3</span>  pip_stats_lq</a></li>
   <li><a href="#pip_stats_lb" id="toc-pip_stats_lb" class="nav-link" data-scroll-target="#pip_stats_lb"><span class="toc-section-number">1.4</span>  pip_stats_lb</a></li>
   <li><a href="#functional_form_lq" id="toc-functional_form_lq" class="nav-link" data-scroll-target="#functional_form_lq"><span class="toc-section-number">1.5</span>  functional_form_lq</a></li>
-  <li><a href="#value_at_lq" id="toc-value_at_lq" class="nav-link" data-scroll-target="#value_at_lq"><span class="toc-section-number">1.6</span>  value_at_lq:</a></li>
+  <li><a href="#value_at_lq" id="toc-value_at_lq" class="nav-link" data-scroll-target="#value_at_lq"><span class="toc-section-number">1.6</span>  value_at_lq</a></li>
   <li><a href="#derive_lq" id="toc-derive_lq" class="nav-link" data-scroll-target="#derive_lq"><span class="toc-section-number">1.7</span>  derive_lq</a></li>
   <li><a href="#estimate_lq" id="toc-estimate_lq" class="nav-link" data-scroll-target="#estimate_lq"><span class="toc-section-number">1.8</span>  estimate_lq</a></li>
   <li><a href="#check_curve_validity_lq" id="toc-check_curve_validity_lq" class="nav-link" data-scroll-target="#check_curve_validity_lq"><span class="toc-section-number">1.9</span>  check_curve_validity_lq</a></li>
@@ -159,8 +159,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#gini_lq" id="toc-gini_lq" class="nav-link" data-scroll-target="#gini_lq"><span class="toc-section-number">1.13</span>  gini_lq</a></li>
   <li><a href="#polarization_lq" id="toc-polarization_lq" class="nav-link" data-scroll-target="#polarization_lq"><span class="toc-section-number">1.14</span>  polarization_lq</a></li>
   </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="toc-section-number">2</span>  References:</a></li>
-  <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix"><span class="toc-section-number">3</span>  Appendix:</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="toc-section-number">2</span>  References</a></li>
+  <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix"><span class="toc-section-number">3</span>  Appendix</a></li>
   </ul>
 </nav>
     </div>
@@ -194,7 +194,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 id="objective" class="unnumbered anchored">Objective</h2>
 <p>This document aims to describe the functions used in <code>wbpip</code> to calculated the poverty and inequality statistics using group data.</p>
 </blockquote>
-<!-- I start by presenting the structure of the functions and then there is a description on how each function is built. -->
 <section id="structure" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="structure">Structure</h2>
 <div class="cell">
@@ -208,18 +207,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     form_lq(functional_form_lq) --&gt; lq
     derive_lq(derive_lq) --&gt; lq
     est_lq(estimate_lq) --&gt; lq
+    fit_lq(fit_lq) --&gt; lq
     check_val(check_curve_validity_lq) --&gt; est_lq
     comp_dist_lq(compute_dist_stats_lq) --&gt; est_lq
+    comp_pov_lq(compute_pov_stats_lq) --&gt; est_lq
     polarization_lq(polarization_lq) --&gt; comp_dist_lq
     gini_lq(gini_lq) --&gt; comp_dist_lq
     value_at_lq --&gt; polarization_lq
     value_at_lq(value_at_lq) --&gt; comp_dist_lq
-    mld_lq(mld_lq) --&gt; comp_dist_lq
-    quantile_lq(quantile_lq) --&gt; comp_dist_lq
+    mld_lq(&lt;b&gt;mld_lq&lt;/b&gt;) --&gt; comp_dist_lq
+    quantile_lq(&lt;b&gt;quantile_lq&lt;/b&gt;) --&gt; comp_dist_lq
     derive_lq --&gt; comp_dist_lq
     derive_lq --&gt; mld_lq
     derive_lq --&gt; polarization_lq
     value_at_lq --&gt; quantile_lq
+    
+    style quantile_lq fill:#FFF1A2
+    style mld_lq fill:#FFF1A2
 
 </pre>
 <div id="mermaid-tooltip-1" class="mermaidTooltip">
@@ -235,6 +239,70 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="sec-pip_stats" class="level3" data-number="1.1">
 <h3 data-number="1.1" class="anchored" data-anchor-id="sec-pip_stats"><span class="header-section-number">1.1</span> pip_stats</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gd_compute_pip_stats <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                                 povline,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                                 population,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                                 requested_mean,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">popshare =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">default_ppp =</span> <span class="dv">1</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">ppp =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">p0 =</span> <span class="fl">0.5</span>) {</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Apply Lorenz quadratic fit ----------------------------------------------</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  results_lq <span class="ot">&lt;-</span> <span class="fu">gd_compute_pip_stats_lq</span>(</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">welfare =</span> welfare,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">population =</span> population,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">requested_mean =</span> requested_mean,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">povline =</span> povline,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">popshare =</span> popshare,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">default_ppp =</span> default_ppp,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">ppp =</span> ppp,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">p0 =</span> p0</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Apply Lorenz beta fit ----------------------------------------------</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  results_lb <span class="ot">&lt;-</span> <span class="fu">gd_compute_pip_stats_lb</span>(</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">welfare =</span> welfare,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">population =</span> population,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">requested_mean =</span> requested_mean,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">povline =</span> povline,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">popshare =</span> popshare,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">default_ppp =</span> default_ppp,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">ppp =</span> ppp,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">p0 =</span> p0</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Apply selection rules ---------------------------------------------------</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">gd_select_lorenz</span>(</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">lq =</span> results_lq,</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">lb =</span> results_lb</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return only subset of variables</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> out[<span class="fu">c</span>(</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">"poverty_line"</span>,</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean"</span>,</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"median"</span>,</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"headcount"</span>,</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    <span class="st">"poverty_gap"</span>,</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>    <span class="st">"poverty_severity"</span>,</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>    <span class="st">"watts"</span>,</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>    <span class="st">"gini"</span>,</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mld"</span>,</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>    <span class="st">"polarization"</span>,</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    <span class="st">"deciles"</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>  )]</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <div id="nte-boundary-issue" class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -252,10 +320,154 @@ Issue: Boundary conditions
 <section id="sec-select_lorenz" class="level3" data-number="1.2">
 <h3 data-number="1.2" class="anchored" data-anchor-id="sec-select_lorenz"><span class="header-section-number">1.2</span> select_lorenz</h3>
 <p><em>Description</em>: Select best Lorenz fit and adjust the returned statistics if needed.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>gd_select_lorenz <span class="ot">&lt;-</span> <span class="cf">function</span>(lq, lb) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set default value</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  datamean <span class="ot">&lt;-</span> lq[[<span class="st">"mean"</span>]]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  is_valid <span class="ot">&lt;-</span> lq[[<span class="st">"is_valid"</span>]] <span class="sc">|</span> lb[[<span class="st">"is_valid"</span>]]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  is_normal <span class="ot">&lt;-</span> lq[[<span class="st">"is_normal"</span>]] <span class="sc">|</span> lb[[<span class="st">"is_normal"</span>]]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Selection of Lorenz fit for poverty statistics</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  use_lq_for_pov <span class="ot">&lt;-</span> <span class="fu">use_lq_for_poverty</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">lq =</span> lq,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">lb =</span> lb</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Selection of Lorenz fit for distributional statistics</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  use_lq_for_dist <span class="ot">&lt;-</span> <span class="fu">use_lq_for_distributional</span>(</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">lq =</span> lq,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">lb =</span> lb</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Retrieve distributional statistics</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  dist <span class="ot">&lt;-</span> <span class="fu">retrieve_distributional</span>(</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">lq =</span> lq,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">lb =</span> lb,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_valid =</span> is_valid,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">use_lq_for_dist =</span> use_lq_for_dist</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Retrieve poverty statistics</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  pov <span class="ot">&lt;-</span> <span class="fu">retrieve_poverty</span>(</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">lq =</span> lq,</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">lb =</span> lb,</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_normal =</span> is_normal,</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">use_lq_for_pov =</span> use_lq_for_pov</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean             =</span> datamean,</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">poverty_line     =</span> pov[[<span class="st">"poverty_line"</span>]],</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">z_min            =</span> dist[[<span class="st">"z_min"</span>]],</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">z_max            =</span> dist[[<span class="st">"z_max"</span>]],</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ppp            = lq[["ppp"]],</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">gini             =</span> dist[[<span class="st">"gini"</span>]],</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">median           =</span> dist[[<span class="st">"median"</span>]],</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># rmed           = rmed,</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">rmhalf           =</span> dist[[<span class="st">"rmhalf"</span>]],</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">polarization     =</span> dist[[<span class="st">"polarization"</span>]],</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">ris              =</span> dist[[<span class="st">"ris"</span>]],</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">mld              =</span> dist[[<span class="st">"mld"</span>]],</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">dcm              =</span> lq[[<span class="st">"dcm"</span>]],</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">deciles          =</span> dist[[<span class="st">"deciles"</span>]],</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">headcount        =</span> pov[[<span class="st">"headcount"</span>]],</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">poverty_gap      =</span> pov[[<span class="st">"poverty_gap"</span>]],</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">poverty_severity =</span> pov[[<span class="st">"poverty_severity"</span>]],</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">eh               =</span> pov[[<span class="st">"eh"</span>]],</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">epg              =</span> pov[[<span class="st">"epg"</span>]],</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">ep               =</span> pov[[<span class="st">"ep"</span>]],</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">gh               =</span> pov[[<span class="st">"gh"</span>]],</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">gpg              =</span> pov[[<span class="st">"gpg"</span>]],</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">gp               =</span> pov[[<span class="st">"gp"</span>]],</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">watts            =</span> pov[[<span class="st">"watts"</span>]],</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">sse              =</span> dist[[<span class="st">"sse"</span>]]</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 </section>
 <section id="pip_stats_lq" class="level3" data-number="1.3">
 <h3 data-number="1.3" class="anchored" data-anchor-id="pip_stats_lq"><span class="header-section-number">1.3</span> pip_stats_lq</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data using the quadratic functional form of the Lorenz qurve.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>gd_compute_pip_stats_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                                    povline,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                                    population,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                                    requested_mean,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">popshare =</span> <span class="cn">NULL</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                                    default_ppp,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">ppp =</span> <span class="cn">NULL</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">p0 =</span> <span class="fl">0.5</span>) {</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adjust mean if different PPP value is provided</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(ppp)) {</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    requested_mean <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> default_ppp <span class="sc">/</span> ppp</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    ppp <span class="ot">&lt;-</span> default_ppp</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 1: Prep data to fit functional form</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  prepped_data <span class="ot">&lt;-</span> <span class="fu">create_functional_form_lq</span>(</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">welfare =</span> welfare,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">population =</span> population</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 2: Estimate regression coefficients using LQ parameterization</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  reg_results <span class="ot">&lt;-</span> <span class="fu">regres</span>(prepped_data, <span class="at">is_lq =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  reg_coef <span class="ot">&lt;-</span> reg_results<span class="sc">$</span>coef</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  A <span class="ot">&lt;-</span> reg_coef[<span class="dv">1</span>]</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  B <span class="ot">&lt;-</span> reg_coef[<span class="dv">2</span>]</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  C <span class="ot">&lt;-</span> reg_coef[<span class="dv">3</span>]</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 2.1: pre-calculate key values</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  kv <span class="ot">&lt;-</span> <span class="fu">gd_lq_key_values</span>(A, B, C)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># OPTIONAL: Only when popshare is supplied</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return poverty line if share of population living in poverty is supplied</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># intead of a poverty line</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(popshare)) {</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    povline <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(popshare,</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>                         A, B, C,</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>                         <span class="at">key_values =</span> kv) <span class="sc">*</span> requested_mean</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Boundary conditions (Why 4?)</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lq</span>(<span class="fl">0.001</span>,</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>                                      A, B, C,</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">key_values =</span> kv) <span class="sc">+</span> <span class="dv">4</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  z_max <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lq</span>(<span class="fl">0.980</span>,</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>                                      A, B, C,</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">key_values =</span> kv) <span class="sc">-</span> <span class="dv">4</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> <span class="cf">if</span> (z_min <span class="sc">&lt;</span> <span class="dv">0</span>) 0L <span class="cf">else</span> z_min</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>  results1 <span class="ot">&lt;-</span> <span class="fu">list</span>(requested_mean, povline, z_min, z_max, ppp)</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(results1) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"mean"</span>, <span class="st">"poverty_line"</span>, <span class="st">"z_min"</span>, <span class="st">"z_max"</span>, <span class="st">"ppp"</span>)</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 3: Estimate poverty measures based on identified parameters</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  results2 <span class="ot">&lt;-</span> <span class="fu">gd_estimate_lq</span>(requested_mean, povline, p0,</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>                             A, B, C, <span class="at">key_values =</span> kv)</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 4: Compute measure of regression fit</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  results_fit <span class="ot">&lt;-</span> <span class="fu">gd_compute_fit_lq</span>(welfare,</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>                                   population,</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>                                   results2<span class="sc">$</span>headcount,</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>                                   A, B, C,</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">key_values =</span> kv)</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">c</span>(results1,</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>           results2,</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>           results_fit,</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>           reg_results)</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(res)</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 </section>
 <section id="pip_stats_lb" class="level3" data-number="1.4">
 <h3 data-number="1.4" class="anchored" data-anchor-id="pip_stats_lb"><span class="header-section-number">1.4</span> pip_stats_lb</h3>
@@ -264,6 +476,37 @@ Issue: Boundary conditions
 <section id="functional_form_lq" class="level3" data-number="1.5">
 <h3 data-number="1.5" class="anchored" data-anchor-id="functional_form_lq"><span class="header-section-number">1.5</span> functional_form_lq</h3>
 <p><em>Description</em>: Prepares data for regression of <span class="math inline">\(y(1-y)\)</span> on <span class="math inline">\((x^2-y)\)</span>, <span class="math inline">\(y(x-1)\)</span> and <span class="math inline">\((x-y)\)</span>.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>create_functional_form_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                                      population) {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># CHECK inputs</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(is.numeric(population))</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(is.numeric(welfare))</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(length(population) == length(welfare))</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(length(population) &gt; 1)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove last observation (the functional form for the Lorenz curve already forces</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># it to pass through the point (1, 1)</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  nobs <span class="ot">&lt;-</span> <span class="fu">length</span>(population) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  population <span class="ot">&lt;-</span> population[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  welfare <span class="ot">&lt;-</span> welfare[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># L(1-L)</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> welfare <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> welfare)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># (P^2-L)</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> population<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> welfare</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># L(P-1)</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> welfare <span class="sc">*</span> (population <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># P-L</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  x3 <span class="ot">&lt;-</span> population <span class="sc">-</span> welfare</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">y =</span> y, <span class="at">X =</span> <span class="fu">cbind</span>(x1, x2, x3)))</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><em>Note</em>: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).</p>
 <p><em>References</em>: [1]</p>
 <p><em>Relevant equations</em>:</p>
@@ -274,29 +517,29 @@ Issue: Boundary conditions
 <p>This function prepares data to estimate <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, and <span class="math inline">\(d\)</span> (<em>Note</em>: <span class="math inline">\(d\)</span> is named <span class="math inline">\(C\)</span> in <code>wbpip</code>).</p>
 </section>
 <section id="value_at_lq" class="level3" data-number="1.6">
-<h3 data-number="1.6" class="anchored" data-anchor-id="value_at_lq"><span class="header-section-number">1.6</span> value_at_lq:</h3>
+<h3 data-number="1.6" class="anchored" data-anchor-id="value_at_lq"><span class="header-section-number">1.6</span> value_at_lq</h3>
 <p><em>Description</em>: Solves for the Quadratic Lorenz curves.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>value_at_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check for NA, Inf and negative values in x</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_NA_Inf_values</span>(x)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_neg_values</span>(x)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculations</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># e &lt;- -(A + B + C + 1)</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># m &lt;- (B^2) - (4 * A)</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># n &lt;- (2 * B * e) - (4 * C)</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  temp <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>m <span class="sc">*</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> x) <span class="sc">+</span> (key_values<span class="sc">$</span>e<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  temp[temp <span class="sc">&lt;</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Solving the equation of the Lorenz curve</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  estle <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> ((B <span class="sc">*</span> x) <span class="sc">+</span> key_values<span class="sc">$</span>e <span class="sc">+</span> <span class="fu">sqrt</span>(temp))</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(estle)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>value_at_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check for NA, Inf and negative values in x</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_NA_Inf_values</span>(x)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_neg_values</span>(x)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculations</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># e &lt;- -(A + B + C + 1)</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># m &lt;- (B^2) - (4 * A)</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># n &lt;- (2 * B * e) - (4 * C)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  temp <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>m <span class="sc">*</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> x) <span class="sc">+</span> (key_values<span class="sc">$</span>e<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  temp[temp <span class="sc">&lt;</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Solving the equation of the Lorenz curve</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  estle <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> ((B <span class="sc">*</span> x) <span class="sc">+</span> key_values<span class="sc">$</span>e <span class="sc">+</span> <span class="fu">sqrt</span>(temp))</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(estle)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>References</em>: [1]</p>
@@ -311,33 +554,33 @@ Issue: Boundary conditions
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>derive_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(key_values)) {</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    key_values <span class="ot">&lt;-</span> <span class="fu">gd_lq_key_values</span>(A, B, C)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># e          &lt;- key_values$e</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># m          &lt;- key_values$m</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># n          &lt;- key_values$n</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">anyNA</span>(x) <span class="sc">==</span> <span class="cn">TRUE</span>) {</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    cli<span class="sc">::</span><span class="fu">cli_abort</span>(<span class="st">"`x' must be a numeric or integer vector"</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># note:</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   alpha --&gt; m</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   beta  --&gt; n</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># e &lt;- -(A + B + C + 1)</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># m &lt;- (B^2) - (4 * A)</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># n &lt;- (2 * B * e) - (4 * C) # C is called D in original paper, but C in Datt paper</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>m <span class="sc">*</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> x) <span class="sc">+</span> (key_values<span class="sc">$</span>e<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  tmp[(<span class="sc">!</span><span class="fu">is.na</span>(tmp) <span class="sc">&amp;</span> tmp <span class="sc">&lt;</span> <span class="dv">0</span>)] <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># If tmp == 0, val = Inf.</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Formula for first derivative of GQ Lorenz Curve</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  val <span class="ot">&lt;-</span> <span class="sc">-</span>(B <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">-</span> ((<span class="dv">2</span> <span class="sc">*</span> key_values<span class="sc">$</span>m <span class="sc">*</span> x <span class="sc">+</span> key_values<span class="sc">$</span>n) <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fu">sqrt</span>(tmp)))</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(val)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>derive_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(key_values)) {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    key_values <span class="ot">&lt;-</span> <span class="fu">gd_lq_key_values</span>(A, B, C)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># e          &lt;- key_values$e</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># m          &lt;- key_values$m</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># n          &lt;- key_values$n</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">anyNA</span>(x) <span class="sc">==</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    cli<span class="sc">::</span><span class="fu">cli_abort</span>(<span class="st">"`x' must be a numeric or integer vector"</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># note:</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   alpha --&gt; m</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   beta  --&gt; n</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># e &lt;- -(A + B + C + 1)</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># m &lt;- (B^2) - (4 * A)</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># n &lt;- (2 * B * e) - (4 * C) # C is called D in original paper, but C in Datt paper</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>m <span class="sc">*</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> x) <span class="sc">+</span> (key_values<span class="sc">$</span>e<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  tmp[(<span class="sc">!</span><span class="fu">is.na</span>(tmp) <span class="sc">&amp;</span> tmp <span class="sc">&lt;</span> <span class="dv">0</span>)] <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># If tmp == 0, val = Inf.</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Formula for first derivative of GQ Lorenz Curve</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  val <span class="ot">&lt;-</span> <span class="sc">-</span>(B <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">-</span> ((<span class="dv">2</span> <span class="sc">*</span> key_values<span class="sc">$</span>m <span class="sc">*</span> x <span class="sc">+</span> key_values<span class="sc">$</span>n) <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fu">sqrt</span>(tmp)))</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(val)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>References</em>: [1]</p>
@@ -348,10 +591,113 @@ Issue: Boundary conditions
 <section id="estimate_lq" class="level3" data-number="1.8">
 <h3 data-number="1.8" class="anchored" data-anchor-id="estimate_lq"><span class="header-section-number">1.8</span> estimate_lq</h3>
 <p><em>Description</em>: Estimates poverty and inequality stats from Quadratic Lorenz fit</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>gd_estimate_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, p0, A, B, C, key_values) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(key_values)) {</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    key_values <span class="ot">&lt;-</span> <span class="fu">gd_lq_key_values</span>(A, B, C)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  e  <span class="ot">&lt;-</span> key_values<span class="sc">$</span>e</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  m  <span class="ot">&lt;-</span> key_values<span class="sc">$</span>m</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  n  <span class="ot">&lt;-</span> key_values<span class="sc">$</span>n</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  r  <span class="ot">&lt;-</span> key_values<span class="sc">$</span>r</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  s1 <span class="ot">&lt;-</span> key_values<span class="sc">$</span>s1</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  s2 <span class="ot">&lt;-</span> key_values<span class="sc">$</span>s2</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  validity <span class="ot">&lt;-</span> <span class="fu">check_curve_validity_lq</span>(A, B, C, <span class="at">key_values =</span> key_values)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                                      <span class="co">#e, m, n, r^2)</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (validity<span class="sc">$</span>is_valid <span class="sc">==</span> <span class="cn">FALSE</span> <span class="sc">&amp;</span> validity<span class="sc">$</span>is_normal <span class="sc">==</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(empty_gd_compute_pip_stats_response)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute distributional measures -----------------------------------------</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  dist_stats <span class="ot">&lt;-</span> <span class="fu">gd_compute_dist_stats_lq</span>(mean, p0, A, B, C, <span class="at">key_values =</span> key_values)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute poverty stats ---------------------------------------------------</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  pov_stats  <span class="ot">&lt;-</span> <span class="fu">gd_compute_poverty_stats_lq</span>(mean, povline, A, B, C, <span class="at">key_values =</span> key_values)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">gini =</span> dist_stats<span class="sc">$</span>gini,</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> dist_stats<span class="sc">$</span>median,</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">rmhalf =</span> dist_stats<span class="sc">$</span>rmhalf,</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">polarization =</span> dist_stats<span class="sc">$</span>polarization,</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">ris =</span> dist_stats<span class="sc">$</span>ris,</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">mld =</span> dist_stats<span class="sc">$</span>mld,</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">dcm =</span> dist_stats<span class="sc">$</span>dcm,</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">deciles =</span> dist_stats<span class="sc">$</span>deciles,</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">headcount =</span> pov_stats<span class="sc">$</span>headcount,</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">poverty_gap =</span> pov_stats<span class="sc">$</span>pg,</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">poverty_severity =</span> pov_stats<span class="sc">$</span>p2,</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">eh =</span> pov_stats<span class="sc">$</span>eh,</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">epg =</span> pov_stats<span class="sc">$</span>epg,</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">ep =</span> pov_stats<span class="sc">$</span>ep,</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">gh =</span> pov_stats<span class="sc">$</span>gh,</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">gpg =</span> pov_stats<span class="sc">$</span>gpg,</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">gp =</span> pov_stats<span class="sc">$</span>gp,</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">watts =</span> pov_stats<span class="sc">$</span>watts,</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">dl =</span> pov_stats<span class="sc">$</span>dl,</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">ddl =</span> pov_stats<span class="sc">$</span>ddl,</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_normal =</span> validity<span class="sc">$</span>is_normal,</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_valid =</span> validity<span class="sc">$</span>is_valid</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 </section>
 <section id="check_curve_validity_lq" class="level3" data-number="1.9">
 <h3 data-number="1.9" class="anchored" data-anchor-id="check_curve_validity_lq"><span class="header-section-number">1.9</span> check_curve_validity_lq</h3>
 <p><em>Description</em>: Check validity of Lorenz Quadratic fit</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>check_curve_validity_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, key_values) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  is_normal <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  is_valid <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>r)<span class="sc">^</span><span class="dv">2</span> <span class="co"># formerly, the input to the func was r^2</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># r needs to be &gt; 0 because need to extract sq root</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (r <span class="sc">&lt;</span> <span class="dv">0</span>) { <span class="co"># now that r is squared, this will never be TRUE</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>( <span class="co"># but r^2 was used as input before `key_values` so</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">is_normal =</span> is_normal, <span class="co"># this was already never executed</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">is_valid =</span> is_valid</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (key_values<span class="sc">$</span>e <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">||</span> C <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">is_normal =</span> is_normal,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">is_valid =</span> is_valid</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Failure conditions for checking theoretically valid Lorenz curve</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Found in section 4 of Datt computational tools paper</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  cn1 <span class="ot">&lt;-</span> key_values<span class="sc">$</span>n<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  cn3 <span class="ot">&lt;-</span> cn1 <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> key_values<span class="sc">$</span>e<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>((key_values<span class="sc">$</span>m <span class="sc">&lt;</span> <span class="dv">0</span>) <span class="sc">|</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    ((key_values<span class="sc">$</span>m <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">&amp;</span> (key_values<span class="sc">$</span>m <span class="sc">&lt;</span> cn3) <span class="sc">&amp;</span> (key_values<span class="sc">$</span>n <span class="sc">&gt;=</span> <span class="dv">0</span>)) <span class="sc">|</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    ((key_values<span class="sc">$</span>m <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">&amp;</span> (key_values<span class="sc">$</span>m <span class="sc">&lt;</span> <span class="sc">-</span>key_values<span class="sc">$</span>n <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">&amp;</span> (key_values<span class="sc">$</span>m <span class="sc">&lt;</span> cn3)))) {</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">is_normal =</span> is_normal,</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">is_valid =</span> is_valid</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>  is_normal <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>  is_valid <span class="ot">&lt;-</span> (A <span class="sc">+</span> C) <span class="sc">&gt;=</span> <span class="fl">0.9</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_normal =</span> is_normal,</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_valid  =</span> is_valid</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><em>References</em>: [1], [2], [3]</p>
 <p><em>Relevant equations</em>:</p>
 <p>The function tests for specific assumptions for the Lorenz Quadratic and relies on the formulas from Table 2 in Datt, G (1998) [3]. The nomenclature for some of these formulas differ from Villasenor et al (1989), so this is how they match:</p>
@@ -388,7 +734,7 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 </div>
 </div>
 <div id="imp-condad" class="callout-body-container callout-body">
-<p>At the moment, we still use the old validation <span class="math inline">\(a+d \leq 1\)</span>. However, the Corrigendum of the original paper [2] indicates we should use <span class="math inline">\(a+d \geq 1\)</span></p>
+<p>At the moment, most test are design for the old validation <span class="math inline">\(a+d \leq 1\)</span>. However, the Corrigendum of the original paper [2] indicates we should use <span class="math inline">\(a+d \geq 1\)</span></p>
 </div>
 </div>
 <p>And so <span class="math inline">\(L''(x,y) \geq 0\)</span> for <span class="math inline">\(x\)</span> within <span class="math inline">\((0,1)\)</span>:</p>
@@ -403,6 +749,40 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 <section id="compute_dist_stats_lq" class="level3" data-number="1.10">
 <h3 data-number="1.10" class="anchored" data-anchor-id="compute_dist_stats_lq"><span class="header-section-number">1.10</span> compute_dist_stats_lq</h3>
 <p><em>Description</em>: Computes distributional stats from Lorenz Quadratic fit</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gd_compute_dist_stats_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, p0, A, B, C, <span class="at">key_values =</span> key_values) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  gini    <span class="ot">&lt;-</span> <span class="fu">gd_compute_gini_lq</span>(A, B, C,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                                <span class="at">key_values =</span> key_values)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  median  <span class="ot">&lt;-</span> mean <span class="sc">*</span> <span class="fu">derive_lq</span>(<span class="fl">0.5</span>, A, B, C,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                              <span class="at">key_values =</span> key_values)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  rmhalf  <span class="ot">&lt;-</span> <span class="fu">value_at_lq</span>(p0, A, B, C,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                         <span class="at">key_values =</span> key_values) <span class="sc">*</span> mean <span class="sc">/</span> p0 <span class="co"># What is this??</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  dcm     <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> gini) <span class="sc">*</span> mean</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  pol     <span class="ot">&lt;-</span> <span class="fu">gd_compute_polarization_lq</span>(mean, p0, dcm, A, B, C,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">key_values =</span> key_values)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  ris     <span class="ot">&lt;-</span> <span class="fu">value_at_lq</span>(<span class="fl">0.5</span>, A, B, C,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>                         <span class="at">key_values =</span> key_values)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  mld     <span class="ot">&lt;-</span> <span class="fu">gd_compute_mld_lq</span>(A, B, C,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                               <span class="at">key_values =</span> key_values)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  deciles <span class="ot">&lt;-</span> <span class="fu">gd_compute_quantile_lq</span>(A, B, C,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">key_values =</span> key_values)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">gini         =</span> gini,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">median       =</span> median,</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">rmhalf       =</span> rmhalf,</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">dcm          =</span> dcm,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">polarization =</span> pol,</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">ris          =</span> ris,</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">mld          =</span> mld,</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">deciles      =</span> deciles</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <div id="nte-check1" class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -423,22 +803,22 @@ Check:
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  vec <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="at">mode =</span> <span class="st">"numeric"</span>, <span class="at">length =</span> n_quantile)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> n_quantile</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  q <span class="ot">&lt;-</span> 0L</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  lastq <span class="ot">&lt;-</span> 0L</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n_quantile <span class="sc">-</span> <span class="dv">1</span>)) {</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">value_at_lq</span>(x1, A, B, C)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    v <span class="ot">&lt;-</span> q <span class="sc">-</span> lastq</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    vec[i] <span class="ot">&lt;-</span> v</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    lastq <span class="ot">&lt;-</span> q</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    x1 <span class="ot">&lt;-</span> x1 <span class="sc">+</span> <span class="dv">1</span> <span class="sc">/</span> n_quantile</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  vec[n_quantile] <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> lastq</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(vec)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  vec <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="at">mode =</span> <span class="st">"numeric"</span>, <span class="at">length =</span> n_quantile)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> n_quantile</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  q <span class="ot">&lt;-</span> 0L</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  lastq <span class="ot">&lt;-</span> 0L</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n_quantile <span class="sc">-</span> <span class="dv">1</span>)) {</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">value_at_lq</span>(x1, A, B, C)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    v <span class="ot">&lt;-</span> q <span class="sc">-</span> lastq</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    vec[i] <span class="ot">&lt;-</span> v</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    lastq <span class="ot">&lt;-</span> q</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    x1 <span class="ot">&lt;-</span> x1 <span class="sc">+</span> <span class="dv">1</span> <span class="sc">/</span> n_quantile</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  vec[n_quantile] <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> lastq</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(vec)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>Note</em>: This function calculates the quantiles for a Lorenz Quadratic with specific values for <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>.</p>
@@ -455,23 +835,23 @@ Issues:
 <p>The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>, but it calculates instead the “share” or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the <code>deciles</code> of the welfare vector.</p>
 <p>Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:</p>
 <p><code>vec[n_quantile] &lt;- 1 - value_at_lq(x[n_quantile-1], A, B, C)</code> where <code>n_quantile = 10</code></p>
-<p>However, my hypothesis is that this is related to <em>Issue: The inequality for <span class="math inline">\(a+d\)</span></em> above. If <span class="math inline">\(A+C \geq 1\)</span> then <code>value_at_lq(1, A, B, C) = 1</code></p>
+<p>However, my hypothesis is that this is related to <em>Issue: The inequality for <span class="math inline">\(a+d\)</span></em> above. If <span class="math inline">\(A+C \geq 1\)</span> then <code>value_at_lq(1, A, B, C) = 1</code>. We can see the case in this <a href="https://www.desmos.com/calculator/g164gdepzk" class="external" target="_blank">Desmos graph</a>.</p>
 </div>
 </div>
 <p><em>My version of the code</em>:</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  x   <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">1</span><span class="sc">/</span>n_quantile, <span class="at">to =</span> <span class="dv">1</span>, <span class="at">by =</span> <span class="dv">1</span><span class="sc">/</span>n_quantile)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  vec <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="fu">value_at_lq</span>(x, A, B, C)))</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  vec[n_quantile] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span> <span class="fu">value_at_lq</span>(x[n_quantile<span class="dv">-1</span>], A, B, C) <span class="co"># Is this correct?</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(vec)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  x   <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">1</span><span class="sc">/</span>n_quantile, <span class="at">to =</span> <span class="dv">1</span>, <span class="at">by =</span> <span class="dv">1</span><span class="sc">/</span>n_quantile)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  vec <span class="ot">&lt;-</span> <span class="fu">diff</span>(<span class="fu">c</span>(<span class="dv">0</span>,<span class="fu">value_at_lq</span>(x, A, B, C)))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  vec[n_quantile] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span> <span class="fu">value_at_lq</span>(x[n_quantile<span class="dv">-1</span>], A, B, C) <span class="co"># Is this correct?</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(vec)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -481,31 +861,31 @@ Issues:
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  gap <span class="ot">&lt;-</span> 0L</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  mld <span class="ot">&lt;-</span> 0L</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (x1 <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    gap <span class="ot">&lt;-</span> <span class="fl">0.0005</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">log</span>(x1) <span class="sc">*</span> <span class="fl">0.001</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="dv">0</span>, A, B, C)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (xstep <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.998</span>, <span class="fl">0.001</span>)) {</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    x2 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(xstep <span class="sc">+</span> <span class="fl">0.001</span>, A, B, C)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((x1 <span class="sc">&lt;=</span> <span class="dv">0</span>) <span class="sc">||</span> (x2 <span class="sc">&lt;=</span> <span class="dv">0</span>)) {</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>      gap <span class="ot">&lt;-</span> gap <span class="sc">+</span> <span class="fl">0.001</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (gap <span class="sc">&gt;</span> <span class="fl">0.5</span>) {</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>      gap <span class="ot">&lt;-</span> 0L</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>      mld <span class="ot">&lt;-</span> mld <span class="sc">+</span> (<span class="fu">log</span>(x1) <span class="sc">+</span> <span class="fu">log</span>(x2)) <span class="sc">*</span> <span class="fl">0.0005</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    x1 <span class="ot">&lt;-</span> x2</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="sc">-</span>mld)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  gap <span class="ot">&lt;-</span> 0L</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  mld <span class="ot">&lt;-</span> 0L</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (x1 <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    gap <span class="ot">&lt;-</span> <span class="fl">0.0005</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">log</span>(x1) <span class="sc">*</span> <span class="fl">0.001</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="dv">0</span>, A, B, C)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (xstep <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.998</span>, <span class="fl">0.001</span>)) {</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    x2 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(xstep <span class="sc">+</span> <span class="fl">0.001</span>, A, B, C)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((x1 <span class="sc">&lt;=</span> <span class="dv">0</span>) <span class="sc">||</span> (x2 <span class="sc">&lt;=</span> <span class="dv">0</span>)) {</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>      gap <span class="ot">&lt;-</span> gap <span class="sc">+</span> <span class="fl">0.001</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (gap <span class="sc">&gt;</span> <span class="fl">0.5</span>) {</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>      gap <span class="ot">&lt;-</span> 0L</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>      mld <span class="ot">&lt;-</span> mld <span class="sc">+</span> (<span class="fu">log</span>(x1) <span class="sc">+</span> <span class="fu">log</span>(x2)) <span class="sc">*</span> <span class="fl">0.0005</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    x1 <span class="ot">&lt;-</span> x2</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="sc">-</span>mld)</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>References</em>: None</p>
@@ -534,41 +914,23 @@ Issue:
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C) <span class="co"># Not sure I understand this condition</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#gap &lt;- 0L</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  mld <span class="ot">&lt;-</span> 0L</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (x1 <span class="sc">==</span> <span class="dv">0</span>) { <span class="co"># So log is not undefined</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">#gap &lt;- 0.0005</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">log</span>(x1) <span class="sc">*</span> <span class="fl">0.001</span>) <span class="co"># Needed to match test</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  xstep <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.999</span>, <span class="fl">0.001</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(xstep, A, B, C)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(x[<span class="dv">1</span><span class="sc">:</span><span class="dv">33</span>]<span class="sc">&lt;=</span><span class="dv">0</span>)){ <span class="co"># To account for the gap and the stop parameter within the loop.</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  }<span class="cf">else</span>{</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> mld <span class="sc">+</span> <span class="fu">fsum</span>( (<span class="fu">log</span>(x[<span class="dv">1</span><span class="sc">:</span><span class="dv">999</span>])<span class="sc">+</span><span class="fu">log</span>(x[<span class="dv">2</span><span class="sc">:</span><span class="dv">1000</span>])) <span class="sc">*</span><span class="fl">0.0005</span>) <span class="co"># Not sure why add previous mld</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="sc">-</span>mld)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x1 &lt;- derive_lq(0, A, B, C)</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># for (xstep in seq(0, 0.998, 0.001)) {</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   x2 &lt;- derive_lq(xstep + 0.001, A, B, C)</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   if ((x1 &lt;= 0) || (x2 &lt;= 0)) {</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     gap &lt;- gap + 0.001</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     if (gap &gt; 0.5) {</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="co">#       return(-1)</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     }</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   } else {</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     gap &lt;- 0L</span></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     mld &lt;- mld + (log(x1) + log(x2)) * 0.0005</span></span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   }</span></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   x1 &lt;- x2</span></span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># }</span></span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C) </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  mld <span class="ot">&lt;-</span> 0L</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (x1 <span class="sc">!=</span> <span class="dv">0</span>) { </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">log</span>(x1) <span class="sc">*</span> <span class="fl">0.001</span>) <span class="co"># Needed to match test</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  xstep <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.999</span>, <span class="fl">0.001</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(xstep, A, B, C)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(x[<span class="dv">1</span><span class="sc">:</span><span class="dv">33</span>]<span class="sc">&lt;=</span><span class="dv">0</span>)){ <span class="co"># To account for negative values </span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  }<span class="cf">else</span>{</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    mld <span class="ot">&lt;-</span> mld <span class="sc">+</span> <span class="fu">fsum</span>( (<span class="fu">log</span>(x[<span class="dv">1</span><span class="sc">:</span><span class="dv">999</span>])<span class="sc">+</span><span class="fu">log</span>(x[<span class="dv">2</span><span class="sc">:</span><span class="dv">1000</span>])) <span class="sc">*</span><span class="fl">0.0005</span>) </span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="sc">-</span>mld)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -586,7 +948,7 @@ Issue:
 </section>
 </section>
 <section id="references" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="references"><span class="header-section-number">2</span> References:</h2>
+<h2 data-number="2" class="anchored" data-anchor-id="references"><span class="header-section-number">2</span> References</h2>
 <ol type="1">
 <li><p>Villasenor, J., B. C. Arnold. 1989. “<a href="https://doi.org/10.1016/0304-4076(89)90089-4">Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 40</em> (2): 327-338.</p></li>
 <li><p>Krause, M. 2013. “<a href="https://doi.org/10.1016/j.jeconom.2013.01.001">Corrigendum to Elliptical Lorenz curves</a>”. <em>Journal of Econometrics 174</em> (1): 44.</p></li>
@@ -595,7 +957,7 @@ Issue:
 </ol>
 </section>
 <section id="appendix" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="appendix"><span class="header-section-number">3</span> Appendix:</h2>
+<h2 data-number="3" class="anchored" data-anchor-id="appendix"><span class="header-section-number">3</span> Appendix</h2>
 <p>Find function using the following list:</p>
 <ul>
 <li><a href="#sec-pip_stats">Section&nbsp;1.1</a>: <code>gd_compute_pip_stats</code></li>
@@ -744,6 +1106,20 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       });
     }
   }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+    var links = window.document.querySelectorAll('a:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+          // target, if specified
+          link.setAttribute("target", "_blank");
+      }
+    }
 });
 </script>
 </div> <!-- /content -->
