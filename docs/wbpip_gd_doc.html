@@ -938,8 +938,52 @@ Issue:
 <section id="gini_lq" class="level3" data-number="1.12">
 <h3 data-number="1.12" class="anchored" data-anchor-id="gini_lq"><span class="header-section-number">1.12</span> gini_lq</h3>
 <p><em>Description</em>: Compute Gini index from Lorenz Quadratic fit.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>gd_compute_gini_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, key_values) {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># For the GQ Lorenz curve, the Gini formula are valid under the condition A+C&gt;=1</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># P.isValid &lt;- (A + C) &gt;= 0.9</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># P.isNormal &lt;- TRUE</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  e1 <span class="ot">&lt;-</span> <span class="fu">abs</span>(A <span class="sc">+</span> C <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  e2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">+</span> (B <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">+</span> key_values<span class="sc">$</span>e</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  tmp1 <span class="ot">&lt;-</span> key_values<span class="sc">$</span>n <span class="sc">*</span> (B <span class="sc">+</span> <span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> key_values<span class="sc">$</span>m)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  tmp2 <span class="ot">&lt;-</span> (key_values<span class="sc">$</span>r<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">8</span> <span class="sc">*</span> key_values<span class="sc">$</span>m)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  tmp3 <span class="ot">&lt;-</span> (<span class="dv">2</span> <span class="sc">*</span> key_values<span class="sc">$</span>m) <span class="sc">+</span> key_values<span class="sc">$</span>n</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (key_values<span class="sc">$</span>m <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># tmpnum &lt;- tmp3 + 2 * sqrt(m) * abs(e)</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># tmpden &lt;- n - 2 * abs(e) * sqrt(m)</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Formula from Datt paper</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># CHECK that code matches formulas in paper</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    gini <span class="ot">&lt;-</span> e2 <span class="sc">+</span> (tmp3 <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> key_values<span class="sc">$</span>m)) <span class="sc">*</span> e1 <span class="sc">-</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> <span class="fu">abs</span>(key_values<span class="sc">$</span>e) <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> key_values<span class="sc">$</span>m)) <span class="sc">-</span> ((key_values<span class="sc">$</span>r<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">8</span> <span class="sc">*</span> <span class="fu">sqrt</span>(key_values<span class="sc">$</span>m)<span class="sc">^</span><span class="dv">3</span>)) <span class="sc">*</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">log</span>(<span class="fu">abs</span>(((tmp3 <span class="sc">+</span> (<span class="dv">2</span> <span class="sc">*</span> <span class="fu">sqrt</span>(key_values<span class="sc">$</span>m) <span class="sc">*</span> e1))) <span class="sc">/</span> (key_values<span class="sc">$</span>n <span class="sc">+</span> (<span class="dv">2</span> <span class="sc">*</span> <span class="fu">sqrt</span>(key_values<span class="sc">$</span>m) <span class="sc">*</span> <span class="fu">abs</span>(key_values<span class="sc">$</span>e)))))</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># P.gi &lt;- (e/2) - tmp1 - (tmp2 * log(abs(tmpnum/tmpden)) / sqrt(m))</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    tmp4 <span class="ot">&lt;-</span> ((<span class="dv">2</span> <span class="sc">*</span> key_values<span class="sc">$</span>m) <span class="sc">+</span> key_values<span class="sc">$</span>n) <span class="sc">/</span> key_values<span class="sc">$</span>r</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    tmp4 <span class="ot">&lt;-</span> <span class="cf">if</span> (tmp4 <span class="sc">&lt;</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">-</span><span class="dv">1</span> <span class="cf">else</span> tmp4</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    tmp4 <span class="ot">&lt;-</span> <span class="cf">if</span> (tmp4 <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="dv">1</span> <span class="cf">else</span> tmp4</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Formula does not match with paper</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    gini <span class="ot">&lt;-</span> e2 <span class="sc">+</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>      (tmp3 <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> key_values<span class="sc">$</span>m)) <span class="sc">*</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>      e1 <span class="sc">-</span> (key_values<span class="sc">$</span>n <span class="sc">*</span> <span class="fu">abs</span>(key_values<span class="sc">$</span>e) <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> key_values<span class="sc">$</span>m)) <span class="sc">+</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>      (tmp2 <span class="sc">*</span> (<span class="fu">asin</span>(tmp4) <span class="sc">-</span> <span class="fu">asin</span>(key_values<span class="sc">$</span>n <span class="sc">/</span> key_values<span class="sc">$</span>r)) <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="sc">-</span>key_values<span class="sc">$</span>m))</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># P.gi &lt;- (e/2) - tmp1 + ((tmp2 * (asin(tmp4) - asin(n/r))) / sqrt(-m))</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(gini)</span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><em>References</em>: [3]</p>
-<p><em>Relevant equations</em>: …</p>
+<p><em>Relevant equations</em>:</p>
+<p><span class="math display">\[ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt(-m)}\left[ ...\right]\]</span></p>
+<p><span class="math display">\[  \frac{e}{2} - \]</span></p>
 </section>
 <section id="polarization_lq" class="level3" data-number="1.13">
 <h3 data-number="1.13" class="anchored" data-anchor-id="polarization_lq"><span class="header-section-number">1.13</span> polarization_lq</h3>
@@ -953,61 +997,61 @@ Issue:
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>gd_compute_pip_stats_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                                    povline,</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                                    population,</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                                    requested_mean,</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">popshare =</span> <span class="cn">NULL</span>,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                                    default_ppp,</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">ppp =</span> <span class="cn">NULL</span>,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">p0 =</span> <span class="fl">0.5</span>) {</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adjust mean if different PPP value is provided</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(ppp)) {</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    requested_mean <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> default_ppp <span class="sc">/</span> ppp</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    ppp <span class="ot">&lt;-</span> default_ppp</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 1: Prep data to fit functional form</span></span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  prepped_data <span class="ot">&lt;-</span> <span class="fu">create_functional_form_lb</span>(</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">welfare =</span> welfare,</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">population =</span> population</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 2: Estimate regression coefficients using LB parameterization</span></span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  reg_results <span class="ot">&lt;-</span> <span class="fu">regres</span>(prepped_data, <span class="at">is_lq =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>  reg_coef <span class="ot">&lt;-</span> reg_results<span class="sc">$</span>coef</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>  A <span class="ot">&lt;-</span> reg_coef[<span class="dv">1</span>]</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>  B <span class="ot">&lt;-</span> reg_coef[<span class="dv">2</span>]</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>  C <span class="ot">&lt;-</span> reg_coef[<span class="dv">3</span>]</span>
-<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># OPTIONAL: Only when popshare is supplied</span></span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return poverty line if share of population living in poverty is supplied</span></span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># instead of a poverty line</span></span>
-<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(popshare)) {</span>
-<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>    povline <span class="ot">&lt;-</span> <span class="fu">derive_lb</span>(popshare, A, B, C) <span class="sc">*</span> requested_mean</span>
-<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Boundary conditions (Why 4?)</span></span>
-<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lb</span>(<span class="fl">0.001</span>, A, B, C) <span class="sc">+</span> <span class="dv">4</span></span>
-<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>  z_max <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lb</span>(<span class="fl">0.980</span>, A, B, C) <span class="sc">-</span> <span class="dv">4</span></span>
-<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> <span class="cf">if</span> (z_min <span class="sc">&lt;</span> <span class="dv">0</span>) 0L <span class="cf">else</span> z_min</span>
-<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>  results1 <span class="ot">&lt;-</span> <span class="fu">list</span>(requested_mean, povline, z_min, z_max, ppp)</span>
-<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(results1) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"mean"</span>, <span class="st">"poverty_line"</span>, <span class="st">"z_min"</span>, <span class="st">"z_max"</span>, <span class="st">"ppp"</span>)</span>
-<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 3: Estimate poverty measures based on identified parameters</span></span>
-<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>  results2 <span class="ot">&lt;-</span> <span class="fu">gd_estimate_lb</span>(requested_mean, povline, p0, A, B, C)</span>
-<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 4: Compute measure of regression fit</span></span>
-<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>  results_fit <span class="ot">&lt;-</span> <span class="fu">gd_compute_fit_lb</span>(welfare, population, results2<span class="sc">$</span>headcount, A, B, C)</span>
-<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">c</span>(results1, results2, results_fit, reg_results)</span>
-<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(res)</span>
-<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>gd_compute_pip_stats_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                                    povline,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                                    population,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                                    requested_mean,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">popshare =</span> <span class="cn">NULL</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                                    default_ppp,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">ppp =</span> <span class="cn">NULL</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">p0 =</span> <span class="fl">0.5</span>) {</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adjust mean if different PPP value is provided</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(ppp)) {</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    requested_mean <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> default_ppp <span class="sc">/</span> ppp</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    ppp <span class="ot">&lt;-</span> default_ppp</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 1: Prep data to fit functional form</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  prepped_data <span class="ot">&lt;-</span> <span class="fu">create_functional_form_lb</span>(</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">welfare =</span> welfare,</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">population =</span> population</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 2: Estimate regression coefficients using LB parameterization</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>  reg_results <span class="ot">&lt;-</span> <span class="fu">regres</span>(prepped_data, <span class="at">is_lq =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>  reg_coef <span class="ot">&lt;-</span> reg_results<span class="sc">$</span>coef</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>  A <span class="ot">&lt;-</span> reg_coef[<span class="dv">1</span>]</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>  B <span class="ot">&lt;-</span> reg_coef[<span class="dv">2</span>]</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>  C <span class="ot">&lt;-</span> reg_coef[<span class="dv">3</span>]</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># OPTIONAL: Only when popshare is supplied</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return poverty line if share of population living in poverty is supplied</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># instead of a poverty line</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(popshare)) {</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    povline <span class="ot">&lt;-</span> <span class="fu">derive_lb</span>(popshare, A, B, C) <span class="sc">*</span> requested_mean</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Boundary conditions (Why 4?)</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lb</span>(<span class="fl">0.001</span>, A, B, C) <span class="sc">+</span> <span class="dv">4</span></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>  z_max <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lb</span>(<span class="fl">0.980</span>, A, B, C) <span class="sc">-</span> <span class="dv">4</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> <span class="cf">if</span> (z_min <span class="sc">&lt;</span> <span class="dv">0</span>) 0L <span class="cf">else</span> z_min</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>  results1 <span class="ot">&lt;-</span> <span class="fu">list</span>(requested_mean, povline, z_min, z_max, ppp)</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(results1) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"mean"</span>, <span class="st">"poverty_line"</span>, <span class="st">"z_min"</span>, <span class="st">"z_max"</span>, <span class="st">"ppp"</span>)</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 3: Estimate poverty measures based on identified parameters</span></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>  results2 <span class="ot">&lt;-</span> <span class="fu">gd_estimate_lb</span>(requested_mean, povline, p0, A, B, C)</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># STEP 4: Compute measure of regression fit</span></span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>  results_fit <span class="ot">&lt;-</span> <span class="fu">gd_compute_fit_lb</span>(welfare, population, results2<span class="sc">$</span>headcount, A, B, C)</span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">c</span>(results1, results2, results_fit, reg_results)</span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(res)</span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -1017,31 +1061,31 @@ Issue:
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>create_functional_form_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare, population) {</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># CHECK inputs</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(is.numeric(population))</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(is.numeric(welfare))</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(length(population) == length(welfare))</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(length(population) &gt; 1)</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove last observation (the functional form for the Lorenz curve already forces</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># it to pass through the point (1, 1)</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  nobs <span class="ot">&lt;-</span> <span class="fu">length</span>(population) <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  population <span class="ot">&lt;-</span> population[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  welfare <span class="ot">&lt;-</span> welfare[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># y</span></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">log</span>(population <span class="sc">-</span> welfare)</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x1</span></span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> 1L</span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x2</span></span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> <span class="fu">log</span>(population)</span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x3</span></span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  x3 <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> population)</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">y =</span> y, <span class="at">X =</span> <span class="fu">cbind</span>(x1, x2, x3)))</span>
-<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>create_functional_form_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare, population) {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># CHECK inputs</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(is.numeric(population))</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(is.numeric(welfare))</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(length(population) == length(welfare))</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># assertthat::assert_that(length(population) &gt; 1)</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove last observation (the functional form for the Lorenz curve already forces</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># it to pass through the point (1, 1)</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  nobs <span class="ot">&lt;-</span> <span class="fu">length</span>(population) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  population <span class="ot">&lt;-</span> population[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  welfare <span class="ot">&lt;-</span> welfare[<span class="dv">1</span><span class="sc">:</span>nobs]</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># y</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">log</span>(population <span class="sc">-</span> welfare)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x1</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> 1L</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x2</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> <span class="fu">log</span>(population)</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x3</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  x3 <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> population)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">y =</span> y, <span class="at">X =</span> <span class="fu">cbind</span>(x1, x2, x3)))</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>References</em>: [5]</p>

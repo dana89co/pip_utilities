@@ -744,9 +744,53 @@ gd_compute_mld_lq <- function(A, B, C) {
 
 *Description*: Compute Gini index from Lorenz Quadratic fit.
 
+```{r}
+gd_compute_gini_lq <- function(A, B, C, key_values) {
+
+  # For the GQ Lorenz curve, the Gini formula are valid under the condition A+C>=1
+  # P.isValid <- (A + C) >= 0.9
+  # P.isNormal <- TRUE
+
+  e1 <- abs(A + C - 1)
+  e2 <- 1 + (B / 2) + key_values$e
+
+  tmp1 <- key_values$n * (B + 2) / (4 * key_values$m)
+  tmp2 <- (key_values$r^2) / (8 * key_values$m)
+  tmp3 <- (2 * key_values$m) + key_values$n
+
+  if (key_values$m > 0) {
+    # tmpnum <- tmp3 + 2 * sqrt(m) * abs(e)
+    # tmpden <- n - 2 * abs(e) * sqrt(m)
+
+    # Formula from Datt paper
+    # CHECK that code matches formulas in paper
+    gini <- e2 + (tmp3 / (4 * key_values$m)) * e1 - (key_values$n * abs(key_values$e) / (4 * key_values$m)) - ((key_values$r^2) / (8 * sqrt(key_values$m)^3)) *
+      log(abs(((tmp3 + (2 * sqrt(key_values$m) * e1))) / (key_values$n + (2 * sqrt(key_values$m) * abs(key_values$e)))))
+    # P.gi <- (e/2) - tmp1 - (tmp2 * log(abs(tmpnum/tmpden)) / sqrt(m))
+  } else {
+    tmp4 <- ((2 * key_values$m) + key_values$n) / key_values$r
+    tmp4 <- if (tmp4 < -1) -1 else tmp4
+    tmp4 <- if (tmp4 > 1) 1 else tmp4
+
+    # Formula does not match with paper
+    gini <- e2 +
+      (tmp3 / (4 * key_values$m)) *
+      e1 - (key_values$n * abs(key_values$e) / (4 * key_values$m)) +
+      (tmp2 * (asin(tmp4) - asin(key_values$n / key_values$r)) / sqrt(-key_values$m))
+    # P.gi <- (e/2) - tmp1 + ((tmp2 * (asin(tmp4) - asin(n/r))) / sqrt(-m))
+  }
+
+  return(gini)
+}
+```
+
 *References*: [3]
 
-*Relevant equations*: ...
+*Relevant equations*: 
+
+$$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt(-m)}\left[ ...\right]$$
+
+$$  \frac{e}{2} - $$
 
 ### polarization_lq
 
