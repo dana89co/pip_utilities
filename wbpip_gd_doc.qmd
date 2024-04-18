@@ -21,14 +21,17 @@ format:
 
 ```{mermaid}
 
-flowchart TD
+flowchart RL
     lz(select_lorenz) --> stats[pip_stats]
     lq(pip_stats_lq) --> lz
     lb(pip_stats_lb) --> lz  
     form_lq(functional_form_lq) --> lq
-    derive_lq(derive_lq) --> lq
     est_lq(estimate_lq) --> lq
     fit_lq(fit_lq) --> lq
+    form_lb(functional_form_lb) --> lb
+    est_lb(estimate_lb) --> lb
+    fit_lb(fit_lb) --> lb
+    derive_lb(derive_lb) --> lb
     check_val(check_curve_validity_lq) --> est_lq
     comp_dist_lq(compute_dist_stats_lq) --> est_lq
     comp_pov_lq(compute_pov_stats_lq) --> est_lq
@@ -38,6 +41,7 @@ flowchart TD
     value_at_lq(value_at_lq) --> comp_dist_lq
     mld_lq(<b>mld_lq</b>) --> comp_dist_lq
     quantile_lq(<b>quantile_lq</b>) --> comp_dist_lq
+    derive_lq(derive_lq) --> lq
     derive_lq --> comp_dist_lq
     derive_lq --> mld_lq
     derive_lq --> polarization_lq
@@ -274,10 +278,6 @@ gd_compute_pip_stats_lq <- function(welfare,
 
 ```
 
-
-### pip_stats_lb
-
-*Description*: Compute poverty statistics for grouped data using the beta functional form of the Lorenz qurve.
 
 ### functional_form_lq
 
@@ -756,6 +756,109 @@ gd_compute_mld_lq <- function(A, B, C) {
 
 *Relevant equations*: ...
 
+### pip_stats_lb
+
+*Description*: Compute poverty statistics for grouped data using the beta functional form of the Lorenz qurve.
+
+```{r}
+gd_compute_pip_stats_lb <- function(welfare,
+                                    povline,
+                                    population,
+                                    requested_mean,
+                                    popshare = NULL,
+                                    default_ppp,
+                                    ppp = NULL,
+                                    p0 = 0.5) {
+
+  # Adjust mean if different PPP value is provided
+  if (!is.null(ppp)) {
+    requested_mean <- requested_mean * default_ppp / ppp
+  } else {
+    ppp <- default_ppp
+  }
+  # STEP 1: Prep data to fit functional form
+  prepped_data <- create_functional_form_lb(
+    welfare = welfare,
+    population = population
+  )
+
+  # STEP 2: Estimate regression coefficients using LB parameterization
+  reg_results <- regres(prepped_data, is_lq = FALSE)
+  reg_coef <- reg_results$coef
+
+  A <- reg_coef[1]
+  B <- reg_coef[2]
+  C <- reg_coef[3]
+
+  # OPTIONAL: Only when popshare is supplied
+  # return poverty line if share of population living in poverty is supplied
+  # instead of a poverty line
+
+  if (!is.null(popshare)) {
+    povline <- derive_lb(popshare, A, B, C) * requested_mean
+  }
+
+  # Boundary conditions (Why 4?)
+  z_min <- requested_mean * derive_lb(0.001, A, B, C) + 4
+  z_max <- requested_mean * derive_lb(0.980, A, B, C) - 4
+  z_min <- if (z_min < 0) 0L else z_min
+
+  results1 <- list(requested_mean, povline, z_min, z_max, ppp)
+  names(results1) <- list("mean", "poverty_line", "z_min", "z_max", "ppp")
+
+  # STEP 3: Estimate poverty measures based on identified parameters
+  results2 <- gd_estimate_lb(requested_mean, povline, p0, A, B, C)
+
+  # STEP 4: Compute measure of regression fit
+  results_fit <- gd_compute_fit_lb(welfare, population, results2$headcount, A, B, C)
+
+  res <- c(results1, results2, results_fit, reg_results)
+
+  return(res)
+}
+```
+
+### functional_form_lb
+
+*Description*: Prepare data for Lorenz beta regression: ...  
+
+```{r}
+create_functional_form_lb <- function(welfare, population) {
+  # CHECK inputs
+  # assertthat::assert_that(is.numeric(population))
+  # assertthat::assert_that(is.numeric(welfare))
+  # assertthat::assert_that(length(population) == length(welfare))
+  # assertthat::assert_that(length(population) > 1)
+
+  # Remove last observation (the functional form for the Lorenz curve already forces
+  # it to pass through the point (1, 1)
+  nobs <- length(population) - 1
+  population <- population[1:nobs]
+  welfare <- welfare[1:nobs]
+
+  # y
+  y <- log(population - welfare)
+  # x1
+  x1 <- 1L
+  # x2
+  x2 <- log(population)
+  # x3
+  x3 <- log(1 - population)
+
+  return(list(y = y, X = cbind(x1, x2, x3)))
+
+}
+```
+*References*: [5]
+
+*Note*: The last observation of (p,l), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).
+
+*Relevant equations*:
+
+From Kakwani (1980):
+$$ L(p) = p - a p^\alpha (1-p)^\beta$$
+
+...
 
 ## References
 
@@ -763,9 +866,11 @@ gd_compute_mld_lq <- function(A, B, C) {
 
 2. Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
 
-3. Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/cdmref/p15738coll2/id/125673)". FCND Discussion Paper 50. World Bank, Washington, DC.
+3. Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/publication/computational-tools-poverty-measurement-and-analysis)". FCND Discussion Paper 50. World Bank, Washington, DC.
 
 4. Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY. 
+
+5. Kakwani, N. 1980. "[On a Class of Poverty Measures](https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46)". *Econometrica 48* (2): 437-46.
 
 ## Appendix
 
