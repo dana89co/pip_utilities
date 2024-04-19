@@ -788,9 +788,13 @@ gd_compute_gini_lq <- function(A, B, C, key_values) {
 
 *Relevant equations*: 
 
-$$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt(-m)}\left[ ...\right]$$
+- if $m<0$:
 
-$$  \frac{e}{2} - $$
+$$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt{-m}}\left[ \sin^{-1} \frac{2 + n}{r} - \sin^{-1} \frac{2 + n}{r} \right]$$ 
+
+- if $m>0$:
+
+$$  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\frac{2m+n+2\sqrt{m} (a+c-1)}{n-2e\sqrt{m}}}\right| \right] $$
 
 ### polarization_lq
 
