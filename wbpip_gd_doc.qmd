@@ -1016,6 +1016,8 @@ According to Kakwani (1980) and the rest of the literature, the only condition f
 
 ### estimate_lb
 
+*Description*: Estimates poverty and inequality stats from the Beta Lorenz fit
+
 ```{r}
 gd_estimate_lb <- function(mean, povline, p0, A, B, C) {
 
