@@ -4,8 +4,7 @@ author: "Diana Garcia"
 format: 
   html:
     number-sections: true
-    mermaid:
-      theme: sandstone
+    theme: sandstone
     code-fold: true
     code-summary: "Show the code"
     toc: true
@@ -15,7 +14,6 @@ format:
 > ## Objective {.unnumbered}
 >
 > This document aims to describe the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
-
 
 ## Structure {.unnumbered}
 
@@ -51,7 +49,6 @@ flowchart RL
     style mld_lq fill:#FFF1A2
 
 ```
-
 
 ## Functions
 
@@ -122,10 +119,9 @@ gd_compute_pip_stats <- function(welfare,
 ```
 
 ::: {#nte-boundary-issue .callout-note}
-#### Issue: Boundary conditions 
+#### Issue: Boundary conditions
 
-At the moment, this is calculated using $(\mu L'(0.001) + 4,\mu L'(0.98) - 4)$ (*Note: Not sure what is the reason of adding and subtracting 4*). 
-
+At the moment, this is calculated using $(\mu L'(0.001) + 4,\mu L'(0.98) - 4)$ (*Note: Not sure what is the reason of adding and subtracting 4*).
 :::
 
 ### select_lorenz {#sec-select_lorenz}
@@ -278,10 +274,9 @@ gd_compute_pip_stats_lq <- function(welfare,
 
 ```
 
-
 ### functional_form_lq
 
-*Description*: Prepares data for regression of $y(1-y)$ on $(x^2-y)$, $y(x-1)$ and $(x-y)$. 
+*Description*: Prepares data for regression of $y(1-y)$ on $(x^2-y)$, $y(x-1)$ and $(x-y)$.
 
 ```{r}
 create_functional_form_lq <- function(welfare,
@@ -313,14 +308,13 @@ create_functional_form_lq <- function(welfare,
 
 ```
 
+*Note*: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).
 
-*Note*: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1). 
-
-*References*: [1]
+*References*: \[1\]
 
 *Relevant equations*:
 
-The general Quadratic Lorenz curve form is: 
+The general Quadratic Lorenz curve form is:
 
 $$ax^2 + bxy + cy^2 + dx + ey + f = 0$$ {#eq-gen-equation}
 
@@ -330,8 +324,7 @@ $$y(1-y) = a(x^2-y) + by(x-1) + d(x-y)$$ {#eq-linear-form}
 
 This function prepares data to estimate $a$, $b$, and $d$ (*Note*: $d$ is named $C$ in `wbpip`).
 
-
-### value_at_lq 
+### value_at_lq
 
 *Description*: Solves for the Quadratic Lorenz curves.
 
@@ -356,7 +349,7 @@ value_at_lq <- function(x, A, B, C, key_values) {
 }
 ```
 
-*References*: [1]
+*References*: \[1\]
 
 *Relevant equations*:
 
@@ -366,9 +359,9 @@ $$ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2$$ {#eq-
 
 where $\alpha = b^2 -4a$ and $\beta = 2be - 4d$.
 
-### derive_lq 
+### derive_lq
 
-*Description*: returns the first derivative of the quadratic Lorenz curves with $c = 1$. 
+*Description*: returns the first derivative of the quadratic Lorenz curves with $c = 1$.
 
 ```{r}
 derive_lq <- function(x, A, B, C, key_values) {
@@ -400,7 +393,7 @@ derive_lq <- function(x, A, B, C, key_values) {
 }
 ```
 
-*References*: [1]
+*References*: \[1\]
 
 *Relevant equations*:
 
@@ -467,7 +460,6 @@ gd_estimate_lq <- function(mean, povline, p0, A, B, C, key_values) {
 
 ```
 
-
 ### check_curve_validity_lq
 
 *Description*: Check validity of Lorenz Quadratic fit
@@ -518,46 +510,44 @@ check_curve_validity_lq <- function(A, B, C, key_values) {
 
 ```
 
-
-*References*: [1], [2], [3]
+*References*: \[1\], \[2\], \[3\]
 
 *Relevant equations*:
 
-The function tests for specific assumptions for the Lorenz Quadratic and relies on the formulas from Table 2 in Datt, G (1998) [3]. The nomenclature for some of these formulas differ from Villasenor et al (1989), so this is how they match:
+The function tests for specific assumptions for the Lorenz Quadratic and relies on the formulas from Table 2 in Datt, G (1998) \[3\]. The nomenclature for some of these formulas differ from Villasenor et al (1989), so this is how they match:
 
 $m = \alpha = b^2 -4a$
 
 $n = \beta = 2be -4c$ ($c=d$ for Villasenor et al, 1989)
 
-$r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$ 
+$r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$
 
 ::: {#nte-cond-r-issue .callout-note}
-#### Issue: Rename $r$ 
+#### Issue: Rename $r$
 
-At the moment, $r$ refers to $(n^2 - 4me^2)$ in `wbpip`. This is already fixed on commit `47852c` in branch `fix_key_values` by Zander (Waiting for merge). We should maybe rename this within this function. 
-
+At the moment, $r$ refers to $(n^2 - 4me^2)$ in `wbpip`. This is already fixed on commit `47852c` in branch `fix_key_values` by Zander (Waiting for merge). We should maybe rename this within this function.
 :::
 
 The conditions this function tests are presented in Section 4 of Datt (1998):
 
 Normality and Validity
 
- - $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive. (Normality and validity)
- - $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$ (Normality and validity)
- - $a+d \geq 0.9$ so $L(1,y) = 1$ (Validity) 
+-   $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive. (Normality and validity)
+-   $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$ (Normality and validity)
+-   $a+d \geq 0.9$ so $L(1,y) = 1$ (Validity)
 
 ::: {#imp-condad .callout-important}
 #### Issue: The inequality for $a+d$
 
-At the moment, most test are design for the old validation $a+d \leq 1$. However, the Corrigendum of the original paper [2] indicates we should use $a+d \geq 1$
+At the moment, most test are design for the old validation $a+d \leq 1$. However, the Corrigendum of the original paper \[2\] indicates we should use $a+d \geq 1$
 :::
 
 And so $L''(x,y) \geq 0$ for $x$ within $(0,1)$:
 
- - $m < 0$ (condition on Villasenor et al., 1989)
- - if $m > 0$ then $m < n^2/4 e^2$ and $n \leq 0$ (last condition from Datt,1998)
- - if $m > 0$ then $m < n^2/4 e^2$ and $m < -n/2$ (last condition from Datt,1998)
- 
+-   $m < 0$ (condition on Villasenor et al., 1989)
+-   if $m > 0$ then $m < n^2/4 e^2$ and $n \leq 0$ (last condition from Datt,1998)
+-   if $m > 0$ then $m < n^2/4 e^2$ and $m < -n/2$ (last condition from Datt,1998)
+
 $L''(x,y)$ can be calculated using @eq-first-der:
 
 $$ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} $$
@@ -599,10 +589,9 @@ gd_compute_dist_stats_lq <- function(mean, p0, A, B, C, key_values = key_values)
 ```
 
 ::: {#nte-check1 .callout-note}
-#### Check: 
+#### Check:
 
 What is the difference with `gd_estimate_dist_stats_lq`?
-
 :::
 
 ### quantile_lq
@@ -628,20 +617,18 @@ old_gd_compute_quantile_lq <- function(A, B, C, n_quantile = 10) {
 }
 ```
 
-
-*Note*: This function calculates the quantiles for a Lorenz Quadratic with specific values for $a$, $b$ and $d$.  
+*Note*: This function calculates the quantiles for a Lorenz Quadratic with specific values for $a$, $b$ and $d$.
 
 ::: {#imp-quant-gd-issue .callout-important}
-#### Issues:  
+#### Issues:
 
-The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of $a$, $b$ and $d$, but it calculates instead the "share" or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the `deciles` of the welfare vector. 
+The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of $a$, $b$ and $d$, but it calculates instead the "share" or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the `deciles` of the welfare vector.
 
 Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:
 
 `vec[n_quantile] <- 1 - value_at_lq(x[n_quantile-1], A, B, C)` where `n_quantile = 10`
 
-However, my hypothesis is that this is related to *Issue: The inequality for $a+d$* above. If $A+C \geq 1$ then `value_at_lq(1, A, B, C) = 1`. We can see the case in this [Desmos graph](https://www.desmos.com/calculator/g164gdepzk){.external target="_blank"}. 
-
+However, my hypothesis is that this is related to *Issue: The inequality for* $a+d$ above. If $A+C \geq 1$ then `value_at_lq(1, A, B, C) = 1`. We can see the case in this [Desmos graph](https://www.desmos.com/calculator/g164gdepzk){.external target="_blank"}.
 :::
 
 *My version of the code*:
@@ -706,16 +693,14 @@ Using the derivation from Rohde (2008) (Equation 15.20), we know that:
 
 $$L'(\pi) = \frac{N y_k}{\sum_{k=1}^N y_k}$$
 
-
 where $y_k$ is the income accruing to the $k_{th}$ individual if ordered such that $y_1<y_2<...<y_k$ and $\pi= \frac{k}{j}$. Then the mean log deviation can be rewritten as (Equation 15.21):
 
 $$-\int_0^1 ln(L'(\pi))d\pi= \lim_{n \rightarrow \infty} -\sum_{i=1}^{N}\frac{1}{N}ln(\frac{N y_k}{\sum_{k=1}^N y_k})$$
 
 ::: {#imp-mld-gd-issue .callout-important}
-#### Issue:  
+#### Issue:
 
-My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return $1$ if for the left tail of $y$ we encounter negative values. 
-
+My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return $1$ if for the left tail of $y$ we encounter negative values.
 :::
 
 *My version of the code*:
@@ -784,15 +769,15 @@ gd_compute_gini_lq <- function(A, B, C, key_values) {
 }
 ```
 
-*References*: [3]
+*References*: \[3\]
 
-*Relevant equations*: 
+*Relevant equations*:
 
-- if $m<0$:
+-   if $m<0$:
 
-$$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt{-m}}\left[ \sin^{-1} \frac{2 + n}{r} - \sin^{-1} \frac{2 + n}{r} \right]$$ 
+$$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt{-m}}\left[ \sin^{-1} \frac{2 + n}{r} - \sin^{-1} \frac{2 + n}{r} \right]$$
 
-- if $m>0$:
+-   if $m>0$:
 
 $$  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\frac{2m+n+2\sqrt{m} (a+c-1)}{n-2e\sqrt{m}}}\right| \right] $$
 
@@ -866,9 +851,11 @@ gd_compute_pip_stats_lb <- function(welfare,
 }
 ```
 
+
+
 ### functional_form_lb
 
-*Description*: Prepare data for Lorenz beta regression: ...  
+*Description*: Prepare data for Lorenz beta regression: $Log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)$.
 
 ```{r}
 create_functional_form_lb <- function(welfare, population) {
@@ -897,45 +884,203 @@ create_functional_form_lb <- function(welfare, population) {
 
 }
 ```
-*References*: [5]
+
+*References*: \[5\], \[3\]
 
 *Note*: The last observation of (p,l), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).
 
 *Relevant equations*:
 
-From Kakwani (1980):
-$$ L(p) = p - a p^\alpha (1-p)^\beta$$
+The general Beta Lorenz curve (Kakwani, 1980) form is: 
+$$ L(p) = p - a p^\alpha (1-p)^\beta$$ {#eq-beta-gen-equation}
 
+where $L(p)$ is the vector of cumulative proportion of consumption/income and $p$ is the cumulative proportions of population. They correspond to $y$ and $x$ in the Quadratic Lorenz form.
+
+Note that in Datt (1998), the parameters have different letters: 
+$$ L(p) = p - \theta p^\gamma (1-p)^\delta$$ {#eq-beta-linear-form}
+
+In our code, the parameters are addressed respectively as:
+$$\begin{aligned}
+A = a = \theta \\
+
+B = \alpha = \gamma \\
+
+C = \beta = \delta
+\end{aligned}$$
+
+The previous equation is logged and rewritten as follows:
+$$\begin{aligned}
+L(p) = p - a p^\alpha (1-p)^\beta \\
+
+L(p) - p = - a p^\alpha (1-p)^\beta \\
+
+p - L(p) = a p^\alpha (1-p)^\beta \\
+
+Log(p - L(p)) = 
+
+\log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)
+
+\end{aligned}$$
+### value_at_lb
+*Description*: Solves for the Beta Lorenz curve.
+
+```{r}
+
+value_at_lb <- function(x, A, B, C) {
+
+  # Check for NA, Inf and negative values in x
+  check_NA_Inf_values(x)
+  check_neg_values(x)
+
+  out <- x - (A * (x^B) * ((1 - x)^C))
+
+  return(out)
+}
+```
+
+*References*: \[5\]
+
+This function calculates the value at the Beta Lorenz Curve. It solves @eq-beta-gen-equation for $L(p)$.
+
+
+### derive_lb
+*Description*: returns the first derivative of the Beta Lorenz curves.
+
+```{r}
+derive_lb <- function(x, A, B, C) {
+  val <- vector("numeric", length(x))
+  val[x == 0] <- -Inf
+  val[x == 1] <- Inf
+
+  if (B == 1) {
+      val[x == 0] <- 1 - A
+    }
+    if (B > 1) {
+      val[x == 0] <- 1
+    }
+    if (C == 1) {
+      val[x == 1] <- 1 + A
+    }
+    if (C > 1) {
+      val[x == 1] <- 1
+    } else {
+
+      # Formula for first derivative of GQ Lorenz Curve
+      new_x <- x[!(x %in% c(0,1))]
+      val[!(x %in% c(0,1))] <- 1 - ((A * new_x^B) * ((1 - new_x)^C) * ((B / new_x) -( C / (1 - new_x)) ) )
+    }
+  return(val)
+}
+
+
+```
+
+
+*References*: \[3\]
+
+*Relevant equations*:
+
+As noted above, in our code, the parameters are addressed respectively as:
+$$\begin{aligned}
+A = a = \theta \\
+
+B = \alpha = \gamma \\
+
+C = \beta = \delta
+\end{aligned}$$
+
+Additionally, $p = x$ and $L(p) = y$. We will use the code notation for practicality.
+
+This function computes the first derivative of @eq-beta-gen-equation, which is derived as follows:
+
+$$\begin{aligned}
+y &= x - A x^B (1-x)^C \\
+y' &= a A (1-x)^{C-1} x^B - AB(1-x)^C x^{B-1} + 1\\
+ &= 1 - A (1-x)^C x^B \left[\frac{C}{1-x} - \frac{B}{x}\right]
+\end{aligned}$$
+
+::: {#nte-lb-derivative .callout-note}
+#### Issues:
+
+There are a series of boundary conditions for the first derivative, but I cannot find the reason for those boundary conditions in the literature. The conditions are the following:
+
+- at $x = 0$:
+  - if $B = 1$ -> $1 - A$
+  - if $B > 1$ -> $1$
+- at $x = 1$:
+  - if $C = 1$ -> $1 + A$
+  - if $C > 1$ -> $1$
+
+According to Kakwani (1980) and the rest of the literature, the only condition for $L'(x) = y'$ is to be $>=0$ at $x = 0$. Now, if we follow the execution of the function, it is true that when $x=0$, $\frac{B}{X} = \frac{B}{0} = undefined$,which would cause calculation issues, but the rest of the derivative already sets $L'(x) = 1$, so it is not clear to me why we have to set it to $1-A$ or $1$. The same sort of reasoning applies at $x = 1$, but with the parameter $C$.
+:::
+
+### estimate_lb
+
+```{r}
+gd_estimate_lb <- function(mean, povline, p0, A, B, C) {
+
+  # Compute distributional measures
+  dist_stats <- gd_compute_dist_stats_lb(mean, p0, A, B, C)
+
+  # Compute poverty stats
+  pov_stats <- gd_compute_poverty_stats_lb(mean, povline, A, B, C)
+
+  # Check validity
+  validity <- check_curve_validity_lb(headcount = pov_stats[["headcount"]], A, B, C)
+
+  out <- list(
+    gini = dist_stats$gini,
+    median = dist_stats$median,
+    rmhalf = dist_stats$rmhalf,
+    polarization = dist_stats$polarization,
+    ris = dist_stats$ris,
+    mld = dist_stats$mld,
+    dcm = dist_stats$dcm,
+    deciles = dist_stats$deciles,
+    headcount = pov_stats$headcount,
+    poverty_gap = pov_stats$pg,
+    poverty_severity = pov_stats$p2,
+    eh = pov_stats$eh,
+    epg = pov_stats$epg,
+    ep = pov_stats$ep,
+    gh = pov_stats$gh,
+    gpg = pov_stats$gpg,
+    gp = pov_stats$gp,
+    watts = pov_stats$watts,
+    dl = pov_stats$dl,
+    ddl = pov_stats$ddl,
+    is_normal = validity$is_normal,
+    is_valid = validity$is_valid
+  )
+
+  return(out)
+}
+
+```
 ...
 
 ## References
 
-1. Villasenor, J., B. C. Arnold. 1989. "[Elliptical Lorenz curves](https://doi.org/10.1016/0304-4076(89)90089-4)". *Journal of Econometrics 40* (2): 327-338.
+1.  Villasenor, J., B. C. Arnold. 1989. "[Elliptical Lorenz curves](https://doi.org/10.1016/0304-4076(89)90089-4)". *Journal of Econometrics 40* (2): 327-338.
 
-2. Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
+2.  Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
 
-3. Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/publication/computational-tools-poverty-measurement-and-analysis)". FCND Discussion Paper 50. World Bank, Washington, DC.
+3.  Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/publication/computational-tools-poverty-measurement-and-analysis)". FCND Discussion Paper 50. World Bank, Washington, DC.
 
-4. Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY. 
+4.  Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY.
 
-5. Kakwani, N. 1980. "[On a Class of Poverty Measures](https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46)". *Econometrica 48* (2): 437-46.
+5.  Kakwani, N. 1980. "[On a Class of Poverty Measures](https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46)". *Econometrica 48* (2): 437-46.
 
 ## Appendix
 
 Find function using the following list:
 
--  @sec-pip_stats: `gd_compute_pip_stats`
--  @sec-select_lorenz: `gd_select_lorenz`
-- `gd_compute_pip_stats_lq`
-- `gd_compute_pip_stats_lb`
-- `create_functional_form_lq`
-- `derive_lq`
-- `gd_estimate_lq` 
-- `check_curve_validity_lq`
-- `gd_compute_dist_stats_lq`
-
-
-
-
-
-
+-   @sec-pip_stats: `gd_compute_pip_stats`
+-   @sec-select_lorenz: `gd_select_lorenz`
+-   `gd_compute_pip_stats_lq`
+-   `gd_compute_pip_stats_lb`
+-   `create_functional_form_lq`
+-   `derive_lq`
+-   `gd_estimate_lq`
+-   `check_curve_validity_lq`
+-   `gd_compute_dist_stats_lq`
