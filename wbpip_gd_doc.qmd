@@ -22,17 +22,32 @@ format:
 flowchart RL
     lz(select_lorenz) --> stats[pip_stats]
     lq(pip_stats_lq) --> lz
-    lb(pip_stats_lb) --> lz  
+    lb(pip_stats_lb) --> lz
+    
     form_lq(functional_form_lq) --> lq
     est_lq(estimate_lq) --> lq
     fit_lq(fit_lq) --> lq
+    
     form_lb(functional_form_lb) --> lb
     est_lb(estimate_lb) --> lb
     fit_lb(fit_lb) --> lb
-    derive_lb(derive_lb) --> lb
+    derive_lb(derive_lb) ---> lb
+    
     check_val(check_curve_validity_lq) --> est_lq
     comp_dist_lq(compute_dist_stats_lq) --> est_lq
     comp_pov_lq(compute_pov_stats_lq) --> est_lq
+    
+    check_val_lb(check_curve_validity_lb) --> est_lb
+    derive_lb(derive_lb) ---> check_val_lb
+    ddlk(ddlk) --> check_val_lb
+    
+    comp_dist_lb(compute_dist_stats_lb) --> est_lb
+    
+    comp_pov_lb(compute_pov_stats_lb) --> est_lb
+    gd_compute_headcount_lb --> comp_pov_lb
+    gd_compute_pov_gap_lb --> comp_pov_lb
+    
+    
     polarization_lq(polarization_lq) --> comp_dist_lq
     gini_lq(gini_lq) --> comp_dist_lq
     value_at_lq --> polarization_lq
@@ -44,6 +59,7 @@ flowchart RL
     derive_lq --> mld_lq
     derive_lq --> polarization_lq
     value_at_lq --> quantile_lq
+    
     
     style quantile_lq fill:#FFF1A2
     style mld_lq fill:#FFF1A2
@@ -1016,7 +1032,7 @@ According to Kakwani (1980) and the rest of the literature, the only condition f
 
 ### estimate_lb
 
-*Description*: Estimates poverty and inequality stats from the Beta Lorenz fit
+*Description*: Estimates poverty and inequality stats from the Beta Lorenz fit.
 
 ```{r}
 gd_estimate_lb <- function(mean, povline, p0, A, B, C) {
@@ -1059,6 +1075,51 @@ gd_estimate_lb <- function(mean, povline, p0, A, B, C) {
 }
 
 ```
+
+### check_curve_validity_lb
+
+*Description*: Check validity of Lorenz Beta fit:
+
+```{r}
+check_curve_validity_lb <- function(headcount, A, B, C) {
+  is_valid <- TRUE
+
+  for (w in seq(from = 0.001, to = 0.1, by = 0.05)) {
+    if (derive_lb(w, A, B, C) < 0) {
+      is_valid <- FALSE
+      break
+    }
+  }
+
+  if (is_valid) {
+    for (w in seq(from = 0.001, to = 0.999, by = 0.05)) {
+      if (DDLK(w, A, B, C) < 0) { # What does DDLK stands for?? What does it do?
+        is_valid <- FALSE
+        break
+      }
+    }
+  }
+
+  # WHAT IS THE RATIONAL HERE?
+  is_normal <- if (!is.na(headcount)) {
+    is_normal <- TRUE
+  } else {
+    is_normal <- FALSE
+  }
+
+  return(list(
+    is_valid = is_valid,
+    is_normal = is_normal
+  ))
+}
+
+```
+
+*References*: \[1\], \[3\]
+
+The function tests for 
+
+
 ...
 
 ## References
