@@ -32,6 +32,7 @@ flowchart RL
     est_lb(estimate_lb) --> lb
     fit_lb(fit_lb) --> lb
     derive_lb(derive_lb) ---> lb
+    regres --> lb
     
     check_val(check_curve_validity_lq) --> est_lq
     comp_dist_lq(compute_dist_stats_lq) --> est_lq
@@ -42,10 +43,27 @@ flowchart RL
     ddlk(ddlk) --> check_val_lb
     
     comp_dist_lb(compute_dist_stats_lb) --> est_lb
+    derive_lb --> comp_dist_lb
+    value_at_lb --> comp_dist_lb
+    compute_gini_lb --> comp_dist_lb
+    value_at_lb --> compute_gini_lb
+    compute_polarization_lb --> comp_dist_lb
+    derive_lb --> compute_polarization_lb
+    value_at_lb --> compute_polarization_lb
+    compute_quantile_lb --> comp_dist_lb
     
     comp_pov_lb(compute_pov_stats_lb) --> est_lb
-    gd_compute_headcount_lb --> comp_pov_lb
-    gd_compute_pov_gap_lb --> comp_pov_lb
+    compute_headcount_lb --> comp_pov_lb
+    rtSafe --> compute_headcount_lb
+    funcD --> rtSafe
+    rtNewt --> rtSafe
+    BETAI --> compute_headcount_lb
+    BETAICF --> BETAI
+    GAMMLN --> BETAI
+    compute_pov_gap_lb --> comp_pov_lb
+    compute_pov_severity_lb --> comp_pov_lb
+    
+    value_at_lb --> fit_lb
     
     
     polarization_lq(polarization_lq) --> comp_dist_lq
@@ -1117,8 +1135,173 @@ check_curve_validity_lb <- function(headcount, A, B, C) {
 
 *References*: \[1\], \[3\]
 
-The function tests for 
+The function tests for specific assumptions for the Lorenz Beta and relies on the formulas from Table 2 in Datt, G (1998) \[3\]. 
 
+### DDLK
+
+*Description*
+
+### compute_poverty_stats_lb
+
+*Description*
+```{r}
+gd_compute_poverty_stats_lb <- function(mean,
+                                        povline,
+                                        A,
+                                        B,
+                                        C) {
+  # Compute headcount
+  headcount <- gd_compute_headcount_lb(
+    mean = mean,
+    povline = povline,
+    A = A,
+    B = B,
+    C = C
+  )
+
+  # Poverty gap
+  u <- mean / povline
+  pov_gap <- gd_compute_pov_gap_lb(headcount = headcount,
+                                   A         = A,
+                                   B         = B,
+                                   C         = C,
+                                   u         = u)
+
+  # Poverty severity
+  pov_gap_sq <- gd_compute_pov_severity_lb(
+    headcount = headcount,
+    pov_gap   = pov_gap,
+    A         = A,
+    B         = B,
+    C         = C,
+    u         = u
+  )
+
+  # First derivative of the Lorenz curve
+  dl <- 1 - A * (headcount^B) * ((1 - headcount)^C) * (B / headcount - C / (1 - headcount))
+
+  # Second derivative of the Lorenz curve
+  ddl <- A * (headcount^B) *
+    ((1 - headcount)^C) *
+    ((B * (1 - B) / headcount^2) +
+      (2 * B * C / (headcount * (1 - headcount))) +
+      (C * (1 - C) / ((1 - headcount)^2)))
+
+  # Elasticity of headcount index w.r.t mean
+  eh <- -povline / (mean * headcount * ddl)
+
+  # Elasticity of poverty gap index w.r.t mean
+  epg <- 1 - (headcount / pov_gap)
+
+  # Elasticity of distributionally sensitive FGT poverty measure w.r.t mean
+  ep <- 2 * (1 - pov_gap / pov_gap_sq)
+
+  # PElasticity of headcount index w.r.t gini index
+  gh <- (1 - povline / mean) / (headcount * ddl)
+
+  # Elasticity of poverty gap index w.r.t gini index
+  gpg <- 1 + (((mean / povline) - 1) * headcount / pov_gap)
+
+  # Elasticity of distributionally sensitive FGT poverty measure w.r.t gini index
+  gp <- 2 * (1 + (((mean / povline) - 1) * pov_gap / pov_gap_sq))
+
+  # Watts index
+  watts <- gd_compute_watts_lb(headcount, mean, povline, 0.005, A, B, C)
+
+  return(
+    list(
+      headcount = headcount,
+      pg = pov_gap,
+      p2 = pov_gap_sq,
+      eh = eh,
+      epg = epg,
+      ep = ep,
+      gh = gh,
+      gpg = gpg,
+      gp = gp,
+      watts = watts,
+      dl = dl,
+      ddl = ddl
+    )
+  )
+}
+```
+
+### compute_headcount_lb
+
+**Description**
+
+```{r}
+gd_compute_headcount_lb <- function(mean, povline, A, B, C) {
+  # Compute headcount
+  headcount <- rtSafe(0.0001, 0.9999, 1e-4,
+    mean = mean,
+    povline = povline,
+    A = A,
+    B = B,
+    C = C
+  )
+  # Check headcount invalidity conditions
+  if (headcount < 0 | is.na(headcount)) {
+    return(NA_real_)
+  }
+
+  condition1 <- is.na(BETAI(
+    a = 2 * B - 1,
+    b = 2 * C + 1,
+    x = headcount
+  ))
+  condition2 <- is.na(BETAI(
+    a = 2 * B,
+    b = 2 * C,
+    x = headcount
+  ))
+  condition3 <- is.na(BETAI(
+    a = 2 * B + 1,
+    b = 2 * C - 1,
+    x = headcount
+  ))
+
+  if (condition1 | condition2 | condition3) {
+    return(NA_real_)
+  }
+
+  return(headcount)
+}
+
+```
+
+### BETAI
+```{r}
+BETAI <- function(a, b, x) {
+  if (!is.na(x)) {
+    bt <- betai <- 0
+
+    if (x == 0 || x == 1) {
+      bt <- 0
+    } else {
+      bt <- exp((a * log(x)) + (b * log(1 - x)))
+    }
+
+    if (x < (a + 1) / (a + b + 2)) {
+      betai <- bt * BETAICF(a, b, x) / a
+    } else if (is.na(GAMMLN(a)) || is.na(GAMMLN(b)) || is.na(GAMMLN(a + b))) {
+      betai <- NA_real_
+    } else {
+      betai <- exp(GAMMLN(a) + GAMMLN(b) - GAMMLN(a + b)) - (bt * BETAICF(b, a, 1 - x) / b)
+    }
+  } else {
+    betai <- NA_real_
+  }
+
+  return(betai)
+}
+
+```
+
+### BETAICF
+
+### GAMMLN
 
 ...
 
