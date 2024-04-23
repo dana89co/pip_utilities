@@ -1349,7 +1349,116 @@ BETAICF <- function(a, b, x) {
 
 ### rtSafe
 
-*Description*: `rtSafe`
+*Description*: `rtSafe`is an implementation of a 'safe' version of `rtNewt`. It adds checks to ensure that the method is robust and converges correctly. 
+
+```{r}
+rtSafe <- function(x1, x2, xacc, mean, povline, A, B, C) {
+  
+  # Evaluate the function at the initial guesses x1 and x2:
+  
+  funcCall1 <- funcD(x1, mean, povline, A, B, C)
+  fl <- funcCall1[[1]]  # Function value at x1 (low)
+
+  funcCall2 <- funcD(x2, mean, povline, A, B, C)
+  fh <- funcCall2[[1]]  # Function value at x2 (high)
+  df <- funcCall2[[2]]  # Derivative value at x2
+
+  # Check if the function values at x1 and x2 bracket a root (have opposite signs)
+  if (fl * fh >= 0) {
+    # If they do not bracket a root, fall back to the Newton-Raphson method (which has larger brackets)
+    res <- rtNewt(mean = mean, povline = povline, A = A, B = B, C = C)
+    return(res)
+  }
+
+  # Assign xl and xh to bracket the root with xl having a function value less than 0
+  if (fl < 0) {
+    xl <- x1
+    xh <- x2
+  } else {
+    xl <- x2
+    xh <- x1
+  }
+
+  # Initialize the safe guess for the root as the midpoint between x1 and x2
+  rtsafe <- 0.5 * (x1 + x2)
+  # Set the full step and fractional step sizes to the interval length
+  dxold <- abs(x2 - x1)
+  dx <- dxold
+
+  # Enter the main iteration loop
+  for (i in seq_len(99)) {
+    # Update the function and derivative at the current guess rtsafe
+    funcCall3 <- funcD(rtsafe, mean, povline, A, B, C)
+    f <- funcCall3[[1]]
+    df <- funcCall3[[2]]
+
+    # Check for convergence by comparing the change in the root with the tolerance
+    if (abs(2 * f) > abs(dxold * df)) {
+      # If not converging, bisect the interval
+      dxold <- dx
+      dx <- 0.5 * (xh - xl)
+      rtsafe <- xl + dx
+      if (xl == rtsafe) return(rtsafe)  # Check for underflow
+    } else {
+      # If converging, use Newton-Raphson step
+      dxold <- dx
+      dx <- f / df
+      temp <- rtsafe
+      rtsafe <- temp - dx
+      if (temp == rtsafe) return(rtsafe)  # Check for underflow
+    }
+
+    # If the size of the Newton-Raphson step is less than the tolerance, return the root
+    if (abs(dx) < xacc) return(rtsafe)
+
+    # Update the function value at the new guess
+    funcCall4 <- funcD(rtsafe, mean, povline, A, B, C)
+    f <- funcCall4[[1]]
+
+    # Update the interval bounds to continue the bisection process
+    if (f < 0) {
+      xl <- rtsafe
+    } else {
+      xh <- rtsafe
+    }
+  }
+  # If the loop finishes without returning, it indicates failure to converge
+  return(NA_real_)
+}
+
+```
+
+*Steps*:
+
+1. Input parameters:
+  - `x1` and `x2`: initial guesses for the root, defining a bracket within which the root lies.
+  - `xacc`: desired accuracy for the root.
+  - `mean`, `povline`, and the parameters of the Lorenz curve.
+
+2. Initial Function Evaluation:
+   - Calculate the function values at `x1` and `x2`.
+   - If the function values at these points do not bracket a root (i.e., the function values are not of opposite signs), the function will revert to use `rtNewt` directly, using larger default bounds (0 and 1).
+
+3. Bracketing the Root:
+   - Assign `xl` and `xh` to be the lower and upper bounds of the bracketing interval, respectively.
+   - Ensure that the lower bound `xl` has a function value less than zero.
+   - *Note*: According to the Intermediate Value Theorem, if a continuous function changes sign over an interval, then there must be at least one root (zero crossing) within that interval. Therefore, bracketing is a way of confirming that within the interval `[xl, xh]` there is at least one root.
+
+4. Iterative Process:
+   - Initialize the midpoint guess for the root, `rtsafe`, as halfway between `x1` and `x2`.
+   - Set up variables `dxold` and `dx` to control the iteration step size.
+
+5. Main Iteration Loop:
+   - For each iteration, calculate the function value and its derivative at `rtsafe`.
+   - Use a combination of bisection and Newton-Raphson updates to adjust `rtsafe` and home in on the root.
+   - If the function value at the new guess `rtsafe` is negative, update `xl`; otherwise, update `xh`.
+   - Check for convergence by comparing the change in `rtsafe` with the tolerance `xacc`.
+   - Repeat this process for a maximum of 99 iterations or until the root is found within the desired accuracy.
+
+6. Convergence Check:
+   - If the algorithm converges to a root within the desired accuracy, the function returns the value of `rtsafe`.
+   - If the function fails to converge within the set number of iterations, it returns `NA_real_` to indicate an unsuccessful search.
+
 
 ### funcD
 
@@ -1439,7 +1548,8 @@ The Newton-Raphson iteration is used to find the root of an equation. In our cas
 $$
 \theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0
 $$
-Steps:
+
+*Steps:*
 
 - Initialize the algorithm:
   - `x1` and `x2` are the initial boundaries of the search interval
