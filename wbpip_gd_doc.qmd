@@ -65,7 +65,6 @@ flowchart RL
     
     value_at_lb --> fit_lb
     
-    
     polarization_lq(polarization_lq) --> comp_dist_lq
     gini_lq(gini_lq) --> comp_dist_lq
     value_at_lq --> polarization_lq
@@ -1272,6 +1271,9 @@ gd_compute_headcount_lb <- function(mean, povline, A, B, C) {
 ```
 
 ### BETAI
+
+**Description**
+
 ```{r}
 BETAI <- function(a, b, x) {
   if (!is.na(x)) {
@@ -1301,9 +1303,162 @@ BETAI <- function(a, b, x) {
 
 ### BETAICF
 
+**Description** This function uses the continued fraction method to calculate the Beta Incomplete function.
+
+```{r}
+BETAICF <- function(a, b, x) {
+  eps <- 3e-7
+  am <- 1
+  bm <- 1
+  az <- 1
+  qab <- a + b
+  qap <- a + 1
+  qam <- a - 1
+  bz <- c( 1 - (qab * x / qap), rep(1, 99))
+
+  m <- 1:100
+  em <- 1:100
+  tem <- em * 2
+  d <- em * (b - m) * x / ((qam + tem) * (a + tem))
+  d2 <- -(a + em) * (qab + em) * x / ((a + tem) * (qap + tem))
+
+  for (i in seq_len(100)) {
+    ap <- az + (d[i] * am)
+    bp <- bz[i] + (d[i] * bm)
+    app <- ap + (d2[i]  * az)
+    bpp <- bp + (d2[i] * bz[i])
+    aold <- az
+    am <- ap / bpp
+    bm <- bp / bpp
+    az <- app / bpp
+    if ((abs(az - aold)) < (eps * abs(az))) {
+      break
+    }
+  }
+  return(az)
+}
+```
+
+*References*
+
+*Relevant equations*:
+
+
+
 ### GAMMLN
 
+### rtSafe
+
+*Description*: `rtSafe`
+
+### funcD
+
+*Description*: `funcD` returns two equations needed to calculate $H$ when using $$L'(H) + \frac{z}{\mu} - 1 = 0$$.
+
+```{r}
+funcD <- function(x, mean, povline, A, B, C) {
+  x1 <- 1 - x
+  v1 <- (x^B) * (x1^C)
+  f <- (A * v1 * ((B / x) - (C / x1))) + (povline / mean) - 1
+  df <- A * v1 * (((B / x) - (C / x1))^2 - (B / x^2) - (C / x1^2))
+  return(list(
+    f = f,
+    df = df
+  ))
+}
+
+
+```
+
+*Relevant Equations*: 
+
+- `f` is equivalent to $L'(H) + \frac{z}{\mu} - 1 = 0$
+- `df` is the derivative of `f`.
+
+See `rtNewt` for more details.
+
+### rtNewt
+
+*Description*: `rtNewt` uses the Newton-Raphson iteration to find $H$ (the headcount) using:
+$$L'(H) + \frac{z}{\mu} - 1 = 0$$.
+
+```{r}
+rtNewt <- function(mean, povline, A, B, C) {
+  # Initial bounds of the search interval
+  x1 <- 0L
+  x2 <- 1L
+  # Accuracy tolerance for the solution
+  xacc <- 1e-4
+  # Initial guess for the root, halfway between x1 and x2
+  rtnewt <- 0.5 * (x1 + x2)
+
+  # Perform up to 19 iterations to find the root
+  for (i in seq_len(19)) {
+    # Current guess for the proportion of the population
+    x <- rtnewt
+    # Part of the Lorenz curve derivative: x^B * (1 - x)^C
+    v1 <- (x^B) * ((1 - x)^C)
+    # The function whose root we're finding; it's the difference between the
+    # Lorenz curve's derivative at x and the normalized poverty line
+    f <- A * v1 * ((B / x) - (C / (1 - x))) + (povline / mean) - 1
+    # Derivative of f with respect to x
+    df <- A * v1 * (((B / x) - (C / (1 - x)))^2 - (B / x^2) - (C / (1 - x)^2))
+    # Newton-Raphson step size
+    dx <- f / df
+    # Update the current guess for the root
+    rtnewt <- rtnewt - dx
+
+    # Check if the new guess is outside the initial interval
+    if ((x1 - rtnewt) * (rtnewt - x2) < 0) {
+      # Reset rtnewt to the midpoint of the interval closer to the bounds
+      rtnewt <- if (rtnewt < x1) { 0.5 * (x2 - x) } else { 0.5 * (x - x1) }
+    } else {
+      # If the change in the root estimate is smaller than the tolerance, return it
+      if (abs(dx) < xacc) {
+        return(rtnewt)
+      }
+    }
+  }
+  # If no convergence, return NA to indicate failure
+  return(NA_real_)
+}
+```
+
+*Relevant equations*:
+
+The first derivative of the Lorenz Beta curve evaluated at $H$ is equal to:
+
+$$\begin{aligned}
+L'(H) = 1 - \frac{z}{\mu} \\
+\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] = 1 - \frac{z}{\mu}
+
+\end{aligned}$$
+
+The Newton-Raphson iteration is used to find the root of an equation. In our case, this means finding when $L'(H) = 0$ or:
+
+$$
+\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0
+$$
+Steps:
+
+- Initialize the algorithm:
+  - `x1` and `x2` are the initial boundaries of the search interval
+  - `xacc` is the accuracy tolerance for the solution
+  - `rtnewt` is the initial guess for the root, taken as the midpoint of the interval `[x1, x2]`
+- Begin the Iterative process:
+  - Each iteration consists of:
+    - `v1` calculates a part of the function we need to solve for $f(x) = L'(H)$, $x^B (1-x)^C = H^\gamma (1-H)^\delta$.
+    - `f` sets up the function $f(x) = L'(H)$ as defined above.
+    - `df` sets up the derivative $f'(x) = L''(H)$.
+- Update the Guess for the Root
+  - `dx` calculates the Newton-Raphson step size (`dx = f/df` = $\frac{f(x_{old})}{f'(x_{old})}$)
+  - `rtnewt` updates the current guess by subtracting `dx` from it. This step is based on the Newton-Raphson update rule:
+  
+  $$x_{new} = x_{old} - \frac{f(x_{old})}{f'(x_{old})}$$
+- Check for interval boundaries and convergence: after each iteration, the algorithm checks whether the new guess `rtnewt` is within the initial interval `[x1, x2]`. If it is not, the interval is adjusted. If the guess is within the desired accuracy, the function returns the root `rtnewt`.
+
 ...
+
 
 ## References
 

@@ -141,6 +141,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#betai" id="toc-betai" class="nav-link" data-scroll-target="#betai"><span class="header-section-number">1.22</span> BETAI</a></li>
   <li><a href="#betaicf" id="toc-betaicf" class="nav-link" data-scroll-target="#betaicf"><span class="header-section-number">1.23</span> BETAICF</a></li>
   <li><a href="#gammln" id="toc-gammln" class="nav-link" data-scroll-target="#gammln"><span class="header-section-number">1.24</span> GAMMLN</a></li>
+  <li><a href="#rtsafe" id="toc-rtsafe" class="nav-link" data-scroll-target="#rtsafe"><span class="header-section-number">1.25</span> rtSafe</a></li>
+  <li><a href="#funcd" id="toc-funcd" class="nav-link" data-scroll-target="#funcd"><span class="header-section-number">1.26</span> funcD</a></li>
+  <li><a href="#rtnewt" id="toc-rtnewt" class="nav-link" data-scroll-target="#rtnewt"><span class="header-section-number">1.27</span> rtNewt</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">2</span> References</a></li>
   <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix"><span class="header-section-number">3</span> Appendix</a></li>
@@ -228,7 +231,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     compute_pov_severity_lb --&gt; comp_pov_lb
     
     value_at_lb --&gt; fit_lb
-    
     
     polarization_lq(polarization_lq) --&gt; comp_dist_lq
     gini_lq(gini_lq) --&gt; comp_dist_lq
@@ -1460,6 +1462,7 @@ Issues:
 </section>
 <section id="betai" class="level3" data-number="1.22">
 <h3 data-number="1.22" class="anchored" data-anchor-id="betai"><span class="header-section-number">1.22</span> BETAI</h3>
+<p><strong>Description</strong></p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -1491,9 +1494,162 @@ Issues:
 </section>
 <section id="betaicf" class="level3" data-number="1.23">
 <h3 data-number="1.23" class="anchored" data-anchor-id="betaicf"><span class="header-section-number">1.23</span> BETAICF</h3>
+<p><strong>Description</strong> This function uses the continued fraction method to calculate the Beta Incomplete function.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>BETAICF <span class="ot">&lt;-</span> <span class="cf">function</span>(a, b, x) {</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  eps <span class="ot">&lt;-</span> <span class="fl">3e-7</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  am <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  bm <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  az <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  qab <span class="ot">&lt;-</span> a <span class="sc">+</span> b</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  qap <span class="ot">&lt;-</span> a <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  qam <span class="ot">&lt;-</span> a <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  bz <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="dv">1</span> <span class="sc">-</span> (qab <span class="sc">*</span> x <span class="sc">/</span> qap), <span class="fu">rep</span>(<span class="dv">1</span>, <span class="dv">99</span>))</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  em <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  tem <span class="ot">&lt;-</span> em <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> em <span class="sc">*</span> (b <span class="sc">-</span> m) <span class="sc">*</span> x <span class="sc">/</span> ((qam <span class="sc">+</span> tem) <span class="sc">*</span> (a <span class="sc">+</span> tem))</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  d2 <span class="ot">&lt;-</span> <span class="sc">-</span>(a <span class="sc">+</span> em) <span class="sc">*</span> (qab <span class="sc">+</span> em) <span class="sc">*</span> x <span class="sc">/</span> ((a <span class="sc">+</span> tem) <span class="sc">*</span> (qap <span class="sc">+</span> tem))</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="dv">100</span>)) {</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    ap <span class="ot">&lt;-</span> az <span class="sc">+</span> (d[i] <span class="sc">*</span> am)</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    bp <span class="ot">&lt;-</span> bz[i] <span class="sc">+</span> (d[i] <span class="sc">*</span> bm)</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    app <span class="ot">&lt;-</span> ap <span class="sc">+</span> (d2[i]  <span class="sc">*</span> az)</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    bpp <span class="ot">&lt;-</span> bp <span class="sc">+</span> (d2[i] <span class="sc">*</span> bz[i])</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    aold <span class="ot">&lt;-</span> az</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>    am <span class="ot">&lt;-</span> ap <span class="sc">/</span> bpp</span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>    bm <span class="ot">&lt;-</span> bp <span class="sc">/</span> bpp</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>    az <span class="ot">&lt;-</span> app <span class="sc">/</span> bpp</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((<span class="fu">abs</span>(az <span class="sc">-</span> aold)) <span class="sc">&lt;</span> (eps <span class="sc">*</span> <span class="fu">abs</span>(az))) {</span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">break</span></span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(az)</span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><em>References</em></p>
+<p><em>Relevant equations</em>:</p>
 </section>
 <section id="gammln" class="level3" data-number="1.24">
 <h3 data-number="1.24" class="anchored" data-anchor-id="gammln"><span class="header-section-number">1.24</span> GAMMLN</h3>
+</section>
+<section id="rtsafe" class="level3" data-number="1.25">
+<h3 data-number="1.25" class="anchored" data-anchor-id="rtsafe"><span class="header-section-number">1.25</span> rtSafe</h3>
+<p><em>Description</em>: <code>rtSafe</code></p>
+</section>
+<section id="funcd" class="level3" data-number="1.26">
+<h3 data-number="1.26" class="anchored" data-anchor-id="funcd"><span class="header-section-number">1.26</span> funcD</h3>
+<p><em>Description</em>: <code>funcD</code> returns two equations needed to calculate <span class="math inline">\(H\)</span> when using <span class="math display">\[L'(H) + \frac{z}{\mu} - 1 = 0\]</span>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>funcD <span class="ot">&lt;-</span> <span class="cf">function</span>(x, mean, povline, A, B, C) {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> x</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  v1 <span class="ot">&lt;-</span> (x<span class="sc">^</span>B) <span class="sc">*</span> (x1<span class="sc">^</span>C)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> (A <span class="sc">*</span> v1 <span class="sc">*</span> ((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> x1))) <span class="sc">+</span> (povline <span class="sc">/</span> mean) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> (((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> x1))<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> (B <span class="sc">/</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">-</span> (C <span class="sc">/</span> x1<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">f =</span> f,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">df =</span> df</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><em>Relevant Equations</em>:</p>
+<ul>
+<li><code>f</code> is equivalent to <span class="math inline">\(L'(H) + \frac{z}{\mu} - 1 = 0\)</span></li>
+<li><code>df</code> is the derivative of <code>f</code>.</li>
+</ul>
+<p>See <code>rtNewt</code> for more details.</p>
+</section>
+<section id="rtnewt" class="level3" data-number="1.27">
+<h3 data-number="1.27" class="anchored" data-anchor-id="rtnewt"><span class="header-section-number">1.27</span> rtNewt</h3>
+<p><em>Description</em>: <code>rtNewt</code> uses the Newton-Raphson iteration to find <span class="math inline">\(H\)</span> (the headcount) using: <span class="math display">\[L'(H) + \frac{z}{\mu} - 1 = 0\]</span>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>rtNewt <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, A, B, C) {</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial bounds of the search interval</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> 0L</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> 1L</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Accuracy tolerance for the solution</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  xacc <span class="ot">&lt;-</span> <span class="fl">1e-4</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial guess for the root, halfway between x1 and x2</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  rtnewt <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> (x1 <span class="sc">+</span> x2)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Perform up to 19 iterations to find the root</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="dv">19</span>)) {</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Current guess for the proportion of the population</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> rtnewt</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Part of the Lorenz curve derivative: x^B * (1 - x)^C</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    v1 <span class="ot">&lt;-</span> (x<span class="sc">^</span>B) <span class="sc">*</span> ((<span class="dv">1</span> <span class="sc">-</span> x)<span class="sc">^</span>C)</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The function whose root we're finding; it's the difference between the</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Lorenz curve's derivative at x and the normalized poverty line</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> ((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x))) <span class="sc">+</span> (povline <span class="sc">/</span> mean) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Derivative of f with respect to x</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> (((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x)))<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> (B <span class="sc">/</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Newton-Raphson step size</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>    dx <span class="ot">&lt;-</span> f <span class="sc">/</span> df</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the current guess for the root</span></span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    rtnewt <span class="ot">&lt;-</span> rtnewt <span class="sc">-</span> dx</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check if the new guess is outside the initial interval</span></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((x1 <span class="sc">-</span> rtnewt) <span class="sc">*</span> (rtnewt <span class="sc">-</span> x2) <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Reset rtnewt to the midpoint of the interval closer to the bounds</span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>      rtnewt <span class="ot">&lt;-</span> <span class="cf">if</span> (rtnewt <span class="sc">&lt;</span> x1) { <span class="fl">0.5</span> <span class="sc">*</span> (x2 <span class="sc">-</span> x) } <span class="cf">else</span> { <span class="fl">0.5</span> <span class="sc">*</span> (x <span class="sc">-</span> x1) }</span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If the change in the root estimate is smaller than the tolerance, return it</span></span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">abs</span>(dx) <span class="sc">&lt;</span> xacc) {</span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(rtnewt)</span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If no convergence, return NA to indicate failure</span></span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><em>Relevant equations</em>:</p>
+<p>The first derivative of the Lorenz Beta curve evaluated at <span class="math inline">\(H\)</span> is equal to:</p>
+$$
+<span class="math display">\[\begin{aligned}
+L'(H) = 1 - \frac{z}{\mu} \\
+\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] = 1 - \frac{z}{\mu}
+
+\end{aligned}\]</span>
+<p>$$</p>
+<p>The Newton-Raphson iteration is used to find the root of an equation. In our case, this means finding when <span class="math inline">\(L'(H) = 0\)</span> or:</p>
+<p><span class="math display">\[
+\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0
+\]</span> Steps:</p>
+<ul>
+<li>Initialize the algorithm:
+<ul>
+<li><code>x1</code> and <code>x2</code> are the initial boundaries of the search interval</li>
+<li><code>xacc</code> is the accuracy tolerance for the solution</li>
+<li><code>rtnewt</code> is the initial guess for the root, taken as the midpoint of the interval <code>[x1, x2]</code></li>
+</ul></li>
+<li>Begin the Iterative process:
+<ul>
+<li>Each iteration consists of:
+<ul>
+<li><code>v1</code> calculates a part of the function we need to solve for <span class="math inline">\(f(x) = L'(H)\)</span>, <span class="math inline">\(x^B (1-x)^C = H^\gamma (1-H)^\delta\)</span>.</li>
+<li><code>f</code> sets up the function <span class="math inline">\(f(x) = L'(H)\)</span> as defined above.</li>
+<li><code>df</code> sets up the derivative <span class="math inline">\(f'(x) = L''(H)\)</span>.</li>
+</ul></li>
+</ul></li>
+<li>Update the Guess for the Root
+<ul>
+<li><code>dx</code> calculates the Newton-Raphson step size (<code>dx = f/df</code> = <span class="math inline">\(\frac{f(x_{old})}{f'(x_{old})}\)</span>)</li>
+<li><code>rtnewt</code> updates the current guess by subtracting <code>dx</code> from it. This step is based on the Newton-Raphson update rule:</li>
+</ul>
+<span class="math display">\[x_{new} = x_{old} - \frac{f(x_{old})}{f'(x_{old})}\]</span></li>
+<li>Check for interval boundaries and convergence: after each iteration, the algorithm checks whether the new guess <code>rtnewt</code> is within the initial interval <code>[x1, x2]</code>. If it is not, the interval is adjusted. If the guess is within the desired accuracy, the function returns the root <code>rtnewt</code>.</li>
+</ul>
 <p>…</p>
 </section>
 </section>
