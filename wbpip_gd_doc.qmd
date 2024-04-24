@@ -1228,7 +1228,7 @@ gd_compute_poverty_stats_lb <- function(mean,
 
 ### compute_headcount_lb
 
-**Description**
+**Description**: This function calculates
 
 ```{r}
 gd_compute_headcount_lb <- function(mean, povline, A, B, C) {
@@ -1346,6 +1346,144 @@ BETAICF <- function(a, b, x) {
 
 
 ### GAMMLN
+
+*Description*: `GAMMLN` calculates the logarithm of the gamma function, $log(\Gamma(.))$. It is used as part of the `BETAI` function.
+
+```{r}
+GAMMLN <- function(xx) {
+  cof <- c(76.18009173, 
+           -86.50532033, 
+           24.01409822, 
+           -1.231739516, 
+           0.120858003e-2, 
+           -0.536382e-5)
+  
+  stp <- 2.50662827465
+  fpf <- 5.5
+  x <- xx - 1
+  tmp <- x + fpf
+  
+  if (tmp <= 0) {
+    return(NA_real_)
+  }
+
+  tmp <- (x + 0.5) * log(tmp) - tmp
+  # ser <- 1L
+  x <-  c(x + 1:6)
+  ser <- sum(cof / x) + 1
+
+  if (stp * ser <= 0) {
+    return(NA_real_)
+  }
+
+  return(tmp + log(stp * ser))
+}
+
+```
+
+Annotated version:
+```{r}
+GAMMLN <- function(xx) {
+  # Coefficients for the Lanczos approximation; these are pre-computed constants
+  cof <- c(76.18009173, 
+           -86.50532033, 
+           24.01409822, 
+           -1.231739516, 
+           0.120858003e-2, 
+           -0.536382e-5)
+  
+  # sqrt(2*pi), which is a part of the normalization constant in the Lanczos formula
+  stp <- 2.50662827465
+  
+  # Constant to offset x for the approximation; gamma = 5 -> equal to gamma + 1/2
+  fpf <- 5.5
+  
+  # Adjust the input xx by subtracting 1, given that we calculate it for z + 1
+  x <- xx - 1
+  
+  # Calculate the term (z + gamma + 1/2)
+  tmp <- x + fpf
+  
+  # Check if the adjusted term is non-positive
+  if (tmp <= 0) {
+    return(NA_real_)
+  }
+
+  # Calculate part of the Lanczos formula:
+  # This corresponds to the (z + gamma + 1/2)^(z + 1/2) * e^(-(z + gamma + 1/2)) in the approximation
+  # e is the base of the natural logarithm; since we are calculating the log-gamma,
+  # we are taking the log of e^(-(z+gamma+1/2)), which simplifies to just -(z+gamma+1/2)
+  tmp <- (x + 0.5) * log(tmp) - tmp
+  
+  # Create a sequence of (z+1) to (z+6) for the Lanczos series in the denominator
+  x <-  c(x + 1:6)
+  
+  # Calculate the Lanczos series sum using the coefficients (cof)
+  # and add 1 to it for the c_0 term in the Lanczos formula
+  ser <- sum(cof / x) + 1
+
+  # Check if the final series is non-positive
+  if (stp * ser <= 0) {
+    return(NA_real_)
+  }
+
+  # Return the final computed value of the logarithm of the gamma function
+  # This combines the calculated series with the earlier part and the log of the normalization constant (stp)
+  return(tmp + log(stp * ser))
+}
+
+```
+*References*:\[6\]
+
+*Relevant equations*:
+The gamma function is defined by the integral:
+$$\Gamma(z) = \int_0^{\infty} t^{z-1} e^{-t} \, dt$$
+
+To calculate it numerically, we use an approximation. The best approximation we have is the Lanczos approximation\[6\], which we use here:
+
+$$\begin{align*}
+\Gamma(z + 1) &\approx (z + \gamma + \frac{1}{2})^{z+\frac{1}{2}} e^{-(z+\gamma+\frac{1}{2})} \\
+& \quad \times \sqrt{2\pi} \left[ c_0 + \frac{c_1}{z + 1} + \frac{c_2}{z + 2} + \ldots + \frac{c_N}{z + N} + \epsilon \right] \\
+& \\
+& with \quad (z > 0)
+\end{align*}$$
+
+With parameters $\gamma = 5$ and $N = 6$.
+
+As noted in \[6\], it is easier to compute the logarithm of the gamma function, which is what this function does. Therefore, the actual equation we use is this:
+
+$$\begin{align*}
+\ln(\Gamma(z + 1)) & \approx \left( z + \frac{1}{2} \right) \ln\left( z + \gamma + \frac{1}{2} \right) - \left( z + \gamma + \frac{1}{2} \right) + \ln\left( \sqrt{2\pi} \right) \\
+& \quad + \ln\left( c_0 + \frac{c_1}{z + 1} + \frac{c_2}{z + 2} + \ldots + \frac{c_N}{z + N} \right)
+\end{align*}$$
+
+*Steps*:
+
+1. `cof` is an array of coefficients($c_{1}, c_{2}, ... , c_{n}$) used for the series expansion. 
+
+::: {#imp-gammaln-issue .callout-important}
+#### Issue:
+
+The coefficients chosen in the Lanczos approximation are not used anymore in the newest implementations of the C code. The newest literature suggests different coefficients (Available in the third edition of Numerical Recipes in C)
+:::
+
+2. Compute the adjusted input:
+   Adjust the input value `xx` to `x` by subtracting one to align with the formulation in the Lanczos approximation, which is $\Gamma(z + 1)$.
+
+3. Check for non-positive input:
+   If the adjusted input is non-positive, return `NA_real_` as the computation cannot proceed with non-positive values ($z > 0$).
+   
+4. Create `fpf`: this is equivalent to $\gamma + \frac{1}{2}$, with $\gamma = 5$.
+
+5. Compute the Lanczos sum:
+   Initialize the variable `ser` with 1.0 ($c_{0}$), then add the terms of the Lanczos sum using a for loop. Each term is a coefficient from the `cof` vector divided by the incremented input `x`.
+
+6. Calculate the final log-gamma value:
+   Combine the logarithm of `stp` ($\sqrt{2\pi}$) with the sum `ser` and the main part of the Lanczos approximation involving `tmp`.
+
+7. Return the result:
+   The function returns the computed value, which is the natural logarithm of the gamma function for the input `xx`.
+
 
 ### rtSafe
 
@@ -1581,6 +1719,8 @@ $$
 4.  Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY.
 
 5.  Kakwani, N. 1980. "[On a Class of Poverty Measures](https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46)". *Econometrica 48* (2): 437-46.
+
+6. Press, W. H. et al. 1992. "[Gamma Function, Beta Function, Factorials, Binomial Coefficients](https://s3.amazonaws.com/nrbook.com/book_C210.html), Section 6.1, page 213 in *Numerical recipes in C: the art of scientific computing* (2nd edition, Cambridge Univeristy Press.
 
 ## Appendix
 

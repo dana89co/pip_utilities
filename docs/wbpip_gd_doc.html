@@ -1417,7 +1417,7 @@ Issues:
 </section>
 <section id="compute_headcount_lb" class="level3" data-number="1.21">
 <h3 data-number="1.21" class="anchored" data-anchor-id="compute_headcount_lb"><span class="header-section-number">1.21</span> compute_headcount_lb</h3>
-<p><strong>Description</strong></p>
+<p><strong>Description</strong>: This function calculates</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -1536,6 +1536,131 @@ Issues:
 </section>
 <section id="gammln" class="level3" data-number="1.24">
 <h3 data-number="1.24" class="anchored" data-anchor-id="gammln"><span class="header-section-number">1.24</span> GAMMLN</h3>
+<p><em>Description</em>: <code>GAMMLN</code> calculates the logarithm of the gamma function, <span class="math inline">\(log(\Gamma(.))\)</span>. It is used as part of the <code>BETAI</code> function.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>GAMMLN <span class="ot">&lt;-</span> <span class="cf">function</span>(xx) {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  cof <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">76.18009173</span>, </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>           <span class="sc">-</span><span class="fl">86.50532033</span>, </span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>           <span class="fl">24.01409822</span>, </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>           <span class="sc">-</span><span class="fl">1.231739516</span>, </span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>           <span class="fl">0.120858003e-2</span>, </span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>           <span class="sc">-</span><span class="fl">0.536382e-5</span>)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  stp <span class="ot">&lt;-</span> <span class="fl">2.50662827465</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  fpf <span class="ot">&lt;-</span> <span class="fl">5.5</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> xx <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> x <span class="sc">+</span> fpf</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (tmp <span class="sc">&lt;=</span> <span class="dv">0</span>) {</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> (x <span class="sc">+</span> <span class="fl">0.5</span>) <span class="sc">*</span> <span class="fu">log</span>(tmp) <span class="sc">-</span> tmp</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ser &lt;- 1L</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span>  <span class="fu">c</span>(x <span class="sc">+</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>)</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  ser <span class="ot">&lt;-</span> <span class="fu">sum</span>(cof <span class="sc">/</span> x) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (stp <span class="sc">*</span> ser <span class="sc">&lt;=</span> <span class="dv">0</span>) {</span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tmp <span class="sc">+</span> <span class="fu">log</span>(stp <span class="sc">*</span> ser))</span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Annotated version:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>GAMMLN <span class="ot">&lt;-</span> <span class="cf">function</span>(xx) {</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Coefficients for the Lanczos approximation; these are pre-computed constants</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  cof <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">76.18009173</span>, </span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>           <span class="sc">-</span><span class="fl">86.50532033</span>, </span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>           <span class="fl">24.01409822</span>, </span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>           <span class="sc">-</span><span class="fl">1.231739516</span>, </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>           <span class="fl">0.120858003e-2</span>, </span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>           <span class="sc">-</span><span class="fl">0.536382e-5</span>)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sqrt(2*pi), which is a part of the normalization constant in the Lanczos formula</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  stp <span class="ot">&lt;-</span> <span class="fl">2.50662827465</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Constant to offset x for the approximation; gamma = 5 -&gt; equal to gamma + 1/2</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  fpf <span class="ot">&lt;-</span> <span class="fl">5.5</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adjust the input xx by subtracting 1, given that we calculate it for z + 1</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> xx <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate the term (z + gamma + 1/2)</span></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> x <span class="sc">+</span> fpf</span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check if the adjusted term is non-positive</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (tmp <span class="sc">&lt;=</span> <span class="dv">0</span>) {</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate part of the Lanczos formula:</span></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># This corresponds to the (z + gamma + 1/2)^(z + 1/2) * e^(-(z + gamma + 1/2)) in the approximation</span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># e is the base of the natural logarithm; since we are calculating the log-gamma,</span></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># we are taking the log of e^(-(z+gamma+1/2)), which simplifies to just -(z+gamma+1/2)</span></span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> (x <span class="sc">+</span> <span class="fl">0.5</span>) <span class="sc">*</span> <span class="fu">log</span>(tmp) <span class="sc">-</span> tmp</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create a sequence of (z+1) to (z+6) for the Lanczos series in the denominator</span></span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span>  <span class="fu">c</span>(x <span class="sc">+</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>)</span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate the Lanczos series sum using the coefficients (cof)</span></span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># and add 1 to it for the c_0 term in the Lanczos formula</span></span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>  ser <span class="ot">&lt;-</span> <span class="fu">sum</span>(cof <span class="sc">/</span> x) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check if the final series is non-positive</span></span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (stp <span class="sc">*</span> ser <span class="sc">&lt;=</span> <span class="dv">0</span>) {</span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return the final computed value of the logarithm of the gamma function</span></span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># This combines the calculated series with the earlier part and the log of the normalization constant (stp)</span></span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(tmp <span class="sc">+</span> <span class="fu">log</span>(stp <span class="sc">*</span> ser))</span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><em>References</em>:[6]</p>
+<p><em>Relevant equations</em>: The gamma function is defined by the integral: <span class="math display">\[\Gamma(z) = \int_0^{\infty} t^{z-1} e^{-t} \, dt\]</span></p>
+<p>To calculate it numerically, we use an approximation. The best approximation we have([6]) is the Lanczos approximation, which we use here:</p>
+<p><span class="math display">\[\begin{align*}
+\Gamma(z + 1) &amp;\approx (z + \gamma + \frac{1}{2})^{z+\frac{1}{2}} e^{-(z+\gamma+\frac{1}{2})} \\
+&amp; \quad \times \sqrt{2\pi} \left[ c_0 + \frac{c_1}{z + 1} + \frac{c_2}{z + 2} + \ldots + \frac{c_N}{z + N} + \epsilon \right] \\
+&amp; \\
+&amp; with \quad (z &gt; 0)
+\end{align*}\]</span></p>
+<p>With parameters <span class="math inline">\(\gamma = 5\)</span> and <span class="math inline">\(N = 6\)</span>.</p>
+<p>As noted in [6], it is easier to compute the logarithm of the gamma function, which is what this function does. Therefore, the actual equation we use is this:</p>
+<p><span class="math display">\[\ln(\Gamma(z + 1)) \approx \left( z + \frac{1}{2} \right) \ln\left( z + \gamma + \frac{1}{2} \right) - \left( z + \gamma + \frac{1}{2} \right) + \ln\left( \sqrt{2\pi} \right) + \ln\left( c_0 + \frac{c_1}{z + 1} + \frac{c_2}{z + 2} + \ldots + \frac{c_N}{z + N} \right)\]</span></p>
+<p><em>Steps</em>:</p>
+<ol type="1">
+<li><code>cof</code> is an array of coefficients(<span class="math inline">\(c_{1}, c_{2}, ... , c_{n}\)</span>) used for the series expansion.</li>
+</ol>
+<div id="imp-gammaln-issue" class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Issue:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The coefficients chosen in the Lanczos approximation are not used anymore in the newest implementations of the C code. The newest literature suggests different coefficients (Available in the third edition of Numerical Recipes in C)</p>
+</div>
+</div>
+<ol start="2" type="1">
+<li><p>Compute the adjusted input: Adjust the input value <code>xx</code> to <code>x</code> by subtracting one to align with the formulation in the Lanczos approximation, which is <span class="math inline">\(\Gamma(z + 1)\)</span>.</p></li>
+<li><p>Check for non-positive input: If the adjusted input is non-positive, return <code>NA_real_</code> as the computation cannot proceed with non-positive values (<span class="math inline">\(z &gt; 0\)</span>).</p></li>
+<li><p>Create <code>fpf</code>: this is equivalent to <span class="math inline">\(\gamma + \frac{1}{2}\)</span>, with <span class="math inline">\(\gamma = 5\)</span>.</p></li>
+<li><p>Compute the Lanczos sum: Initialize the variable <code>ser</code> with 1.0 (<span class="math inline">\(c_{0}\)</span>), then add the terms of the Lanczos sum using a for loop. Each term is a coefficient from the <code>cof</code> vector divided by the incremented input <code>x</code>.</p></li>
+<li><p>Calculate the final log-gamma value: Combine the logarithm of <code>stp</code> (<span class="math inline">\(\sqrt{2\pi}\)</span>) with the sum <code>ser</code> and the main part of the Lanczos approximation involving <code>tmp</code>.</p></li>
+<li><p>Return the result: The function returns the computed value, which is the natural logarithm of the gamma function for the input <code>xx</code>.</p></li>
+</ol>
 </section>
 <section id="rtsafe" class="level3" data-number="1.25">
 <h3 data-number="1.25" class="anchored" data-anchor-id="rtsafe"><span class="header-section-number">1.25</span> rtSafe</h3>
@@ -1543,79 +1668,79 @@ Issues:
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>rtSafe <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, xacc, mean, povline, A, B, C) {</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Evaluate the function at the initial guesses x1 and x2:</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  funcCall1 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(x1, mean, povline, A, B, C)</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  fl <span class="ot">&lt;-</span> funcCall1[[<span class="dv">1</span>]]  <span class="co"># Function value at x1 (low)</span></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  funcCall2 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(x2, mean, povline, A, B, C)</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  fh <span class="ot">&lt;-</span> funcCall2[[<span class="dv">1</span>]]  <span class="co"># Function value at x2 (high)</span></span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> funcCall2[[<span class="dv">2</span>]]  <span class="co"># Derivative value at x2</span></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check if the function values at x1 and x2 bracket a root (have opposite signs)</span></span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (fl <span class="sc">*</span> fh <span class="sc">&gt;=</span> <span class="dv">0</span>) {</span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If they do not bracket a root, fall back to the Newton-Raphson method (which has larger brackets)</span></span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    res <span class="ot">&lt;-</span> <span class="fu">rtNewt</span>(<span class="at">mean =</span> mean, <span class="at">povline =</span> povline, <span class="at">A =</span> A, <span class="at">B =</span> B, <span class="at">C =</span> C)</span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(res)</span>
-<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Assign xl and xh to bracket the root with xl having a function value less than 0</span></span>
-<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (fl <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
-<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>    xl <span class="ot">&lt;-</span> x1</span>
-<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>    xh <span class="ot">&lt;-</span> x2</span>
-<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>    xl <span class="ot">&lt;-</span> x2</span>
-<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>    xh <span class="ot">&lt;-</span> x1</span>
-<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initialize the safe guess for the root as the midpoint between x1 and x2</span></span>
-<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>  rtsafe <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> (x1 <span class="sc">+</span> x2)</span>
-<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set the full step and fractional step sizes to the interval length</span></span>
-<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>  dxold <span class="ot">&lt;-</span> <span class="fu">abs</span>(x2 <span class="sc">-</span> x1)</span>
-<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>  dx <span class="ot">&lt;-</span> dxold</span>
-<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Enter the main iteration loop</span></span>
-<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="dv">99</span>)) {</span>
-<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the function and derivative at the current guess rtsafe</span></span>
-<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a>    funcCall3 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(rtsafe, mean, povline, A, B, C)</span>
-<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> funcCall3[[<span class="dv">1</span>]]</span>
-<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> funcCall3[[<span class="dv">2</span>]]</span>
-<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check for convergence by comparing the change in the root with the tolerance</span></span>
-<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">abs</span>(<span class="dv">2</span> <span class="sc">*</span> f) <span class="sc">&gt;</span> <span class="fu">abs</span>(dxold <span class="sc">*</span> df)) {</span>
-<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If not converging, bisect the interval</span></span>
-<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a>      dxold <span class="ot">&lt;-</span> dx</span>
-<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a>      dx <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> (xh <span class="sc">-</span> xl)</span>
-<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a>      rtsafe <span class="ot">&lt;-</span> xl <span class="sc">+</span> dx</span>
-<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (xl <span class="sc">==</span> rtsafe) <span class="fu">return</span>(rtsafe)  <span class="co"># Check for underflow</span></span>
-<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If converging, use Newton-Raphson step</span></span>
-<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a>      dxold <span class="ot">&lt;-</span> dx</span>
-<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a>      dx <span class="ot">&lt;-</span> f <span class="sc">/</span> df</span>
-<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a>      temp <span class="ot">&lt;-</span> rtsafe</span>
-<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a>      rtsafe <span class="ot">&lt;-</span> temp <span class="sc">-</span> dx</span>
-<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (temp <span class="sc">==</span> rtsafe) <span class="fu">return</span>(rtsafe)  <span class="co"># Check for underflow</span></span>
-<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If the size of the Newton-Raphson step is less than the tolerance, return the root</span></span>
-<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">abs</span>(dx) <span class="sc">&lt;</span> xacc) <span class="fu">return</span>(rtsafe)</span>
-<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-60"><a href="#cb25-60" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the function value at the new guess</span></span>
-<span id="cb25-61"><a href="#cb25-61" aria-hidden="true" tabindex="-1"></a>    funcCall4 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(rtsafe, mean, povline, A, B, C)</span>
-<span id="cb25-62"><a href="#cb25-62" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> funcCall4[[<span class="dv">1</span>]]</span>
-<span id="cb25-63"><a href="#cb25-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-64"><a href="#cb25-64" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the interval bounds to continue the bisection process</span></span>
-<span id="cb25-65"><a href="#cb25-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (f <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
-<span id="cb25-66"><a href="#cb25-66" aria-hidden="true" tabindex="-1"></a>      xl <span class="ot">&lt;-</span> rtsafe</span>
-<span id="cb25-67"><a href="#cb25-67" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb25-68"><a href="#cb25-68" aria-hidden="true" tabindex="-1"></a>      xh <span class="ot">&lt;-</span> rtsafe</span>
-<span id="cb25-69"><a href="#cb25-69" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb25-70"><a href="#cb25-70" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-71"><a href="#cb25-71" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If the loop finishes without returning, it indicates failure to converge</span></span>
-<span id="cb25-72"><a href="#cb25-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
-<span id="cb25-73"><a href="#cb25-73" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>rtSafe <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, xacc, mean, povline, A, B, C) {</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Evaluate the function at the initial guesses x1 and x2:</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  funcCall1 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(x1, mean, povline, A, B, C)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  fl <span class="ot">&lt;-</span> funcCall1[[<span class="dv">1</span>]]  <span class="co"># Function value at x1 (low)</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  funcCall2 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(x2, mean, povline, A, B, C)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  fh <span class="ot">&lt;-</span> funcCall2[[<span class="dv">1</span>]]  <span class="co"># Function value at x2 (high)</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> funcCall2[[<span class="dv">2</span>]]  <span class="co"># Derivative value at x2</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check if the function values at x1 and x2 bracket a root (have opposite signs)</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (fl <span class="sc">*</span> fh <span class="sc">&gt;=</span> <span class="dv">0</span>) {</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If they do not bracket a root, fall back to the Newton-Raphson method (which has larger brackets)</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    res <span class="ot">&lt;-</span> <span class="fu">rtNewt</span>(<span class="at">mean =</span> mean, <span class="at">povline =</span> povline, <span class="at">A =</span> A, <span class="at">B =</span> B, <span class="at">C =</span> C)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(res)</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Assign xl and xh to bracket the root with xl having a function value less than 0</span></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (fl <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    xl <span class="ot">&lt;-</span> x1</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>    xh <span class="ot">&lt;-</span> x2</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>    xl <span class="ot">&lt;-</span> x2</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>    xh <span class="ot">&lt;-</span> x1</span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initialize the safe guess for the root as the midpoint between x1 and x2</span></span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>  rtsafe <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> (x1 <span class="sc">+</span> x2)</span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set the full step and fractional step sizes to the interval length</span></span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>  dxold <span class="ot">&lt;-</span> <span class="fu">abs</span>(x2 <span class="sc">-</span> x1)</span>
+<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>  dx <span class="ot">&lt;-</span> dxold</span>
+<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Enter the main iteration loop</span></span>
+<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="dv">99</span>)) {</span>
+<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the function and derivative at the current guess rtsafe</span></span>
+<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a>    funcCall3 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(rtsafe, mean, povline, A, B, C)</span>
+<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> funcCall3[[<span class="dv">1</span>]]</span>
+<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> funcCall3[[<span class="dv">2</span>]]</span>
+<span id="cb27-40"><a href="#cb27-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-41"><a href="#cb27-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check for convergence by comparing the change in the root with the tolerance</span></span>
+<span id="cb27-42"><a href="#cb27-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">abs</span>(<span class="dv">2</span> <span class="sc">*</span> f) <span class="sc">&gt;</span> <span class="fu">abs</span>(dxold <span class="sc">*</span> df)) {</span>
+<span id="cb27-43"><a href="#cb27-43" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If not converging, bisect the interval</span></span>
+<span id="cb27-44"><a href="#cb27-44" aria-hidden="true" tabindex="-1"></a>      dxold <span class="ot">&lt;-</span> dx</span>
+<span id="cb27-45"><a href="#cb27-45" aria-hidden="true" tabindex="-1"></a>      dx <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> (xh <span class="sc">-</span> xl)</span>
+<span id="cb27-46"><a href="#cb27-46" aria-hidden="true" tabindex="-1"></a>      rtsafe <span class="ot">&lt;-</span> xl <span class="sc">+</span> dx</span>
+<span id="cb27-47"><a href="#cb27-47" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (xl <span class="sc">==</span> rtsafe) <span class="fu">return</span>(rtsafe)  <span class="co"># Check for underflow</span></span>
+<span id="cb27-48"><a href="#cb27-48" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb27-49"><a href="#cb27-49" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If converging, use Newton-Raphson step</span></span>
+<span id="cb27-50"><a href="#cb27-50" aria-hidden="true" tabindex="-1"></a>      dxold <span class="ot">&lt;-</span> dx</span>
+<span id="cb27-51"><a href="#cb27-51" aria-hidden="true" tabindex="-1"></a>      dx <span class="ot">&lt;-</span> f <span class="sc">/</span> df</span>
+<span id="cb27-52"><a href="#cb27-52" aria-hidden="true" tabindex="-1"></a>      temp <span class="ot">&lt;-</span> rtsafe</span>
+<span id="cb27-53"><a href="#cb27-53" aria-hidden="true" tabindex="-1"></a>      rtsafe <span class="ot">&lt;-</span> temp <span class="sc">-</span> dx</span>
+<span id="cb27-54"><a href="#cb27-54" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (temp <span class="sc">==</span> rtsafe) <span class="fu">return</span>(rtsafe)  <span class="co"># Check for underflow</span></span>
+<span id="cb27-55"><a href="#cb27-55" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb27-56"><a href="#cb27-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-57"><a href="#cb27-57" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If the size of the Newton-Raphson step is less than the tolerance, return the root</span></span>
+<span id="cb27-58"><a href="#cb27-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">abs</span>(dx) <span class="sc">&lt;</span> xacc) <span class="fu">return</span>(rtsafe)</span>
+<span id="cb27-59"><a href="#cb27-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-60"><a href="#cb27-60" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the function value at the new guess</span></span>
+<span id="cb27-61"><a href="#cb27-61" aria-hidden="true" tabindex="-1"></a>    funcCall4 <span class="ot">&lt;-</span> <span class="fu">funcD</span>(rtsafe, mean, povline, A, B, C)</span>
+<span id="cb27-62"><a href="#cb27-62" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> funcCall4[[<span class="dv">1</span>]]</span>
+<span id="cb27-63"><a href="#cb27-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-64"><a href="#cb27-64" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the interval bounds to continue the bisection process</span></span>
+<span id="cb27-65"><a href="#cb27-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (f <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
+<span id="cb27-66"><a href="#cb27-66" aria-hidden="true" tabindex="-1"></a>      xl <span class="ot">&lt;-</span> rtsafe</span>
+<span id="cb27-67"><a href="#cb27-67" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb27-68"><a href="#cb27-68" aria-hidden="true" tabindex="-1"></a>      xh <span class="ot">&lt;-</span> rtsafe</span>
+<span id="cb27-69"><a href="#cb27-69" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb27-70"><a href="#cb27-70" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb27-71"><a href="#cb27-71" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If the loop finishes without returning, it indicates failure to converge</span></span>
+<span id="cb27-72"><a href="#cb27-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb27-73"><a href="#cb27-73" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>Steps</em>:</p>
@@ -1665,16 +1790,16 @@ Issues:
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>funcD <span class="ot">&lt;-</span> <span class="cf">function</span>(x, mean, povline, A, B, C) {</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> x</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  v1 <span class="ot">&lt;-</span> (x<span class="sc">^</span>B) <span class="sc">*</span> (x1<span class="sc">^</span>C)</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> (A <span class="sc">*</span> v1 <span class="sc">*</span> ((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> x1))) <span class="sc">+</span> (povline <span class="sc">/</span> mean) <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> (((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> x1))<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> (B <span class="sc">/</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">-</span> (C <span class="sc">/</span> x1<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">f =</span> f,</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">df =</span> df</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  ))</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>funcD <span class="ot">&lt;-</span> <span class="cf">function</span>(x, mean, povline, A, B, C) {</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> x</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  v1 <span class="ot">&lt;-</span> (x<span class="sc">^</span>B) <span class="sc">*</span> (x1<span class="sc">^</span>C)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> (A <span class="sc">*</span> v1 <span class="sc">*</span> ((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> x1))) <span class="sc">+</span> (povline <span class="sc">/</span> mean) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> (((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> x1))<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> (B <span class="sc">/</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">-</span> (C <span class="sc">/</span> x1<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">f =</span> f,</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">df =</span> df</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>Relevant Equations</em>:</p>
@@ -1690,45 +1815,45 @@ Issues:
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>rtNewt <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, A, B, C) {</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial bounds of the search interval</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> 0L</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> 1L</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Accuracy tolerance for the solution</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  xacc <span class="ot">&lt;-</span> <span class="fl">1e-4</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial guess for the root, halfway between x1 and x2</span></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  rtnewt <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> (x1 <span class="sc">+</span> x2)</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Perform up to 19 iterations to find the root</span></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="dv">19</span>)) {</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Current guess for the proportion of the population</span></span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> rtnewt</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Part of the Lorenz curve derivative: x^B * (1 - x)^C</span></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    v1 <span class="ot">&lt;-</span> (x<span class="sc">^</span>B) <span class="sc">*</span> ((<span class="dv">1</span> <span class="sc">-</span> x)<span class="sc">^</span>C)</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The function whose root we're finding; it's the difference between the</span></span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Lorenz curve's derivative at x and the normalized poverty line</span></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> ((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x))) <span class="sc">+</span> (povline <span class="sc">/</span> mean) <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Derivative of f with respect to x</span></span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> (((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x)))<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> (B <span class="sc">/</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x)<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Newton-Raphson step size</span></span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>    dx <span class="ot">&lt;-</span> f <span class="sc">/</span> df</span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the current guess for the root</span></span>
-<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>    rtnewt <span class="ot">&lt;-</span> rtnewt <span class="sc">-</span> dx</span>
-<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check if the new guess is outside the initial interval</span></span>
-<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((x1 <span class="sc">-</span> rtnewt) <span class="sc">*</span> (rtnewt <span class="sc">-</span> x2) <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
-<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Reset rtnewt to the midpoint of the interval closer to the bounds</span></span>
-<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>      rtnewt <span class="ot">&lt;-</span> <span class="cf">if</span> (rtnewt <span class="sc">&lt;</span> x1) { <span class="fl">0.5</span> <span class="sc">*</span> (x2 <span class="sc">-</span> x) } <span class="cf">else</span> { <span class="fl">0.5</span> <span class="sc">*</span> (x <span class="sc">-</span> x1) }</span>
-<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If the change in the root estimate is smaller than the tolerance, return it</span></span>
-<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">abs</span>(dx) <span class="sc">&lt;</span> xacc) {</span>
-<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(rtnewt)</span>
-<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If no convergence, return NA to indicate failure</span></span>
-<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
-<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>rtNewt <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, A, B, C) {</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial bounds of the search interval</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> 0L</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> 1L</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Accuracy tolerance for the solution</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  xacc <span class="ot">&lt;-</span> <span class="fl">1e-4</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial guess for the root, halfway between x1 and x2</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  rtnewt <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> (x1 <span class="sc">+</span> x2)</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Perform up to 19 iterations to find the root</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="dv">19</span>)) {</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Current guess for the proportion of the population</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> rtnewt</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Part of the Lorenz curve derivative: x^B * (1 - x)^C</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    v1 <span class="ot">&lt;-</span> (x<span class="sc">^</span>B) <span class="sc">*</span> ((<span class="dv">1</span> <span class="sc">-</span> x)<span class="sc">^</span>C)</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The function whose root we're finding; it's the difference between the</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Lorenz curve's derivative at x and the normalized poverty line</span></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> ((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x))) <span class="sc">+</span> (povline <span class="sc">/</span> mean) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Derivative of f with respect to x</span></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> A <span class="sc">*</span> v1 <span class="sc">*</span> (((B <span class="sc">/</span> x) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x)))<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> (B <span class="sc">/</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">-</span> (C <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> x)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Newton-Raphson step size</span></span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>    dx <span class="ot">&lt;-</span> f <span class="sc">/</span> df</span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update the current guess for the root</span></span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>    rtnewt <span class="ot">&lt;-</span> rtnewt <span class="sc">-</span> dx</span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check if the new guess is outside the initial interval</span></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> ((x1 <span class="sc">-</span> rtnewt) <span class="sc">*</span> (rtnewt <span class="sc">-</span> x2) <span class="sc">&lt;</span> <span class="dv">0</span>) {</span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Reset rtnewt to the midpoint of the interval closer to the bounds</span></span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>      rtnewt <span class="ot">&lt;-</span> <span class="cf">if</span> (rtnewt <span class="sc">&lt;</span> x1) { <span class="fl">0.5</span> <span class="sc">*</span> (x2 <span class="sc">-</span> x) } <span class="cf">else</span> { <span class="fl">0.5</span> <span class="sc">*</span> (x <span class="sc">-</span> x1) }</span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a>      <span class="co"># If the change in the root estimate is smaller than the tolerance, return it</span></span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">abs</span>(dx) <span class="sc">&lt;</span> xacc) {</span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(rtnewt)</span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If no convergence, return NA to indicate failure</span></span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><em>Relevant equations</em>:</p>
@@ -1780,6 +1905,7 @@ L'(H) = 1 - \frac{z}{\mu} \\
 <li><p>Datt, G. 1998. “<a href="https://www.ifpri.org/publication/computational-tools-poverty-measurement-and-analysis">Computational Tools For Poverty Measurement And Analysis</a>”. FCND Discussion Paper 50. World Bank, Washington, DC.</p></li>
 <li><p>Rohde, N. (2008). “<a href="https://doi.org/10.1007/978-0-387-72796-7_15">Lorenz Curves and Generalised Entropy Inequality Measures</a>”. In: Chotikapanich, D. (eds) <em>Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being</em>, vol 5. Springer, New York, NY.</p></li>
 <li><p>Kakwani, N. 1980. “<a href="https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46">On a Class of Poverty Measures</a>”. <em>Econometrica 48</em> (2): 437-46.</p></li>
+<li><p>Press, W. H. et al.&nbsp;1992. “<a href="https://s3.amazonaws.com/nrbook.com/book_C210.html">Gamma Function, Beta Function, Factorials, Binomial Coefficients</a>, Section 6.1, page 213 in <em>Numerical recipes in C: the art of scientific computing</em> (2nd edition, Cambridge Univeristy Press.</p></li>
 </ol>
 </section>
 <section id="appendix" class="level2" data-number="3">
