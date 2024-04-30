@@ -4,8 +4,7 @@ author: "Diana Garcia"
 format: 
   html:
     number-sections: true
-    mermaid:
-      theme: sandstone
+    theme: sandstone
     code-fold: true
     code-summary: "Show the code"
     toc: true
@@ -16,7 +15,6 @@ format:
 >
 > This document aims to describe the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
 
-
 ## Structure {.unnumbered}
 
 ```{mermaid}
@@ -24,17 +22,49 @@ format:
 flowchart RL
     lz(select_lorenz) --> stats[pip_stats]
     lq(pip_stats_lq) --> lz
-    lb(pip_stats_lb) --> lz  
+    lb(pip_stats_lb) --> lz
+    
     form_lq(functional_form_lq) --> lq
     est_lq(estimate_lq) --> lq
     fit_lq(fit_lq) --> lq
+    
     form_lb(functional_form_lb) --> lb
     est_lb(estimate_lb) --> lb
     fit_lb(fit_lb) --> lb
-    derive_lb(derive_lb) --> lb
+    derive_lb(derive_lb) ---> lb
+    regres --> lb
+    
     check_val(check_curve_validity_lq) --> est_lq
     comp_dist_lq(compute_dist_stats_lq) --> est_lq
     comp_pov_lq(compute_pov_stats_lq) --> est_lq
+    
+    check_val_lb(check_curve_validity_lb) --> est_lb
+    derive_lb(derive_lb) ---> check_val_lb
+    ddlk(ddlk) --> check_val_lb
+    
+    comp_dist_lb(compute_dist_stats_lb) --> est_lb
+    derive_lb --> comp_dist_lb
+    value_at_lb --> comp_dist_lb
+    compute_gini_lb --> comp_dist_lb
+    value_at_lb --> compute_gini_lb
+    compute_polarization_lb --> comp_dist_lb
+    derive_lb --> compute_polarization_lb
+    value_at_lb --> compute_polarization_lb
+    compute_quantile_lb --> comp_dist_lb
+    
+    comp_pov_lb(compute_pov_stats_lb) --> est_lb
+    compute_headcount_lb --> comp_pov_lb
+    rtSafe --> compute_headcount_lb
+    funcD --> rtSafe
+    rtNewt --> rtSafe
+    BETAI --> compute_headcount_lb
+    BETAICF --> BETAI
+    GAMMLN --> BETAI
+    compute_pov_gap_lb --> comp_pov_lb
+    compute_pov_severity_lb --> comp_pov_lb
+    
+    value_at_lb --> fit_lb
+    
     polarization_lq(polarization_lq) --> comp_dist_lq
     gini_lq(gini_lq) --> comp_dist_lq
     value_at_lq --> polarization_lq
@@ -47,11 +77,11 @@ flowchart RL
     derive_lq --> polarization_lq
     value_at_lq --> quantile_lq
     
+    
     style quantile_lq fill:#FFF1A2
     style mld_lq fill:#FFF1A2
 
 ```
-
 
 ## Functions
 
@@ -122,10 +152,9 @@ gd_compute_pip_stats <- function(welfare,
 ```
 
 ::: {#nte-boundary-issue .callout-note}
-#### Issue: Boundary conditions 
+#### Issue: Boundary conditions
 
-At the moment, this is calculated using $(\mu L'(0.001) + 4,\mu L'(0.98) - 4)$ (*Note: Not sure what is the reason of adding and subtracting 4*). 
-
+At the moment, this is calculated using $(\mu L'(0.001) + 4,\mu L'(0.98) - 4)$ (*Note: Not sure what is the reason of adding and subtracting 4*).
 :::
 
 ### select_lorenz {#sec-select_lorenz}
@@ -278,10 +307,9 @@ gd_compute_pip_stats_lq <- function(welfare,
 
 ```
 
-
 ### functional_form_lq
 
-*Description*: Prepares data for regression of $y(1-y)$ on $(x^2-y)$, $y(x-1)$ and $(x-y)$. 
+*Description*: Prepares data for regression of $y(1-y)$ on $(x^2-y)$, $y(x-1)$ and $(x-y)$.
 
 ```{r}
 create_functional_form_lq <- function(welfare,
@@ -313,14 +341,13 @@ create_functional_form_lq <- function(welfare,
 
 ```
 
+*Note*: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).
 
-*Note*: The last observation of (x,y), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1). 
-
-*References*: [1]
+*References*: \[1\]
 
 *Relevant equations*:
 
-The general Quadratic Lorenz curve form is: 
+The general Quadratic Lorenz curve form is:
 
 $$ax^2 + bxy + cy^2 + dx + ey + f = 0$$ {#eq-gen-equation}
 
@@ -330,8 +357,7 @@ $$y(1-y) = a(x^2-y) + by(x-1) + d(x-y)$$ {#eq-linear-form}
 
 This function prepares data to estimate $a$, $b$, and $d$ (*Note*: $d$ is named $C$ in `wbpip`).
 
-
-### value_at_lq 
+### value_at_lq
 
 *Description*: Solves for the Quadratic Lorenz curves.
 
@@ -356,7 +382,7 @@ value_at_lq <- function(x, A, B, C, key_values) {
 }
 ```
 
-*References*: [1]
+*References*: \[1\]
 
 *Relevant equations*:
 
@@ -366,9 +392,9 @@ $$ y= \Bigl\{-(bx+e) - (\alpha x^2 + \beta x + e^2)^\frac{1}{2}\Bigl\}/2$$ {#eq-
 
 where $\alpha = b^2 -4a$ and $\beta = 2be - 4d$.
 
-### derive_lq 
+### derive_lq
 
-*Description*: returns the first derivative of the quadratic Lorenz curves with $c = 1$. 
+*Description*: returns the first derivative of the quadratic Lorenz curves with $c = 1$.
 
 ```{r}
 derive_lq <- function(x, A, B, C, key_values) {
@@ -400,7 +426,7 @@ derive_lq <- function(x, A, B, C, key_values) {
 }
 ```
 
-*References*: [1]
+*References*: \[1\]
 
 *Relevant equations*:
 
@@ -467,7 +493,6 @@ gd_estimate_lq <- function(mean, povline, p0, A, B, C, key_values) {
 
 ```
 
-
 ### check_curve_validity_lq
 
 *Description*: Check validity of Lorenz Quadratic fit
@@ -518,46 +543,44 @@ check_curve_validity_lq <- function(A, B, C, key_values) {
 
 ```
 
-
-*References*: [1], [2], [3]
+*References*: \[1\], \[2\], \[3\]
 
 *Relevant equations*:
 
-The function tests for specific assumptions for the Lorenz Quadratic and relies on the formulas from Table 2 in Datt, G (1998) [3]. The nomenclature for some of these formulas differ from Villasenor et al (1989), so this is how they match:
+The function tests for specific assumptions for the Lorenz Quadratic and relies on the formulas from Table 2 in Datt, G (1998) \[3\]. The nomenclature for some of these formulas differ from Villasenor et al (1989), so this is how they match:
 
 $m = \alpha = b^2 -4a$
 
 $n = \beta = 2be -4c$ ($c=d$ for Villasenor et al, 1989)
 
-$r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$ 
+$r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}$
 
 ::: {#nte-cond-r-issue .callout-note}
-#### Issue: Rename $r$ 
+#### Issue: Rename $r$
 
-At the moment, $r$ refers to $(n^2 - 4me^2)$ in `wbpip`. This is already fixed on commit `47852c` in branch `fix_key_values` by Zander (Waiting for merge). We should maybe rename this within this function. 
-
+At the moment, $r$ refers to $(n^2 - 4me^2)$ in `wbpip`. This is already fixed on commit `47852c` in branch `fix_key_values` by Zander (Waiting for merge). We should maybe rename this within this function.
 :::
 
 The conditions this function tests are presented in Section 4 of Datt (1998):
 
 Normality and Validity
 
- - $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive. (Normality and validity)
- - $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$ (Normality and validity)
- - $a+d \geq 0.9$ so $L(1,y) = 1$ (Validity) 
+-   $(n^2 - 4me^2)>0$ so the square root in $r$ to be positive. (Normality and validity)
+-   $e<0$ or $c>0$ so $L(0,y) = 0$ and $L'(0^{+},y) \geq 0$ (Normality and validity)
+-   $a+d \geq 0.9$ so $L(1,y) = 1$ (Validity)
 
 ::: {#imp-condad .callout-important}
 #### Issue: The inequality for $a+d$
 
-At the moment, most test are design for the old validation $a+d \leq 1$. However, the Corrigendum of the original paper [2] indicates we should use $a+d \geq 1$
+At the moment, most test are design for the old validation $a+d \leq 1$. However, the Corrigendum of the original paper \[2\] indicates we should use $a+d \geq 1$
 :::
 
 And so $L''(x,y) \geq 0$ for $x$ within $(0,1)$:
 
- - $m < 0$ (condition on Villasenor et al., 1989)
- - if $m > 0$ then $m < n^2/4 e^2$ and $n \leq 0$ (last condition from Datt,1998)
- - if $m > 0$ then $m < n^2/4 e^2$ and $m < -n/2$ (last condition from Datt,1998)
- 
+-   $m < 0$ (condition on Villasenor et al., 1989)
+-   if $m > 0$ then $m < n^2/4 e^2$ and $n \leq 0$ (last condition from Datt,1998)
+-   if $m > 0$ then $m < n^2/4 e^2$ and $m < -n/2$ (last condition from Datt,1998)
+
 $L''(x,y)$ can be calculated using @eq-first-der:
 
 $$ \frac{\beta^2 -4\alpha e^2}{8(\alpha x^2 + \beta x + e^2)^\frac{3}{2}} = \frac{n^2 - 4me^2}{8(mx^2 +nx +e^2)^\frac{3}{2}}=\frac{r^2}{8(mx^2 +nx +e^2)^\frac{3}{2}} $$
@@ -599,10 +622,9 @@ gd_compute_dist_stats_lq <- function(mean, p0, A, B, C, key_values = key_values)
 ```
 
 ::: {#nte-check1 .callout-note}
-#### Check: 
+#### Check:
 
 What is the difference with `gd_estimate_dist_stats_lq`?
-
 :::
 
 ### quantile_lq
@@ -628,20 +650,18 @@ old_gd_compute_quantile_lq <- function(A, B, C, n_quantile = 10) {
 }
 ```
 
-
-*Note*: This function calculates the quantiles for a Lorenz Quadratic with specific values for $a$, $b$ and $d$.  
+*Note*: This function calculates the quantiles for a Lorenz Quadratic with specific values for $a$, $b$ and $d$.
 
 ::: {#imp-quant-gd-issue .callout-important}
-#### Issues:  
+#### Issues:
 
-The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of $a$, $b$ and $d$, but it calculates instead the "share" or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the `deciles` of the welfare vector. 
+The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of $a$, $b$ and $d$, but it calculates instead the "share" or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the `deciles` of the welfare vector.
 
 Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:
 
 `vec[n_quantile] <- 1 - value_at_lq(x[n_quantile-1], A, B, C)` where `n_quantile = 10`
 
-However, my hypothesis is that this is related to *Issue: The inequality for $a+d$* above. If $A+C \geq 1$ then `value_at_lq(1, A, B, C) = 1`. We can see the case in this [Desmos graph](https://www.desmos.com/calculator/g164gdepzk){.external target="_blank"}. 
-
+However, my hypothesis is that this is related to *Issue: The inequality for* $a+d$ above. If $A+C \geq 1$ then `value_at_lq(1, A, B, C) = 1`. We can see the case in this [Desmos graph](https://www.desmos.com/calculator/g164gdepzk){.external target="_blank"}.
 :::
 
 *My version of the code*:
@@ -706,16 +726,14 @@ Using the derivation from Rohde (2008) (Equation 15.20), we know that:
 
 $$L'(\pi) = \frac{N y_k}{\sum_{k=1}^N y_k}$$
 
-
 where $y_k$ is the income accruing to the $k_{th}$ individual if ordered such that $y_1<y_2<...<y_k$ and $\pi= \frac{k}{j}$. Then the mean log deviation can be rewritten as (Equation 15.21):
 
 $$-\int_0^1 ln(L'(\pi))d\pi= \lim_{n \rightarrow \infty} -\sum_{i=1}^{N}\frac{1}{N}ln(\frac{N y_k}{\sum_{k=1}^N y_k})$$
 
 ::: {#imp-mld-gd-issue .callout-important}
-#### Issue:  
+#### Issue:
 
-My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return $1$ if for the left tail of $y$ we encounter negative values. 
-
+My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return $1$ if for the left tail of $y$ we encounter negative values.
 :::
 
 *My version of the code*:
@@ -784,15 +802,15 @@ gd_compute_gini_lq <- function(A, B, C, key_values) {
 }
 ```
 
-*References*: [3]
+*References*: \[3\]
 
-*Relevant equations*: 
+*Relevant equations*:
 
-- if $m<0$:
+-   if $m<0$:
 
-$$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt{-m}}\left[ \sin^{-1} \frac{2 + n}{r} - \sin^{-1} \frac{2 + n}{r} \right]$$ 
+$$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt{-m}}\left[ \sin^{-1} \frac{2 + n}{r} - \sin^{-1} \frac{2 + n}{r} \right]$$
 
-- if $m>0$:
+-   if $m>0$:
 
 $$  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\frac{2m+n+2\sqrt{m} (a+c-1)}{n-2e\sqrt{m}}}\right| \right] $$
 
@@ -866,9 +884,11 @@ gd_compute_pip_stats_lb <- function(welfare,
 }
 ```
 
+
+
 ### functional_form_lb
 
-*Description*: Prepare data for Lorenz beta regression: ...  
+*Description*: Prepare data for Lorenz beta regression: $Log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)$.
 
 ```{r}
 create_functional_form_lb <- function(welfare, population) {
@@ -897,45 +917,821 @@ create_functional_form_lb <- function(welfare, population) {
 
 }
 ```
-*References*: [5]
+
+*References*: \[5\], \[3\]
 
 *Note*: The last observation of (p,l), which by construction has the value (1, 1), is excluded since the functional form for the Lorenz curve already forces it to pass through the point (1, 1).
 
 *Relevant equations*:
 
-From Kakwani (1980):
-$$ L(p) = p - a p^\alpha (1-p)^\beta$$
+The general Beta Lorenz curve (Kakwani, 1980) form is: 
+$$ L(p) = p - a p^\alpha (1-p)^\beta$$ {#eq-beta-gen-equation}
+
+where $L(p)$ is the vector of cumulative proportion of consumption/income and $p$ is the cumulative proportions of population. They correspond to $y$ and $x$ in the Quadratic Lorenz form.
+
+Note that in Datt (1998), the parameters have different letters: 
+$$ L(p) = p - \theta p^\gamma (1-p)^\delta$$ {#eq-beta-linear-form}
+
+In our code, the parameters are addressed respectively as:
+$$\begin{aligned}
+A = a = \theta \\
+
+B = \alpha = \gamma \\
+
+C = \beta = \delta
+\end{aligned}$$
+
+The previous equation is logged and rewritten as follows:
+$$\begin{aligned}
+L(p) = p - a p^\alpha (1-p)^\beta \\
+
+L(p) - p = - a p^\alpha (1-p)^\beta \\
+
+p - L(p) = a p^\alpha (1-p)^\beta \\
+
+Log(p - L(p)) = 
+
+\log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)
+
+\end{aligned}$$
+### value_at_lb
+*Description*: Solves for the Beta Lorenz curve.
+
+```{r}
+
+value_at_lb <- function(x, A, B, C) {
+
+  # Check for NA, Inf and negative values in x
+  check_NA_Inf_values(x)
+  check_neg_values(x)
+
+  out <- x - (A * (x^B) * ((1 - x)^C))
+
+  return(out)
+}
+```
+
+*References*: \[5\]
+
+This function calculates the value at the Beta Lorenz Curve. It solves @eq-beta-gen-equation for $L(p)$.
+
+
+### derive_lb
+*Description*: returns the first derivative of the Beta Lorenz curves.
+
+```{r}
+derive_lb <- function(x, A, B, C) {
+  val <- vector("numeric", length(x))
+  val[x == 0] <- -Inf
+  val[x == 1] <- Inf
+
+  if (B == 1) {
+      val[x == 0] <- 1 - A
+    }
+    if (B > 1) {
+      val[x == 0] <- 1
+    }
+    if (C == 1) {
+      val[x == 1] <- 1 + A
+    }
+    if (C > 1) {
+      val[x == 1] <- 1
+    } else {
+
+      # Formula for first derivative of GQ Lorenz Curve
+      new_x <- x[!(x %in% c(0,1))]
+      val[!(x %in% c(0,1))] <- 1 - ((A * new_x^B) * ((1 - new_x)^C) * ((B / new_x) -( C / (1 - new_x)) ) )
+    }
+  return(val)
+}
+
+
+```
+
+
+*References*: \[3\]
+
+*Relevant equations*:
+
+As noted above, in our code, the parameters are addressed respectively as:
+$$\begin{aligned}
+A = a = \theta \\
+
+B = \alpha = \gamma \\
+
+C = \beta = \delta
+\end{aligned}$$
+
+Additionally, $p = x$ and $L(p) = y$. We will use the code notation for practicality.
+
+This function computes the first derivative of @eq-beta-gen-equation, which is derived as follows:
+
+$$\begin{aligned}
+y &= x - A x^B (1-x)^C \\
+y' &= a A (1-x)^{C-1} x^B - AB(1-x)^C x^{B-1} + 1\\
+ &= 1 - A (1-x)^C x^B \left[\frac{C}{1-x} - \frac{B}{x}\right]
+\end{aligned}$$
+
+::: {#nte-lb-derivative .callout-note}
+#### Issues:
+
+There are a series of boundary conditions for the first derivative, but I cannot find the reason for those boundary conditions in the literature. The conditions are the following:
+
+- at $x = 0$:
+  - if $B = 1$ -> $1 - A$
+  - if $B > 1$ -> $1$
+- at $x = 1$:
+  - if $C = 1$ -> $1 + A$
+  - if $C > 1$ -> $1$
+
+According to Kakwani (1980) and the rest of the literature, the only condition for $L'(x) = y'$ is to be $>=0$ at $x = 0$. Now, if we follow the execution of the function, it is true that when $x=0$, $\frac{B}{X} = \frac{B}{0} = undefined$,which would cause calculation issues, but the rest of the derivative already sets $L'(x) = 1$, so it is not clear to me why we have to set it to $1-A$ or $1$. The same sort of reasoning applies at $x = 1$, but with the parameter $C$.
+:::
+
+### estimate_lb
+
+*Description*: Estimates poverty and inequality stats from the Beta Lorenz fit.
+
+```{r}
+gd_estimate_lb <- function(mean, povline, p0, A, B, C) {
+
+  # Compute distributional measures
+  dist_stats <- gd_compute_dist_stats_lb(mean, p0, A, B, C)
+
+  # Compute poverty stats
+  pov_stats <- gd_compute_poverty_stats_lb(mean, povline, A, B, C)
+
+  # Check validity
+  validity <- check_curve_validity_lb(headcount = pov_stats[["headcount"]], A, B, C)
+
+  out <- list(
+    gini = dist_stats$gini,
+    median = dist_stats$median,
+    rmhalf = dist_stats$rmhalf,
+    polarization = dist_stats$polarization,
+    ris = dist_stats$ris,
+    mld = dist_stats$mld,
+    dcm = dist_stats$dcm,
+    deciles = dist_stats$deciles,
+    headcount = pov_stats$headcount,
+    poverty_gap = pov_stats$pg,
+    poverty_severity = pov_stats$p2,
+    eh = pov_stats$eh,
+    epg = pov_stats$epg,
+    ep = pov_stats$ep,
+    gh = pov_stats$gh,
+    gpg = pov_stats$gpg,
+    gp = pov_stats$gp,
+    watts = pov_stats$watts,
+    dl = pov_stats$dl,
+    ddl = pov_stats$ddl,
+    is_normal = validity$is_normal,
+    is_valid = validity$is_valid
+  )
+
+  return(out)
+}
+
+```
+
+### check_curve_validity_lb
+
+*Description*: Check validity of Lorenz Beta fit:
+
+```{r}
+check_curve_validity_lb <- function(headcount, A, B, C) {
+  is_valid <- TRUE
+
+  for (w in seq(from = 0.001, to = 0.1, by = 0.05)) {
+    if (derive_lb(w, A, B, C) < 0) {
+      is_valid <- FALSE
+      break
+    }
+  }
+
+  if (is_valid) {
+    for (w in seq(from = 0.001, to = 0.999, by = 0.05)) {
+      if (DDLK(w, A, B, C) < 0) { # What does DDLK stands for?? What does it do?
+        is_valid <- FALSE
+        break
+      }
+    }
+  }
+
+  # WHAT IS THE RATIONAL HERE?
+  is_normal <- if (!is.na(headcount)) {
+    is_normal <- TRUE
+  } else {
+    is_normal <- FALSE
+  }
+
+  return(list(
+    is_valid = is_valid,
+    is_normal = is_normal
+  ))
+}
+
+```
+
+*References*: \[1\], \[3\]
+
+The function tests for specific assumptions for the Lorenz Beta and relies on the formulas from Table 2 in Datt, G (1998) \[3\]. 
+
+### DDLK
+
+*Description*
+
+### compute_poverty_stats_lb
+
+*Description*
+```{r}
+gd_compute_poverty_stats_lb <- function(mean,
+                                        povline,
+                                        A,
+                                        B,
+                                        C) {
+  # Compute headcount
+  headcount <- gd_compute_headcount_lb(
+    mean = mean,
+    povline = povline,
+    A = A,
+    B = B,
+    C = C
+  )
+
+  # Poverty gap
+  u <- mean / povline
+  pov_gap <- gd_compute_pov_gap_lb(headcount = headcount,
+                                   A         = A,
+                                   B         = B,
+                                   C         = C,
+                                   u         = u)
+
+  # Poverty severity
+  pov_gap_sq <- gd_compute_pov_severity_lb(
+    headcount = headcount,
+    pov_gap   = pov_gap,
+    A         = A,
+    B         = B,
+    C         = C,
+    u         = u
+  )
+
+  # First derivative of the Lorenz curve
+  dl <- 1 - A * (headcount^B) * ((1 - headcount)^C) * (B / headcount - C / (1 - headcount))
+
+  # Second derivative of the Lorenz curve
+  ddl <- A * (headcount^B) *
+    ((1 - headcount)^C) *
+    ((B * (1 - B) / headcount^2) +
+      (2 * B * C / (headcount * (1 - headcount))) +
+      (C * (1 - C) / ((1 - headcount)^2)))
+
+  # Elasticity of headcount index w.r.t mean
+  eh <- -povline / (mean * headcount * ddl)
+
+  # Elasticity of poverty gap index w.r.t mean
+  epg <- 1 - (headcount / pov_gap)
+
+  # Elasticity of distributionally sensitive FGT poverty measure w.r.t mean
+  ep <- 2 * (1 - pov_gap / pov_gap_sq)
+
+  # PElasticity of headcount index w.r.t gini index
+  gh <- (1 - povline / mean) / (headcount * ddl)
+
+  # Elasticity of poverty gap index w.r.t gini index
+  gpg <- 1 + (((mean / povline) - 1) * headcount / pov_gap)
+
+  # Elasticity of distributionally sensitive FGT poverty measure w.r.t gini index
+  gp <- 2 * (1 + (((mean / povline) - 1) * pov_gap / pov_gap_sq))
+
+  # Watts index
+  watts <- gd_compute_watts_lb(headcount, mean, povline, 0.005, A, B, C)
+
+  return(
+    list(
+      headcount = headcount,
+      pg = pov_gap,
+      p2 = pov_gap_sq,
+      eh = eh,
+      epg = epg,
+      ep = ep,
+      gh = gh,
+      gpg = gpg,
+      gp = gp,
+      watts = watts,
+      dl = dl,
+      ddl = ddl
+    )
+  )
+}
+```
+
+### compute_headcount_lb
+
+**Description**: This function calculates
+
+```{r}
+gd_compute_headcount_lb <- function(mean, povline, A, B, C) {
+  # Compute headcount
+  headcount <- rtSafe(0.0001, 0.9999, 1e-4,
+    mean = mean,
+    povline = povline,
+    A = A,
+    B = B,
+    C = C
+  )
+  # Check headcount invalidity conditions
+  if (headcount < 0 | is.na(headcount)) {
+    return(NA_real_)
+  }
+
+  condition1 <- is.na(BETAI(
+    a = 2 * B - 1,
+    b = 2 * C + 1,
+    x = headcount
+  ))
+  condition2 <- is.na(BETAI(
+    a = 2 * B,
+    b = 2 * C,
+    x = headcount
+  ))
+  condition3 <- is.na(BETAI(
+    a = 2 * B + 1,
+    b = 2 * C - 1,
+    x = headcount
+  ))
+
+  if (condition1 | condition2 | condition3) {
+    return(NA_real_)
+  }
+
+  return(headcount)
+}
+
+```
+
+### BETAI
+
+**Description**
+
+```{r}
+BETAI <- function(a, b, x) {
+  if (!is.na(x)) {
+    bt <- betai <- 0
+
+    if (x == 0 || x == 1) {
+      bt <- 0
+    } else {
+      bt <- exp((a * log(x)) + (b * log(1 - x)))
+    }
+
+    if (x < (a + 1) / (a + b + 2)) {
+      betai <- bt * BETAICF(a, b, x) / a
+    } else if (is.na(GAMMLN(a)) || is.na(GAMMLN(b)) || is.na(GAMMLN(a + b))) {
+      betai <- NA_real_
+    } else {
+      betai <- exp(GAMMLN(a) + GAMMLN(b) - GAMMLN(a + b)) - (bt * BETAICF(b, a, 1 - x) / b)
+    }
+  } else {
+    betai <- NA_real_
+  }
+
+  return(betai)
+}
+
+```
+
+### BETAICF
+
+**Description** This function uses the continued fraction method to calculate the Beta Incomplete function.
+
+```{r}
+BETAICF <- function(a, b, x) {
+  eps <- 3e-7
+  am <- 1
+  bm <- 1
+  az <- 1
+  qab <- a + b
+  qap <- a + 1
+  qam <- a - 1
+  bz <- c( 1 - (qab * x / qap), rep(1, 99))
+
+  m <- 1:100
+  em <- 1:100
+  tem <- em * 2
+  d <- em * (b - m) * x / ((qam + tem) * (a + tem))
+  d2 <- -(a + em) * (qab + em) * x / ((a + tem) * (qap + tem))
+
+  for (i in seq_len(100)) {
+    ap <- az + (d[i] * am)
+    bp <- bz[i] + (d[i] * bm)
+    app <- ap + (d2[i]  * az)
+    bpp <- bp + (d2[i] * bz[i])
+    aold <- az
+    am <- ap / bpp
+    bm <- bp / bpp
+    az <- app / bpp
+    if ((abs(az - aold)) < (eps * abs(az))) {
+      break
+    }
+  }
+  return(az)
+}
+```
+
+*References*
+
+*Relevant equations*:
+
+
+
+### GAMMLN
+
+*Description*: `GAMMLN` calculates the logarithm of the gamma function, $log(\Gamma(.))$. It is used as part of the `BETAI` function.
+
+```{r}
+GAMMLN <- function(xx) {
+  cof <- c(76.18009173, 
+           -86.50532033, 
+           24.01409822, 
+           -1.231739516, 
+           0.120858003e-2, 
+           -0.536382e-5)
+  
+  stp <- 2.50662827465
+  fpf <- 5.5
+  x <- xx - 1
+  tmp <- x + fpf
+  
+  if (tmp <= 0) {
+    return(NA_real_)
+  }
+
+  tmp <- (x + 0.5) * log(tmp) - tmp
+  # ser <- 1L
+  x <-  c(x + 1:6)
+  ser <- sum(cof / x) + 1
+
+  if (stp * ser <= 0) {
+    return(NA_real_)
+  }
+
+  return(tmp + log(stp * ser))
+}
+
+```
+
+Annotated version:
+```{r}
+GAMMLN <- function(xx) {
+  # Coefficients for the Lanczos approximation; these are pre-computed constants
+  cof <- c(76.18009173, 
+           -86.50532033, 
+           24.01409822, 
+           -1.231739516, 
+           0.120858003e-2, 
+           -0.536382e-5)
+  
+  # sqrt(2*pi), which is a part of the normalization constant in the Lanczos formula
+  stp <- 2.50662827465
+  
+  # Constant to offset x for the approximation; gamma = 5 -> equal to gamma + 1/2
+  fpf <- 5.5
+  
+  # Adjust the input xx by subtracting 1, given that we calculate it for z + 1
+  x <- xx - 1
+  
+  # Calculate the term (z + gamma + 1/2)
+  tmp <- x + fpf
+  
+  # Check if the adjusted term is non-positive
+  if (tmp <= 0) {
+    return(NA_real_)
+  }
+
+  # Calculate part of the Lanczos formula:
+  # This corresponds to the (z + gamma + 1/2)^(z + 1/2) * e^(-(z + gamma + 1/2)) in the approximation
+  # e is the base of the natural logarithm; since we are calculating the log-gamma,
+  # we are taking the log of e^(-(z+gamma+1/2)), which simplifies to just -(z+gamma+1/2)
+  tmp <- (x + 0.5) * log(tmp) - tmp
+  
+  # Create a sequence of (z+1) to (z+6) for the Lanczos series in the denominator
+  x <-  c(x + 1:6)
+  
+  # Calculate the Lanczos series sum using the coefficients (cof)
+  # and add 1 to it for the c_0 term in the Lanczos formula
+  ser <- sum(cof / x) + 1
+
+  # Check if the final series is non-positive
+  if (stp * ser <= 0) {
+    return(NA_real_)
+  }
+
+  # Return the final computed value of the logarithm of the gamma function
+  # This combines the calculated series with the earlier part and the log of the normalization constant (stp)
+  return(tmp + log(stp * ser))
+}
+
+```
+*References*:\[6\]
+
+*Relevant equations*:
+The gamma function is defined by the integral:
+$$\Gamma(z) = \int_0^{\infty} t^{z-1} e^{-t} \, dt$$
+
+To calculate it numerically, we use an approximation. The best approximation we have is the Lanczos approximation\[6\], which we use here:
+
+$$\begin{align*}
+\Gamma(z + 1) &\approx (z + \gamma + \frac{1}{2})^{z+\frac{1}{2}} e^{-(z+\gamma+\frac{1}{2})} \\
+& \quad \times \sqrt{2\pi} \left[ c_0 + \frac{c_1}{z + 1} + \frac{c_2}{z + 2} + \ldots + \frac{c_N}{z + N} + \epsilon \right] \\
+& \\
+& with \quad (z > 0)
+\end{align*}$$
+
+With parameters $\gamma = 5$ and $N = 6$.
+
+As noted in \[6\], it is easier to compute the logarithm of the gamma function, which is what this function does. Therefore, the actual equation we use is this:
+
+$$\begin{align*}
+\ln(\Gamma(z + 1)) & \approx \left( z + \frac{1}{2} \right) \ln\left( z + \gamma + \frac{1}{2} \right) - \left( z + \gamma + \frac{1}{2} \right) + \ln\left( \sqrt{2\pi} \right) \\
+& \quad + \ln\left( c_0 + \frac{c_1}{z + 1} + \frac{c_2}{z + 2} + \ldots + \frac{c_N}{z + N} \right)
+\end{align*}$$
+
+*Steps*:
+
+1. `cof` is an array of coefficients($c_{1}, c_{2}, ... , c_{n}$) used for the series expansion. 
+
+::: {#imp-gammaln-issue .callout-important}
+#### Issue:
+
+The coefficients chosen in the Lanczos approximation are not used anymore in the newest implementations of the C code. The newest literature suggests different coefficients (Available in the third edition of Numerical Recipes in C)
+:::
+
+2. Compute the adjusted input:
+   Adjust the input value `xx` to `x` by subtracting one to align with the formulation in the Lanczos approximation, which is $\Gamma(z + 1)$.
+
+3. Check for non-positive input:
+   If the adjusted input is non-positive, return `NA_real_` as the computation cannot proceed with non-positive values ($z > 0$).
+   
+4. Create `fpf`: this is equivalent to $\gamma + \frac{1}{2}$, with $\gamma = 5$.
+
+5. Compute the Lanczos sum:
+   Initialize the variable `ser` with 1.0 ($c_{0}$), then add the terms of the Lanczos sum using a for loop. Each term is a coefficient from the `cof` vector divided by the incremented input `x`.
+
+6. Calculate the final log-gamma value:
+   Combine the logarithm of `stp` ($\sqrt{2\pi}$) with the sum `ser` and the main part of the Lanczos approximation involving `tmp`.
+
+7. Return the result:
+   The function returns the computed value, which is the natural logarithm of the gamma function for the input `xx`.
+
+
+### rtSafe
+
+*Description*: `rtSafe`is an implementation of a 'safe' version of `rtNewt`. It adds checks to ensure that the method is robust and converges correctly. 
+
+```{r}
+rtSafe <- function(x1, x2, xacc, mean, povline, A, B, C) {
+  
+  # Evaluate the function at the initial guesses x1 and x2:
+  
+  funcCall1 <- funcD(x1, mean, povline, A, B, C)
+  fl <- funcCall1[[1]]  # Function value at x1 (low)
+
+  funcCall2 <- funcD(x2, mean, povline, A, B, C)
+  fh <- funcCall2[[1]]  # Function value at x2 (high)
+  df <- funcCall2[[2]]  # Derivative value at x2
+
+  # Check if the function values at x1 and x2 bracket a root (have opposite signs)
+  if (fl * fh >= 0) {
+    # If they do not bracket a root, fall back to the Newton-Raphson method (which has larger brackets)
+    res <- rtNewt(mean = mean, povline = povline, A = A, B = B, C = C)
+    return(res)
+  }
+
+  # Assign xl and xh to bracket the root with xl having a function value less than 0
+  if (fl < 0) {
+    xl <- x1
+    xh <- x2
+  } else {
+    xl <- x2
+    xh <- x1
+  }
+
+  # Initialize the safe guess for the root as the midpoint between x1 and x2
+  rtsafe <- 0.5 * (x1 + x2)
+  # Set the full step and fractional step sizes to the interval length
+  dxold <- abs(x2 - x1)
+  dx <- dxold
+
+  # Enter the main iteration loop
+  for (i in seq_len(99)) {
+    # Update the function and derivative at the current guess rtsafe
+    funcCall3 <- funcD(rtsafe, mean, povline, A, B, C)
+    f <- funcCall3[[1]]
+    df <- funcCall3[[2]]
+
+    # Check for convergence by comparing the change in the root with the tolerance
+    if (abs(2 * f) > abs(dxold * df)) {
+      # If not converging, bisect the interval
+      dxold <- dx
+      dx <- 0.5 * (xh - xl)
+      rtsafe <- xl + dx
+      if (xl == rtsafe) return(rtsafe)  # Check for underflow
+    } else {
+      # If converging, use Newton-Raphson step
+      dxold <- dx
+      dx <- f / df
+      temp <- rtsafe
+      rtsafe <- temp - dx
+      if (temp == rtsafe) return(rtsafe)  # Check for underflow
+    }
+
+    # If the size of the Newton-Raphson step is less than the tolerance, return the root
+    if (abs(dx) < xacc) return(rtsafe)
+
+    # Update the function value at the new guess
+    funcCall4 <- funcD(rtsafe, mean, povline, A, B, C)
+    f <- funcCall4[[1]]
+
+    # Update the interval bounds to continue the bisection process
+    if (f < 0) {
+      xl <- rtsafe
+    } else {
+      xh <- rtsafe
+    }
+  }
+  # If the loop finishes without returning, it indicates failure to converge
+  return(NA_real_)
+}
+
+```
+
+*Steps*:
+
+1. Input parameters:
+  - `x1` and `x2`: initial guesses for the root, defining a bracket within which the root lies.
+  - `xacc`: desired accuracy for the root.
+  - `mean`, `povline`, and the parameters of the Lorenz curve.
+
+2. Initial Function Evaluation:
+   - Calculate the function values at `x1` and `x2`.
+   - If the function values at these points do not bracket a root (i.e., the function values are not of opposite signs), the function will revert to use `rtNewt` directly, using larger default bounds (0 and 1).
+
+3. Bracketing the Root:
+   - Assign `xl` and `xh` to be the lower and upper bounds of the bracketing interval, respectively.
+   - Ensure that the lower bound `xl` has a function value less than zero.
+   - *Note*: According to the Intermediate Value Theorem, if a continuous function changes sign over an interval, then there must be at least one root (zero crossing) within that interval. Therefore, bracketing is a way of confirming that within the interval `[xl, xh]` there is at least one root.
+
+4. Iterative Process:
+   - Initialize the midpoint guess for the root, `rtsafe`, as halfway between `x1` and `x2`.
+   - Set up variables `dxold` and `dx` to control the iteration step size.
+
+5. Main Iteration Loop:
+   - For each iteration, calculate the function value and its derivative at `rtsafe`.
+   - Use a combination of bisection and Newton-Raphson updates to adjust `rtsafe` and home in on the root.
+   - If the function value at the new guess `rtsafe` is negative, update `xl`; otherwise, update `xh`.
+   - Check for convergence by comparing the change in `rtsafe` with the tolerance `xacc`.
+   - Repeat this process for a maximum of 99 iterations or until the root is found within the desired accuracy.
+
+6. Convergence Check:
+   - If the algorithm converges to a root within the desired accuracy, the function returns the value of `rtsafe`.
+   - If the function fails to converge within the set number of iterations, it returns `NA_real_` to indicate an unsuccessful search.
+
+
+### funcD
+
+*Description*: `funcD` returns two equations needed to calculate $H$ when using $$L'(H) + \frac{z}{\mu} - 1 = 0$$.
+
+```{r}
+funcD <- function(x, mean, povline, A, B, C) {
+  x1 <- 1 - x
+  v1 <- (x^B) * (x1^C)
+  f <- (A * v1 * ((B / x) - (C / x1))) + (povline / mean) - 1
+  df <- A * v1 * (((B / x) - (C / x1))^2 - (B / x^2) - (C / x1^2))
+  return(list(
+    f = f,
+    df = df
+  ))
+}
+
+
+```
+
+*Relevant Equations*: 
+
+- `f` is equivalent to $L'(H) + \frac{z}{\mu} - 1 = 0$
+- `df` is the derivative of `f`.
+
+See `rtNewt` for more details.
+
+### rtNewt
+
+*Description*: `rtNewt` uses the Newton-Raphson iteration to find $H$ (the headcount) using:
+$$L'(H) + \frac{z}{\mu} - 1 = 0$$.
+
+```{r}
+rtNewt <- function(mean, povline, A, B, C) {
+  # Initial bounds of the search interval
+  x1 <- 0L
+  x2 <- 1L
+  # Accuracy tolerance for the solution
+  xacc <- 1e-4
+  # Initial guess for the root, halfway between x1 and x2
+  rtnewt <- 0.5 * (x1 + x2)
+
+  # Perform up to 19 iterations to find the root
+  for (i in seq_len(19)) {
+    # Current guess for the proportion of the population
+    x <- rtnewt
+    # Part of the Lorenz curve derivative: x^B * (1 - x)^C
+    v1 <- (x^B) * ((1 - x)^C)
+    # The function whose root we're finding; it's the difference between the
+    # Lorenz curve's derivative at x and the normalized poverty line
+    f <- A * v1 * ((B / x) - (C / (1 - x))) + (povline / mean) - 1
+    # Derivative of f with respect to x
+    df <- A * v1 * (((B / x) - (C / (1 - x)))^2 - (B / x^2) - (C / (1 - x)^2))
+    # Newton-Raphson step size
+    dx <- f / df
+    # Update the current guess for the root
+    rtnewt <- rtnewt - dx
+
+    # Check if the new guess is outside the initial interval
+    if ((x1 - rtnewt) * (rtnewt - x2) < 0) {
+      # Reset rtnewt to the midpoint of the interval closer to the bounds
+      rtnewt <- if (rtnewt < x1) { 0.5 * (x2 - x) } else { 0.5 * (x - x1) }
+    } else {
+      # If the change in the root estimate is smaller than the tolerance, return it
+      if (abs(dx) < xacc) {
+        return(rtnewt)
+      }
+    }
+  }
+  # If no convergence, return NA to indicate failure
+  return(NA_real_)
+}
+```
+
+*Relevant equations*:
+
+The first derivative of the Lorenz Beta curve evaluated at $H$ is equal to:
+
+$$\begin{aligned}
+L'(H) = 1 - \frac{z}{\mu} \\
+\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] = 1 - \frac{z}{\mu}
+
+\end{aligned}$$
+
+The Newton-Raphson iteration is used to find the root of an equation. In our case, this means finding when $L'(H) = 0$ or:
+
+$$
+\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0
+$$
+
+*Steps:*
+
+- Initialize the algorithm:
+  - `x1` and `x2` are the initial boundaries of the search interval
+  - `xacc` is the accuracy tolerance for the solution
+  - `rtnewt` is the initial guess for the root, taken as the midpoint of the interval `[x1, x2]`
+- Begin the Iterative process:
+  - Each iteration consists of:
+    - `v1` calculates a part of the function we need to solve for $f(x) = L'(H)$, $x^B (1-x)^C = H^\gamma (1-H)^\delta$.
+    - `f` sets up the function $f(x) = L'(H)$ as defined above.
+    - `df` sets up the derivative $f'(x) = L''(H)$.
+- Update the Guess for the Root
+  - `dx` calculates the Newton-Raphson step size (`dx = f/df` = $\frac{f(x_{old})}{f'(x_{old})}$)
+  - `rtnewt` updates the current guess by subtracting `dx` from it. This step is based on the Newton-Raphson update rule:
+  
+  $$x_{new} = x_{old} - \frac{f(x_{old})}{f'(x_{old})}$$
+- Check for interval boundaries and convergence: after each iteration, the algorithm checks whether the new guess `rtnewt` is within the initial interval `[x1, x2]`. If it is not, the interval is adjusted. If the guess is within the desired accuracy, the function returns the root `rtnewt`.
 
 ...
 
+
 ## References
 
-1. Villasenor, J., B. C. Arnold. 1989. "[Elliptical Lorenz curves](https://doi.org/10.1016/0304-4076(89)90089-4)". *Journal of Econometrics 40* (2): 327-338.
+1.  Villasenor, J., B. C. Arnold. 1989. "[Elliptical Lorenz curves](https://doi.org/10.1016/0304-4076(89)90089-4)". *Journal of Econometrics 40* (2): 327-338.
 
-2. Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
+2.  Krause, M. 2013. "[Corrigendum to Elliptical Lorenz curves](https://doi.org/10.1016/j.jeconom.2013.01.001)". *Journal of Econometrics 174* (1): 44.
 
-3. Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/publication/computational-tools-poverty-measurement-and-analysis)". FCND Discussion Paper 50. World Bank, Washington, DC.
+3.  Datt, G. 1998. "[Computational Tools For Poverty Measurement And Analysis](https://www.ifpri.org/publication/computational-tools-poverty-measurement-and-analysis)". FCND Discussion Paper 50. World Bank, Washington, DC.
 
-4. Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY. 
+4.  Rohde, N. (2008). "[Lorenz Curves and Generalised Entropy Inequality Measures](https://doi.org/10.1007/978-0-387-72796-7_15)". In: Chotikapanich, D. (eds) *Modeling Income Distributions and Lorenz Curves. Economic Studies in Equality, Social Exclusion and Well-Being*, vol 5. Springer, New York, NY.
 
-5. Kakwani, N. 1980. "[On a Class of Poverty Measures](https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46)". *Econometrica 48* (2): 437-46.
+5.  Kakwani, N. 1980. "[On a Class of Poverty Measures](https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46)". *Econometrica 48* (2): 437-46.
+
+6. Press, W. H. et al. 1992. "[Gamma Function, Beta Function, Factorials, Binomial Coefficients](https://s3.amazonaws.com/nrbook.com/book_C210.html), Section 6.1, page 213 in *Numerical recipes in C: the art of scientific computing* (2nd edition, Cambridge Univeristy Press.
 
 ## Appendix
 
 Find function using the following list:
 
--  @sec-pip_stats: `gd_compute_pip_stats`
--  @sec-select_lorenz: `gd_select_lorenz`
-- `gd_compute_pip_stats_lq`
-- `gd_compute_pip_stats_lb`
-- `create_functional_form_lq`
-- `derive_lq`
-- `gd_estimate_lq` 
-- `check_curve_validity_lq`
-- `gd_compute_dist_stats_lq`
-
-
-
-
-
-
+-   @sec-pip_stats: `gd_compute_pip_stats`
+-   @sec-select_lorenz: `gd_select_lorenz`
+-   `gd_compute_pip_stats_lq`
+-   `gd_compute_pip_stats_lb`
+-   `create_functional_form_lq`
+-   `derive_lq`
+-   `gd_estimate_lq`
+-   `check_curve_validity_lq`
+-   `gd_compute_dist_stats_lq`
