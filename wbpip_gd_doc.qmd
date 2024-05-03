@@ -18,6 +18,7 @@ format:
 ## Structure {.unnumbered}
 
 ```{mermaid}
+%%| fig-width: 6.5
 
 flowchart RL
     lz(select_lorenz) --> stats[pip_stats]
