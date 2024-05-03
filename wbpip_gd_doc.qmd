@@ -89,9 +89,20 @@ flowchart RL
     value_at_lq --> pov_severity_lq
     value_at_lq --> fit_lq
     
-    
-    style quantile_lq fill:#FFF1A2
-    style mld_lq fill:#FFF1A2
+    style derive_lq fill: #50C878
+    style value_at_lq fill: #50C878
+    style check_val fill: #50C878
+    style form_lq fill: #50C878
+    style regres fill: #50C878
+    style gini_lq fill: #FFF1A2
+    style polarization_lq fill: #FFF1A2
+    style quantile_lq fill: #FFA500
+    style mld_lq fill: #FFA500
+    style comp_pov_lq fill: #FFF1A2 
+    style headcount_lq fill: #FFF1A2 
+    style pov_gap_lq fill: #FFF1A2
+    style pov_severity_lq fill: #FFF1A2
+    style watts_lq fill: #FFF1A2
 
 ```
 
