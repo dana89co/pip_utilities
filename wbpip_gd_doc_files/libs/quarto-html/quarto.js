@@ -5,53 +5,7 @@ const sectionChanged = new CustomEvent("quarto-sectionChanged", {
   composed: false,
 });
 
-<<<<<<< HEAD
-const layoutMarginEls = () => {
-  // Find any conflicting margin elements and add margins to the
-  // top to prevent overlap
-  const marginChildren = window.document.querySelectorAll(
-    ".column-margin.column-container > *, .margin-caption, .aside"
-  );
-
-  let lastBottom = 0;
-  for (const marginChild of marginChildren) {
-    if (marginChild.offsetParent !== null) {
-      // clear the top margin so we recompute it
-      marginChild.style.marginTop = null;
-      const top = marginChild.getBoundingClientRect().top + window.scrollY;
-      if (top < lastBottom) {
-        const marginChildStyle = window.getComputedStyle(marginChild);
-        const marginBottom = parseFloat(marginChildStyle["marginBottom"]);
-        const margin = lastBottom - top + marginBottom;
-        marginChild.style.marginTop = `${margin}px`;
-      }
-      const styles = window.getComputedStyle(marginChild);
-      const marginTop = parseFloat(styles["marginTop"]);
-      lastBottom = top + marginChild.getBoundingClientRect().height + marginTop;
-    }
-  }
-};
-
 window.document.addEventListener("DOMContentLoaded", function (_event) {
-  // Recompute the position of margin elements anytime the body size changes
-  if (window.ResizeObserver) {
-    const resizeObserver = new window.ResizeObserver(
-      throttle(() => {
-        layoutMarginEls();
-        if (
-          window.document.body.getBoundingClientRect().width < 990 &&
-          isReaderMode()
-        ) {
-          quartoToggleReader();
-        }
-      }, 50)
-    );
-    resizeObserver.observe(window.document.body);
-  }
-
-=======
-window.document.addEventListener("DOMContentLoaded", function (_event) {
->>>>>>> lq_structure
   const tocEl = window.document.querySelector('nav.toc-active[role="doc-toc"]');
   const sidebarEl = window.document.getElementById("quarto-sidebar");
   const leftTocEl = window.document.getElementById("quarto-sidebar-toc-left");

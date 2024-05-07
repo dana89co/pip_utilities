@@ -19,11 +19,13 @@ This document aims to describe the functions used in `wbpip` to calculated the p
 
 ```{mermaid}
 %%| fig-width: 6.5
+%%| fig-width: 6.5
 
 flowchart RL
     lz(select_lorenz) --> stats[pip_stats]
     lq(pip_stats_lq) --> lz
     lb(pip_stats_lb) --> lz
+
 
     
     form_lq(functional_form_lq) --> lq
@@ -33,11 +35,16 @@ flowchart RL
     
     regres(regres) --> lq
     regres(regres) --> lb
+    derive_lq(derive_lq) --> lq
+    
+    regres(regres) --> lq
+    regres(regres) --> lb
     
     form_lb(functional_form_lb) --> lb
     est_lb(estimate_lb) --> lb
     fit_lb(fit_lb) --> lb
     derive_lb(derive_lb) ---> lb
+
 
     check_val(check_curve_validity_lq) --> est_lq
     comp_dist_lq(compute_dist_stats_lq) --> est_lq
@@ -56,22 +63,33 @@ flowchart RL
     derive_lb --> polarization_lb
     value_at_lb --> polarization_lb
     quantile_lb --> comp_dist_lb
+    gini_lb --> comp_dist_lb
+    value_at_lb --> gini_lb
+    polarization_lb --> comp_dist_lb
+    derive_lb --> polarization_lb
+    value_at_lb --> polarization_lb
+    quantile_lb --> comp_dist_lb
     
     comp_pov_lb(compute_pov_stats_lb) --> est_lb
+    headcount_lb --> comp_pov_lb
+    rtSafe --> headcount_lb
     headcount_lb --> comp_pov_lb
     rtSafe --> headcount_lb
     funcD --> rtSafe
     rtNewt --> rtSafe
     BETAI --> headcount_lb
+    BETAI --> headcount_lb
     BETAICF --> BETAI
     GAMMLN --> BETAI
+    pov_gap_lb --> comp_pov_lb
+    pov_severity_lb --> comp_pov_lb
     pov_gap_lb --> comp_pov_lb
     pov_severity_lb --> comp_pov_lb
     
     value_at_lb --> fit_lb
     
-    polarization_lq(polarization_lq) --> comp_dist_lq
-    gini_lq(gini_lq) --> comp_dist_lq
+    polarization_lq(<b>polarization_lq</b>) --> comp_dist_lq
+    gini_lq(<b>gini_lq</b>) --> comp_dist_lq
     value_at_lq --> polarization_lq
     value_at_lq(value_at_lq) --> comp_dist_lq
     mld_lq(<b>mld_lq</b>) --> comp_dist_lq
@@ -82,10 +100,35 @@ flowchart RL
     pov_severity_lq --> comp_pov_lq
     watts_lq --> comp_pov_lq
 
+    
+    headcount_lq --> comp_pov_lq
+    pov_gap_lq --> comp_pov_lq
+    pov_severity_lq --> comp_pov_lq
+    watts_lq --> comp_pov_lq
+
     derive_lq --> comp_dist_lq
     derive_lq --> mld_lq
     derive_lq --> polarization_lq
     value_at_lq --> quantile_lq
+    value_at_lq --> pov_gap_lq
+    value_at_lq --> pov_severity_lq
+    value_at_lq --> fit_lq
+    
+    style derive_lq fill: #50C878
+    style value_at_lq fill: #50C878
+    style check_val fill: #50C878
+    style form_lq fill: #50C878
+    style regres fill: #50C878
+    style gini_lq fill: #FFA500
+    style polarization_lq fill: #FFA500
+    style quantile_lq fill: #FFA500
+    style mld_lq fill: #FFA500
+    style comp_dist_lq fill: #FFF1A2
+    style comp_pov_lq fill: #FFF1A2 
+    style headcount_lq fill: #FFF1A2 
+    style pov_gap_lq fill: #FFF1A2
+    style pov_severity_lq fill: #FFF1A2
+    style watts_lq fill: #FFF1A2
     value_at_lq --> pov_gap_lq
     value_at_lq --> pov_severity_lq
     value_at_lq --> fit_lq
@@ -851,14 +894,38 @@ $$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt{-m}}\left[ \sin^{-1} \f
 -   if $m>0$:
 
 $$  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\frac{2m+n+2\sqrt{m} (a+c-1)}{n-2e\sqrt{m}}}\right| \right] $$
+::: {#imp-gini-gd-issue .callout-important}
+#### Issue:
+
+The formula does not match the Datt paper Gini formula as mentioned previously by Tony.
+
+:::
+
 
 ### polarization_lq
 
 *Description*: Computes polarization index from parametric Lorenz fit
 
-*References*: ...
+```{r}
+gd_compute_polarization_lq <- function(mean,
+                                       p0,
+                                       dcm,
+                                       A, B, C,
+                                       key_values) {
+  pol <- 2 - (1 / p0) +
+    (dcm - (2 * value_at_lq(p0, A, B, C, key_values) * mean)) /
+      (p0 * mean * derive_lq(p0, A, B, C, key_values))
 
-*Relevant equations*: ...
+  return(pol)
+}
+
+```
+
+*References*: None
+
+*Relevant equations*: None
+
+*Questions*: What is p0?
 
 ### pip_stats_lb
 
