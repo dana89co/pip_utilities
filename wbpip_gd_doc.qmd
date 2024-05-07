@@ -19,7 +19,6 @@ This document aims to describe the functions used in `wbpip` to calculated the p
 
 ```{mermaid}
 %%| fig-width: 6.5
-%%| fig-width: 6.5
 
 flowchart RL
     lz(select_lorenz) --> stats[pip_stats]

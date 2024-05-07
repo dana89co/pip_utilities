@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.475">
+<meta name="generator" content="quarto-1.4.553">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -18,9 +18,10 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -47,43 +48,13 @@ pre.numberSource code > span > a:first-child::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    color: #aaaaaa;
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
 div.sourceCode
   {   }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { color: #008000; } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { color: #008000; font-weight: bold; } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 
@@ -125,13 +96,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-clear-button-title": "Clear",
     "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script src="site_libs/quarto-diagram/mermaid.min.js"></script>
 <script src="site_libs/quarto-diagram/mermaid-init.js"></script>
 <link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
@@ -175,39 +148,41 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#structure" id="toc-structure" class="nav-link active" data-scroll-target="#structure">Structure</a></li>
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="toc-section-number">1</span>  Functions</a>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#structure" id="toc-structure" class="nav-link" data-scroll-target="#structure">Structure</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">1</span> Functions</a>
   <ul class="collapse">
-  <li><a href="#sec-pip_stats" id="toc-sec-pip_stats" class="nav-link" data-scroll-target="#sec-pip_stats"><span class="toc-section-number">1.1</span>  pip_stats</a></li>
-  <li><a href="#sec-select_lorenz" id="toc-sec-select_lorenz" class="nav-link" data-scroll-target="#sec-select_lorenz"><span class="toc-section-number">1.2</span>  select_lorenz</a></li>
-  <li><a href="#pip_stats_lq" id="toc-pip_stats_lq" class="nav-link" data-scroll-target="#pip_stats_lq"><span class="toc-section-number">1.3</span>  pip_stats_lq</a></li>
-  <li><a href="#functional_form_lq" id="toc-functional_form_lq" class="nav-link" data-scroll-target="#functional_form_lq"><span class="toc-section-number">1.4</span>  functional_form_lq</a></li>
-  <li><a href="#value_at_lq" id="toc-value_at_lq" class="nav-link" data-scroll-target="#value_at_lq"><span class="toc-section-number">1.5</span>  value_at_lq</a></li>
-  <li><a href="#derive_lq" id="toc-derive_lq" class="nav-link" data-scroll-target="#derive_lq"><span class="toc-section-number">1.6</span>  derive_lq</a></li>
-  <li><a href="#estimate_lq" id="toc-estimate_lq" class="nav-link" data-scroll-target="#estimate_lq"><span class="toc-section-number">1.7</span>  estimate_lq</a></li>
-  <li><a href="#check_curve_validity_lq" id="toc-check_curve_validity_lq" class="nav-link" data-scroll-target="#check_curve_validity_lq"><span class="toc-section-number">1.8</span>  check_curve_validity_lq</a></li>
-  <li><a href="#compute_dist_stats_lq" id="toc-compute_dist_stats_lq" class="nav-link" data-scroll-target="#compute_dist_stats_lq"><span class="toc-section-number">1.9</span>  compute_dist_stats_lq</a></li>
-  <li><a href="#quantile_lq" id="toc-quantile_lq" class="nav-link" data-scroll-target="#quantile_lq"><span class="toc-section-number">1.10</span>  quantile_lq</a></li>
-  <li><a href="#mld_lq" id="toc-mld_lq" class="nav-link" data-scroll-target="#mld_lq"><span class="toc-section-number">1.11</span>  mld_lq</a></li>
-  <li><a href="#gini_lq" id="toc-gini_lq" class="nav-link" data-scroll-target="#gini_lq"><span class="toc-section-number">1.12</span>  gini_lq</a></li>
-  <li><a href="#polarization_lq" id="toc-polarization_lq" class="nav-link" data-scroll-target="#polarization_lq"><span class="toc-section-number">1.13</span>  polarization_lq</a></li>
-  <li><a href="#pip_stats_lb" id="toc-pip_stats_lb" class="nav-link" data-scroll-target="#pip_stats_lb"><span class="toc-section-number">1.14</span>  pip_stats_lb</a></li>
-  <li><a href="#functional_form_lb" id="toc-functional_form_lb" class="nav-link" data-scroll-target="#functional_form_lb"><span class="toc-section-number">1.15</span>  functional_form_lb</a></li>
-  <li><a href="#derive_lb" id="toc-derive_lb" class="nav-link" data-scroll-target="#derive_lb"><span class="toc-section-number">1.16</span>  derive_lb</a></li>
-  <li><a href="#estimate_lb" id="toc-estimate_lb" class="nav-link" data-scroll-target="#estimate_lb"><span class="toc-section-number">1.17</span>  estimate_lb</a></li>
-  <li><a href="#check_curve_validity_lb" id="toc-check_curve_validity_lb" class="nav-link" data-scroll-target="#check_curve_validity_lb"><span class="toc-section-number">1.18</span>  check_curve_validity_lb</a></li>
-  <li><a href="#ddlk" id="toc-ddlk" class="nav-link" data-scroll-target="#ddlk"><span class="toc-section-number">1.19</span>  DDLK</a></li>
-  <li><a href="#compute_poverty_stats_lb" id="toc-compute_poverty_stats_lb" class="nav-link" data-scroll-target="#compute_poverty_stats_lb"><span class="toc-section-number">1.20</span>  compute_poverty_stats_lb</a></li>
-  <li><a href="#compute_headcount_lb" id="toc-compute_headcount_lb" class="nav-link" data-scroll-target="#compute_headcount_lb"><span class="toc-section-number">1.21</span>  compute_headcount_lb</a></li>
-  <li><a href="#betai" id="toc-betai" class="nav-link" data-scroll-target="#betai"><span class="toc-section-number">1.22</span>  BETAI</a></li>
-  <li><a href="#betaicf" id="toc-betaicf" class="nav-link" data-scroll-target="#betaicf"><span class="toc-section-number">1.23</span>  BETAICF</a></li>
-  <li><a href="#gammln" id="toc-gammln" class="nav-link" data-scroll-target="#gammln"><span class="toc-section-number">1.24</span>  GAMMLN</a></li>
-  <li><a href="#rtsafe" id="toc-rtsafe" class="nav-link" data-scroll-target="#rtsafe"><span class="toc-section-number">1.25</span>  rtSafe</a></li>
-  <li><a href="#funcd" id="toc-funcd" class="nav-link" data-scroll-target="#funcd"><span class="toc-section-number">1.26</span>  funcD</a></li>
-  <li><a href="#rtnewt" id="toc-rtnewt" class="nav-link" data-scroll-target="#rtnewt"><span class="toc-section-number">1.27</span>  rtNewt</a></li>
+  <li><a href="#sec-pip_stats" id="toc-sec-pip_stats" class="nav-link" data-scroll-target="#sec-pip_stats"><span class="header-section-number">1.1</span> pip_stats</a></li>
+  <li><a href="#sec-select_lorenz" id="toc-sec-select_lorenz" class="nav-link" data-scroll-target="#sec-select_lorenz"><span class="header-section-number">1.2</span> select_lorenz</a></li>
+  <li><a href="#pip_stats_lq" id="toc-pip_stats_lq" class="nav-link" data-scroll-target="#pip_stats_lq"><span class="header-section-number">1.3</span> pip_stats_lq</a></li>
+  <li><a href="#functional_form_lq" id="toc-functional_form_lq" class="nav-link" data-scroll-target="#functional_form_lq"><span class="header-section-number">1.4</span> functional_form_lq</a></li>
+  <li><a href="#value_at_lq" id="toc-value_at_lq" class="nav-link" data-scroll-target="#value_at_lq"><span class="header-section-number">1.5</span> value_at_lq</a></li>
+  <li><a href="#derive_lq" id="toc-derive_lq" class="nav-link" data-scroll-target="#derive_lq"><span class="header-section-number">1.6</span> derive_lq</a></li>
+  <li><a href="#estimate_lq" id="toc-estimate_lq" class="nav-link" data-scroll-target="#estimate_lq"><span class="header-section-number">1.7</span> estimate_lq</a></li>
+  <li><a href="#check_curve_validity_lq" id="toc-check_curve_validity_lq" class="nav-link" data-scroll-target="#check_curve_validity_lq"><span class="header-section-number">1.8</span> check_curve_validity_lq</a></li>
+  <li><a href="#compute_dist_stats_lq" id="toc-compute_dist_stats_lq" class="nav-link" data-scroll-target="#compute_dist_stats_lq"><span class="header-section-number">1.9</span> compute_dist_stats_lq</a></li>
+  <li><a href="#quantile_lq" id="toc-quantile_lq" class="nav-link" data-scroll-target="#quantile_lq"><span class="header-section-number">1.10</span> quantile_lq</a></li>
+  <li><a href="#mld_lq" id="toc-mld_lq" class="nav-link" data-scroll-target="#mld_lq"><span class="header-section-number">1.11</span> mld_lq</a></li>
+  <li><a href="#gini_lq" id="toc-gini_lq" class="nav-link" data-scroll-target="#gini_lq"><span class="header-section-number">1.12</span> gini_lq</a></li>
+  <li><a href="#polarization_lq" id="toc-polarization_lq" class="nav-link" data-scroll-target="#polarization_lq"><span class="header-section-number">1.13</span> polarization_lq</a></li>
+  <li><a href="#pip_stats_lb" id="toc-pip_stats_lb" class="nav-link" data-scroll-target="#pip_stats_lb"><span class="header-section-number">1.14</span> pip_stats_lb</a></li>
+  <li><a href="#functional_form_lb" id="toc-functional_form_lb" class="nav-link" data-scroll-target="#functional_form_lb"><span class="header-section-number">1.15</span> functional_form_lb</a></li>
+  <li><a href="#value_at_lb" id="toc-value_at_lb" class="nav-link" data-scroll-target="#value_at_lb"><span class="header-section-number">1.16</span> value_at_lb</a></li>
+  <li><a href="#derive_lb" id="toc-derive_lb" class="nav-link" data-scroll-target="#derive_lb"><span class="header-section-number">1.17</span> derive_lb</a></li>
+  <li><a href="#estimate_lb" id="toc-estimate_lb" class="nav-link" data-scroll-target="#estimate_lb"><span class="header-section-number">1.18</span> estimate_lb</a></li>
+  <li><a href="#check_curve_validity_lb" id="toc-check_curve_validity_lb" class="nav-link" data-scroll-target="#check_curve_validity_lb"><span class="header-section-number">1.19</span> check_curve_validity_lb</a></li>
+  <li><a href="#ddlk" id="toc-ddlk" class="nav-link" data-scroll-target="#ddlk"><span class="header-section-number">1.20</span> DDLK</a></li>
+  <li><a href="#compute_poverty_stats_lb" id="toc-compute_poverty_stats_lb" class="nav-link" data-scroll-target="#compute_poverty_stats_lb"><span class="header-section-number">1.21</span> compute_poverty_stats_lb</a></li>
+  <li><a href="#compute_headcount_lb" id="toc-compute_headcount_lb" class="nav-link" data-scroll-target="#compute_headcount_lb"><span class="header-section-number">1.22</span> compute_headcount_lb</a></li>
+  <li><a href="#betai" id="toc-betai" class="nav-link" data-scroll-target="#betai"><span class="header-section-number">1.23</span> BETAI</a></li>
+  <li><a href="#betaicf" id="toc-betaicf" class="nav-link" data-scroll-target="#betaicf"><span class="header-section-number">1.24</span> BETAICF</a></li>
+  <li><a href="#gammln" id="toc-gammln" class="nav-link" data-scroll-target="#gammln"><span class="header-section-number">1.25</span> GAMMLN</a></li>
+  <li><a href="#rtsafe" id="toc-rtsafe" class="nav-link" data-scroll-target="#rtsafe"><span class="header-section-number">1.26</span> rtSafe</a></li>
+  <li><a href="#funcd" id="toc-funcd" class="nav-link" data-scroll-target="#funcd"><span class="header-section-number">1.27</span> funcD</a></li>
+  <li><a href="#rtnewt" id="toc-rtnewt" class="nav-link" data-scroll-target="#rtnewt"><span class="header-section-number">1.28</span> rtNewt</a></li>
   </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="toc-section-number">2</span>  References</a></li>
-  <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix"><span class="toc-section-number">3</span>  Appendix</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">2</span> References</a></li>
+  <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix"><span class="header-section-number">3</span> Appendix</a></li>
   </ul>
 </nav>
     </div>
@@ -245,11 +220,12 @@ window.Quarto = {
 </section>
 <section id="structure" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="structure">Structure</h2>
-<div class="cell" data-fig-width="6.5">
+<div class="cell" data-fig-width="6.5" data-layout-align="default">
 <div class="cell-output-display">
 <div>
-<p>
-</p><pre class="mermaid mermaid-js" data-tooltip-selector="#mermaid-tooltip-1">flowchart RL
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart RL
     lz(select_lorenz) --&gt; stats[pip_stats]
     lq(pip_stats_lq) --&gt; lz
     lb(pip_stats_lb) --&gt; lz
@@ -258,6 +234,10 @@ window.Quarto = {
     form_lq(functional_form_lq) --&gt; lq
     est_lq(estimate_lq) --&gt; lq
     fit_lq(fit_lq) --&gt; lq
+    derive_lq(derive_lq) --&gt; lq
+    
+    regres(regres) --&gt; lq
+    regres(regres) --&gt; lb
     derive_lq(derive_lq) --&gt; lq
     
     regres(regres) --&gt; lq
@@ -285,15 +265,26 @@ window.Quarto = {
     derive_lb --&gt; polarization_lb
     value_at_lb --&gt; polarization_lb
     quantile_lb --&gt; comp_dist_lb
+    gini_lb --&gt; comp_dist_lb
+    value_at_lb --&gt; gini_lb
+    polarization_lb --&gt; comp_dist_lb
+    derive_lb --&gt; polarization_lb
+    value_at_lb --&gt; polarization_lb
+    quantile_lb --&gt; comp_dist_lb
     
     comp_pov_lb(compute_pov_stats_lb) --&gt; est_lb
+    headcount_lb --&gt; comp_pov_lb
+    rtSafe --&gt; headcount_lb
     headcount_lb --&gt; comp_pov_lb
     rtSafe --&gt; headcount_lb
     funcD --&gt; rtSafe
     rtNewt --&gt; rtSafe
     BETAI --&gt; headcount_lb
+    BETAI --&gt; headcount_lb
     BETAICF --&gt; BETAI
     GAMMLN --&gt; BETAI
+    pov_gap_lb --&gt; comp_pov_lb
+    pov_severity_lb --&gt; comp_pov_lb
     pov_gap_lb --&gt; comp_pov_lb
     pov_severity_lb --&gt; comp_pov_lb
     
@@ -305,6 +296,12 @@ window.Quarto = {
     value_at_lq(value_at_lq) --&gt; comp_dist_lq
     mld_lq(&lt;b&gt;mld_lq&lt;/b&gt;) --&gt; comp_dist_lq
     quantile_lq(&lt;b&gt;quantile_lq&lt;/b&gt;) --&gt; comp_dist_lq
+    
+    headcount_lq --&gt; comp_pov_lq
+    pov_gap_lq --&gt; comp_pov_lq
+    pov_severity_lq --&gt; comp_pov_lq
+    watts_lq --&gt; comp_pov_lq
+
     
     headcount_lq --&gt; comp_pov_lq
     pov_gap_lq --&gt; comp_pov_lq
@@ -334,12 +331,42 @@ window.Quarto = {
     style pov_gap_lq fill: #FFF1A2
     style pov_severity_lq fill: #FFF1A2
     style watts_lq fill: #FFF1A2
+    value_at_lq --&gt; pov_gap_lq
+    value_at_lq --&gt; pov_severity_lq
+    value_at_lq --&gt; fit_lq
+    
+    style derive_lq fill: #50C878
+    style value_at_lq fill: #50C878
+    style check_val fill: #50C878
+    style form_lq fill: #50C878
+    style regres fill: #50C878
+    style gini_lq fill: #FFF1A2
+    style polarization_lq fill: #FFF1A2
+    style quantile_lq fill: #FFA500
+    style mld_lq fill: #FFA500
+    style comp_pov_lq fill: #FFF1A2 
+    style headcount_lq fill: #FFF1A2 
+    style pov_gap_lq fill: #FFF1A2
+    style pov_severity_lq fill: #FFF1A2
+    style watts_lq fill: #FFF1A2
+    
+    style form_lb fill: #50C878
+    style derive_lb fill: #FFF1A2
+    style est_lb fill: #50C878
+    style check_val_lb fill: #FFF1A2 
+    style comp_pov_lb fill: #FFF1A2
+    style ddlk fill: #FFF1A2
+    style headcount_lb fill: #FFF1A2
+    style BETAI fill: #FFA500
+    style BETAICF fill: #50C878
+    style GAMMLN fill: #FFA500
+    style rtSafe fill: #50C878
+    style funcD fill: #50C878
+    style rtNewt fill: #50C878
 
 </pre>
-<div id="mermaid-tooltip-1" class="mermaidTooltip">
-
 </div>
-<p></p>
+<p></p></figure><p></p>
 </div>
 </div>
 </div>
@@ -350,7 +377,7 @@ window.Quarto = {
 <h3 data-number="1.1" class="anchored" data-anchor-id="sec-pip_stats"><span class="header-section-number">1.1</span> pip_stats</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data by selecting the best functional fit for the Lorenz curve (either beta or quadratic)</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>gd_compute_pip_stats <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                                 povline,</span>
@@ -413,16 +440,16 @@ window.Quarto = {
 <span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="nte-boundary-issue" class="callout-note callout callout-style-default callout-captioned">
+<div id="nte-boundary-issue" class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Issue: Boundary conditions
+<div class="callout-title-container flex-fill">
+Note&nbsp;1: Issue: Boundary conditions
 </div>
 </div>
-<div id="nte-boundary-issue" class="callout-body-container callout-body">
+<div class="callout-body-container callout-body">
 <p>At the moment, this is calculated using <span class="math inline">\((\mu L'(0.001) + 4,\mu L'(0.98) - 4)\)</span> (<em>Note: Not sure what is the reason of adding and subtracting 4</em>).</p>
 </div>
 </div>
@@ -431,7 +458,7 @@ Issue: Boundary conditions
 <h3 data-number="1.2" class="anchored" data-anchor-id="sec-select_lorenz"><span class="header-section-number">1.2</span> select_lorenz</h3>
 <p><em>Description</em>: Select best Lorenz fit and adjust the returned statistics if needed.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>gd_select_lorenz <span class="ot">&lt;-</span> <span class="cf">function</span>(lq, lb) {</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -503,7 +530,7 @@ Issue: Boundary conditions
 <h3 data-number="1.3" class="anchored" data-anchor-id="pip_stats_lq"><span class="header-section-number">1.3</span> pip_stats_lq</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data using the quadratic functional form of the Lorenz qurve.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>gd_compute_pip_stats_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                                    povline,</span>
@@ -583,7 +610,7 @@ Issue: Boundary conditions
 <h3 data-number="1.4" class="anchored" data-anchor-id="functional_form_lq"><span class="header-section-number">1.4</span> functional_form_lq</h3>
 <p><em>Description</em>: Prepares data for regression of <span class="math inline">\(y(1-y)\)</span> on <span class="math inline">\((x^2-y)\)</span>, <span class="math inline">\(y(x-1)\)</span> and <span class="math inline">\((x-y)\)</span>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>create_functional_form_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                                      population) {</span>
@@ -626,7 +653,7 @@ Issue: Boundary conditions
 <h3 data-number="1.5" class="anchored" data-anchor-id="value_at_lq"><span class="header-section-number">1.5</span> value_at_lq</h3>
 <p><em>Description</em>: Solves for the Quadratic Lorenz curves.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>value_at_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -658,7 +685,7 @@ Issue: Boundary conditions
 <h3 data-number="1.6" class="anchored" data-anchor-id="derive_lq"><span class="header-section-number">1.6</span> derive_lq</h3>
 <p><em>Description</em>: returns the first derivative of the quadratic Lorenz curves with <span class="math inline">\(c = 1\)</span>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>derive_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C, key_values) {</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -698,7 +725,7 @@ Issue: Boundary conditions
 <h3 data-number="1.7" class="anchored" data-anchor-id="estimate_lq"><span class="header-section-number">1.7</span> estimate_lq</h3>
 <p><em>Description</em>: Estimates poverty and inequality stats from Quadratic Lorenz fit</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>gd_estimate_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, p0, A, B, C, key_values) {</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -758,7 +785,7 @@ Issue: Boundary conditions
 <h3 data-number="1.8" class="anchored" data-anchor-id="check_curve_validity_lq"><span class="header-section-number">1.8</span> check_curve_validity_lq</h3>
 <p><em>Description</em>: Check validity of Lorenz Quadratic fit</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>check_curve_validity_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, key_values) {</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  is_normal <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
@@ -810,16 +837,16 @@ Issue: Boundary conditions
 <p><span class="math inline">\(m = \alpha = b^2 -4a\)</span></p>
 <p><span class="math inline">\(n = \beta = 2be -4c\)</span> (<span class="math inline">\(c=d\)</span> for Villasenor et al, 1989)</p>
 <p><span class="math inline">\(r = K*2\alpha = (n^2 - 4me^2)^\frac{1}{2}\)</span></p>
-<div id="nte-cond-r-issue" class="callout-note callout callout-style-default callout-captioned">
+<div id="nte-cond-r-issue" class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Issue: Rename <span class="math inline">\(r\)</span>
+<div class="callout-title-container flex-fill">
+Note&nbsp;2: Issue: Rename <span class="math inline">\(r\)</span>
 </div>
 </div>
-<div id="nte-cond-r-issue" class="callout-body-container callout-body">
+<div class="callout-body-container callout-body">
 <p>At the moment, <span class="math inline">\(r\)</span> refers to <span class="math inline">\((n^2 - 4me^2)\)</span> in <code>wbpip</code>. This is already fixed on commit <code>47852c</code> in branch <code>fix_key_values</code> by Zander (Waiting for merge). We should maybe rename this within this function.</p>
 </div>
 </div>
@@ -830,16 +857,16 @@ Issue: Rename <span class="math inline">\(r\)</span>
 <li><span class="math inline">\(e&lt;0\)</span> or <span class="math inline">\(c&gt;0\)</span> so <span class="math inline">\(L(0,y) = 0\)</span> and <span class="math inline">\(L'(0^{+},y) \geq 0\)</span> (Normality and validity)</li>
 <li><span class="math inline">\(a+d \geq 0.9\)</span> so <span class="math inline">\(L(1,y) = 1\)</span> (Validity)</li>
 </ul>
-<div id="imp-condad" class="callout-important callout callout-style-default callout-captioned">
+<div id="imp-condad" class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Issue: The inequality for <span class="math inline">\(a+d\)</span>
+<div class="callout-title-container flex-fill">
+Important&nbsp;1: Issue: The inequality for <span class="math inline">\(a+d\)</span>
 </div>
 </div>
-<div id="imp-condad" class="callout-body-container callout-body">
+<div class="callout-body-container callout-body">
 <p>At the moment, most test are design for the old validation <span class="math inline">\(a+d \leq 1\)</span>. However, the Corrigendum of the original paper [2] indicates we should use <span class="math inline">\(a+d \geq 1\)</span></p>
 </div>
 </div>
@@ -856,7 +883,7 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 <h3 data-number="1.9" class="anchored" data-anchor-id="compute_dist_stats_lq"><span class="header-section-number">1.9</span> compute_dist_stats_lq</h3>
 <p><em>Description</em>: Computes distributional stats from Lorenz Quadratic fit</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gd_compute_dist_stats_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, p0, A, B, C, <span class="at">key_values =</span> key_values) {</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -889,16 +916,16 @@ Issue: The inequality for <span class="math inline">\(a+d\)</span>
 <span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="nte-check1" class="callout-note callout callout-style-default callout-captioned">
+<div id="nte-check1" class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Check:
+<div class="callout-title-container flex-fill">
+Note&nbsp;3: Check:
 </div>
 </div>
-<div id="nte-check1" class="callout-body-container callout-body">
+<div class="callout-body-container callout-body">
 <p>What is the difference with <code>gd_estimate_dist_stats_lq</code>?</p>
 </div>
 </div>
@@ -907,7 +934,7 @@ Check:
 <h3 data-number="1.10" class="anchored" data-anchor-id="quantile_lq"><span class="header-section-number">1.10</span> quantile_lq</h3>
 <p><em>Description</em>: Compute quantiles from Lorenz Quandratic fit</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  vec <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="at">mode =</span> <span class="st">"numeric"</span>, <span class="at">length =</span> n_quantile)</span>
@@ -928,16 +955,16 @@ Check:
 </details>
 </div>
 <p><em>Note</em>: This function calculates the quantiles for a Lorenz Quadratic with specific values for <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>.</p>
-<div id="imp-quant-gd-issue" class="callout-important callout callout-style-default callout-captioned">
+<div id="imp-quant-gd-issue" class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Issues:
+<div class="callout-title-container flex-fill">
+Important&nbsp;2: Issues:
 </div>
 </div>
-<div id="imp-quant-gd-issue" class="callout-body-container callout-body">
+<div class="callout-body-container callout-body">
 <p>The description of this function indicates that it calculates the quantiles (deciles) for the density for some specific values of <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span> and <span class="math inline">\(d\)</span>, but it calculates instead the “share” or the value between the deciles. If I understand correctly, the density is the lorenz curve and the share will refer to the <code>deciles</code> of the welfare vector.</p>
 <p>Regarding the last decile, they manually calculated it by subtracting 1 to the second-to-last decile:</p>
 <p><code>vec[n_quantile] &lt;- 1 - value_at_lq(x[n_quantile-1], A, B, C)</code> where <code>n_quantile = 10</code></p>
@@ -946,7 +973,7 @@ Issues:
 </div>
 <p><em>My version of the code</em>:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>gd_compute_quantile_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, <span class="at">n_quantile =</span> <span class="dv">10</span>) {</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -965,7 +992,7 @@ Issues:
 <h3 data-number="1.11" class="anchored" data-anchor-id="mld_lq"><span class="header-section-number">1.11</span> mld_lq</h3>
 <p><em>Description</em>: Computes Mean Log Deviation from Lorenz Quadratic fit</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>old_gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C)</span>
@@ -1003,22 +1030,22 @@ Issues:
 <p><span class="math display">\[L'(\pi) = \frac{N y_k}{\sum_{k=1}^N y_k}\]</span></p>
 <p>where <span class="math inline">\(y_k\)</span> is the income accruing to the <span class="math inline">\(k_{th}\)</span> individual if ordered such that <span class="math inline">\(y_1&lt;y_2&lt;...&lt;y_k\)</span> and <span class="math inline">\(\pi= \frac{k}{j}\)</span>. Then the mean log deviation can be rewritten as (Equation 15.21):</p>
 <p><span class="math display">\[-\int_0^1 ln(L'(\pi))d\pi= \lim_{n \rightarrow \infty} -\sum_{i=1}^{N}\frac{1}{N}ln(\frac{N y_k}{\sum_{k=1}^N y_k})\]</span></p>
-<div id="imp-mld-gd-issue" class="callout-important callout callout-style-default callout-captioned">
+<div id="imp-mld-gd-issue" class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Issue:
+<div class="callout-title-container flex-fill">
+Important&nbsp;3: Issue:
 </div>
 </div>
-<div id="imp-mld-gd-issue" class="callout-body-container callout-body">
+<div class="callout-body-container callout-body">
 <p>My hypothesis is that they used the last formula to calculate the Mean Log Deviation. I am still unsure why they used some rules at the lower end, more specifically why they return <span class="math inline">\(1\)</span> if for the left tail of <span class="math inline">\(y\)</span> we encounter negative values.</p>
 </div>
 </div>
 <p><em>My version of the code</em>:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>gd_compute_mld_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C) {</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="fu">derive_lq</span>(<span class="fl">0.0005</span>, A, B, C) </span>
@@ -1044,7 +1071,7 @@ Issue:
 <h3 data-number="1.12" class="anchored" data-anchor-id="gini_lq"><span class="header-section-number">1.12</span> gini_lq</h3>
 <p><em>Description</em>: Compute Gini index from Lorenz Quadratic fit.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>gd_compute_gini_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, C, key_values) {</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1094,15 +1121,26 @@ Issue:
 <ul>
 <li>if <span class="math inline">\(m&gt;0\)</span>:</li>
 </ul>
-<p><span class="math display">\[  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\frac{2m+n+2\sqrt{m} (a+c-1)}{n-2e\sqrt{m}}}\right| \right] \]</span> ::: {#imp-gini-gd-issue .callout-important} #### Issue:</p>
+<p><span class="math display">\[  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\frac{2m+n+2\sqrt{m} (a+c-1)}{n-2e\sqrt{m}}}\right| \right] \]</span></p>
+<div id="imp-gini-gd-issue" class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important&nbsp;4: Issue:
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>The formula does not match the Datt paper Gini formula as mentioned previously by Tony.</p>
-<p>:::</p>
+</div>
+</div>
 </section>
 <section id="polarization_lq" class="level3" data-number="1.13">
 <h3 data-number="1.13" class="anchored" data-anchor-id="polarization_lq"><span class="header-section-number">1.13</span> polarization_lq</h3>
 <p><em>Description</em>: Computes polarization index from parametric Lorenz fit</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>gd_compute_polarization_lq <span class="ot">&lt;-</span> <span class="cf">function</span>(mean,</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                                       p0,</span>
@@ -1125,7 +1163,7 @@ Issue:
 <h3 data-number="1.14" class="anchored" data-anchor-id="pip_stats_lb"><span class="header-section-number">1.14</span> pip_stats_lb</h3>
 <p><em>Description</em>: Compute poverty statistics for grouped data using the beta functional form of the Lorenz curve.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>gd_compute_pip_stats_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare,</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                                    povline,</span>
@@ -1167,7 +1205,7 @@ Issue:
 <span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Boundary conditions (Why 4?)</span></span>
 <span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lb</span>(<span class="fl">0.001</span>, A, B, C) <span class="sc">+</span> <span class="dv">4</span></span>
 <span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>  z_max <span class="ot">&lt;-</span> requested_mean <span class="sc">*</span> <span class="fu">derive_lb</span>(<span class="fl">0.980</span>, A, B, C) <span class="sc">-</span> <span class="dv">4</span></span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> <span class="cf">if</span> (z_min <span class="sc">&lt;</span> <span class="dv">0</span>) 0L <span class="cf">else</span> z_min</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>  z_min <span class="ot">&lt;-</span> <span class="cf">if</span> (z_min <span class="sc">&lt;</span> <span class="dv">0</span>) <span class="dv">0</span>L <span class="cf">else</span> z_min</span>
 <span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>  results1 <span class="ot">&lt;-</span> <span class="fu">list</span>(requested_mean, povline, z_min, z_max, ppp)</span>
 <span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(results1) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"mean"</span>, <span class="st">"poverty_line"</span>, <span class="st">"z_min"</span>, <span class="st">"z_max"</span>, <span class="st">"ppp"</span>)</span>
@@ -1189,7 +1227,7 @@ Issue:
 <h3 data-number="1.15" class="anchored" data-anchor-id="functional_form_lb"><span class="header-section-number">1.15</span> functional_form_lb</h3>
 <p><em>Description</em>: Prepare data for Lorenz beta regression: <span class="math inline">\(Log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)\)</span>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>create_functional_form_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(welfare, population) {</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># CHECK inputs</span></span>
@@ -1207,7 +1245,7 @@ Issue:
 <span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># y</span></span>
 <span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">log</span>(population <span class="sc">-</span> welfare)</span>
 <span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x1</span></span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> 1L</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span>L</span>
 <span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x2</span></span>
 <span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> <span class="fu">log</span>(population)</span>
 <span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x3</span></span>
@@ -1250,7 +1288,7 @@ Log(p - L(p)) =
 <h3 data-number="1.16" class="anchored" data-anchor-id="value_at_lb"><span class="header-section-number">1.16</span> value_at_lb</h3>
 <p><em>Description</em>: Solves for the Beta Lorenz curve.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>value_at_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C) {</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1271,7 +1309,7 @@ Log(p - L(p)) =
 <h3 data-number="1.17" class="anchored" data-anchor-id="derive_lb"><span class="header-section-number">1.17</span> derive_lb</h3>
 <p><em>Description</em>: returns the first derivative of the Beta Lorenz curves.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>derive_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(x, A, B, C) {</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  val <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="st">"numeric"</span>, <span class="fu">length</span>(x))</span>
@@ -1316,17 +1354,7 @@ y &amp;= x - A x^B (1-x)^C \\
 y' &amp;= a A (1-x)^{C-1} x^B - AB(1-x)^C x^{B-1} + 1\\
 &amp;= 1 - A (1-x)^C x^B \left[\frac{C}{1-x} - \frac{B}{x}\right]
 \end{aligned}\]</span></p>
-<div id="nte-lb-derivative" class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-caption-container flex-fill">
-Issues:
-</div>
-</div>
-<div id="nte-lb-derivative" class="callout-body-container callout-body">
-<p>There are a series of boundary conditions for the first derivative, but I cannot find the reason for those boundary conditions in the literature. The conditions are the following:</p>
+<p>There are a series of boundary conditions for the first derivative. The conditions are the following:</p>
 <ul>
 <li>at <span class="math inline">\(x = 0\)</span>:
 <ul>
@@ -1345,7 +1373,7 @@ Issues:
 <h3 data-number="1.18" class="anchored" data-anchor-id="estimate_lb"><span class="header-section-number">1.18</span> estimate_lb</h3>
 <p><em>Description</em>: Estimates poverty and inequality stats from the Beta Lorenz fit.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>gd_estimate_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, p0, A, B, C) {</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1392,7 +1420,7 @@ Issues:
 <h3 data-number="1.19" class="anchored" data-anchor-id="check_curve_validity_lb"><span class="header-section-number">1.19</span> check_curve_validity_lb</h3>
 <p><em>Description</em>: Check validity of Lorenz Beta fit:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>check_curve_validity_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(headcount, A, B, C) {</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  is_valid <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
@@ -1438,7 +1466,7 @@ Issues:
 <h3 data-number="1.21" class="anchored" data-anchor-id="compute_poverty_stats_lb"><span class="header-section-number">1.21</span> compute_poverty_stats_lb</h3>
 <p><em>Description</em></p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>gd_compute_poverty_stats_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(mean,</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                                        povline,</span>
@@ -1527,7 +1555,7 @@ Issues:
 <h3 data-number="1.22" class="anchored" data-anchor-id="compute_headcount_lb"><span class="header-section-number">1.22</span> compute_headcount_lb</h3>
 <p><strong>Description</strong>: This function calculates the poverty headcount <span class="math inline">\(H\)</span> using the Lorenz Beta. It also checks whether <code>BETAI</code> evaluates to NA when run with the same parameters.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>gd_compute_headcount_lb <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, A, B, C) {</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute headcount</span></span>
@@ -1581,7 +1609,7 @@ Issues:
 <h3 data-number="1.23" class="anchored" data-anchor-id="betai"><span class="header-section-number">1.23</span> BETAI</h3>
 <p><strong>Description</strong>: <code>BETAI</code> calculates the incomplete Beta function using the continuous fraction implementation (<code>BETAICF</code>), and the gamma function (<code>GAMMALN</code>) for convergence.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>BETAI <span class="ot">&lt;-</span> <span class="cf">function</span>(a, b, x) {</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(x)) {</span>
@@ -1614,16 +1642,16 @@ Issues:
 <p>The incomplete beta function is defined by <span class="math display">\[I_x(a, b) = \frac{B_x(a, b)}{B(a, b)} = \frac{1}{B(a, b)} \int_0^x t^{a-1}(1-t)^{b-1} \, dt \quad (a, b &gt; 0)\]</span> It has the limiting values: <span class="math display">\[I_0(a, b) = 0 \quad I_1(a, b) = 1\]</span> and the symmetry relation: <span class="math display">\[I_x(a, b) = 1 - I_{1-x}(b, a)\]</span></p>
 <p>If <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are both way above one, then <span class="math inline">\(I_0(a, b)\)</span> rises from near-zero to near-unity sharply at about <span class="math inline">\(x = a/(a+b)\)</span>. The continued fraction representation of this function is better suitable than the expansion for numerical evaluation (see equation in the <code>BETAICF</code> documentation below).</p>
 <p><code>BETAICF</code> converges rapidly for <span class="math inline">\(x &lt; (a + 1)/(a + b + 2)\)</span>, but for <span class="math inline">\(x &lt; (a + 1)/(a + b + 2)\)</span> we can use the symmetry relation to obtain a form which will also converge quickly (the symmetric version, <span class="math inline">\(1 - I_{1-x}(b, a)\)</span>)</p>
-<div id="imp-betai-issue" class="callout-important callout callout-style-default callout-captioned">
+<div id="imp-betai-issue" class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Issue:
+<div class="callout-title-container flex-fill">
+Important&nbsp;5: Issue:
 </div>
 </div>
-<div id="imp-betai-issue" class="callout-body-container callout-body">
+<div class="callout-body-container callout-body">
 <p>Following the reasoning of [6] and the code provided (written in C), I believe that our current code does not calculate the correct incomplete beta. Here are the step to calculate the Beta correctly:</p>
 <span class="math display">\[\begin{align*}
 I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
@@ -1643,7 +1671,7 @@ I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 
 \end{align*}\]</span>
 <p>Therefore, the correct implementation of the function should be something like:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>BETAI <span class="ot">&lt;-</span> <span class="cf">function</span>(a, b, x) {</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(x)) {</span>
@@ -1677,7 +1705,7 @@ I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 
 <h3 data-number="1.24" class="anchored" data-anchor-id="betaicf"><span class="header-section-number">1.24</span> BETAICF</h3>
 <p><strong>Description</strong> Used by <code>BETAI</code>. This function evaluates the continued fraction implementation part for <code>BETAI</code>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>BETAICF <span class="ot">&lt;-</span> <span class="cf">function</span>(a, b, x) {</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  eps <span class="ot">&lt;-</span> <span class="fl">3e-7</span></span>
@@ -1719,7 +1747,7 @@ I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 
 <h3 data-number="1.25" class="anchored" data-anchor-id="gammln"><span class="header-section-number">1.25</span> GAMMLN</h3>
 <p><em>Description</em>: <code>GAMMLN</code> calculates the logarithm of the gamma function, <span class="math inline">\(log(\Gamma(.))\)</span>. It is used as part of the <code>BETAI</code> function.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>GAMMLN <span class="ot">&lt;-</span> <span class="cf">function</span>(xx) {</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  cof <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">76.18009173</span>, </span>
@@ -1753,7 +1781,7 @@ I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 
 </div>
 <p>Annotated version:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>GAMMLN <span class="ot">&lt;-</span> <span class="cf">function</span>(xx) {</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Coefficients for the Lanczos approximation; these are pre-computed constants</span></span>
@@ -1824,17 +1852,17 @@ I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 
 <ol type="1">
 <li><code>cof</code> is an array of coefficients(<span class="math inline">\(c_{1}, c_{2}, ... , c_{n}\)</span>) used for the series expansion.</li>
 </ol>
-<div id="imp-gammaln-issue" class="callout-important callout callout-style-default callout-captioned">
+<div id="imp-gammaln-issue" class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Issue:
+<div class="callout-title-container flex-fill">
+Important&nbsp;6: Issue:
 </div>
 </div>
-<div id="imp-gammaln-issue" class="callout-body-container callout-body">
-<p>The coefficients chosen in the Lanczos approximation are not used anymore in the newest implementations of the C code. The newest literature suggests different coefficients (Available in the third edition of Numerical Recipes in C)</p>
+<div class="callout-body-container callout-body">
+<p>The coefficients chosen in the Lanczos approximation are not used anymore in the newest implementations of the C code. The newest literature suggests different coefficients (Available in the third edition of Numerical Recipes in C).</p>
 </div>
 </div>
 <ol start="2" type="1">
@@ -1850,7 +1878,7 @@ Issue:
 <h3 data-number="1.26" class="anchored" data-anchor-id="rtsafe"><span class="header-section-number">1.26</span> rtSafe</h3>
 <p><em>Description</em>: <code>rtSafe</code>is an implementation of a ‘safe’ version of <code>rtNewt</code>. It adds checks to ensure that the method is robust and converges correctly.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>rtSafe <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, xacc, mean, povline, A, B, C) {</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -1972,7 +2000,7 @@ Issue:
 <h3 data-number="1.27" class="anchored" data-anchor-id="funcd"><span class="header-section-number">1.27</span> funcD</h3>
 <p><em>Description</em>: <code>funcD</code> returns two equations needed to calculate <span class="math inline">\(H\)</span> when using <span class="math display">\[L'(H) + \frac{z}{\mu} - 1 = 0\]</span>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>funcD <span class="ot">&lt;-</span> <span class="cf">function</span>(x, mean, povline, A, B, C) {</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> x</span>
@@ -1997,12 +2025,12 @@ Issue:
 <h3 data-number="1.28" class="anchored" data-anchor-id="rtnewt"><span class="header-section-number">1.28</span> rtNewt</h3>
 <p><em>Description</em>: <code>rtNewt</code> uses the Newton-Raphson iteration to find <span class="math inline">\(H\)</span> (the headcount) using: <span class="math display">\[L'(H) + \frac{z}{\mu} - 1 = 0\]</span>.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>rtNewt <span class="ot">&lt;-</span> <span class="cf">function</span>(mean, povline, A, B, C) {</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial bounds of the search interval</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> 0L</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> 1L</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  x1 <span class="ot">&lt;-</span> <span class="dv">0</span>L</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  x2 <span class="ot">&lt;-</span> <span class="dv">1</span>L</span>
 <span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Accuracy tolerance for the solution</span></span>
 <span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  xacc <span class="ot">&lt;-</span> <span class="fl">1e-4</span></span>
 <span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial guess for the root, halfway between x1 and x2</span></span>
@@ -2136,9 +2164,23 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
   const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
     }
   });
   clipboard.on('success', function(e) {
@@ -2231,9 +2273,245 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
   const findCites = (el) => {
     const parentEl = el.parentElement;
     if (parentEl) {
@@ -2271,20 +2549,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       });
     }
   }
-    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
-    var isInternal = (href) => {
-        return filterRegex.test(href) || localhostRegex.test(href);
-    }
-    // Inspect non-navigation links and adorn them if external
-    var links = window.document.querySelectorAll('a:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-    for (var i=0; i<links.length; i++) {
-      const link = links[i];
-      if (!isInternal(link.href)) {
-          // target, if specified
-          link.setAttribute("target", "_blank");
-      }
-    }
 });
 </script>
 </div> <!-- /content -->

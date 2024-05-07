@@ -1,7 +1,7 @@
 // mermaid-init.js
 // Initializes the quarto-mermaid JS runtime
 //
-// Copyright (C) 2022 by RStudio, PBC
+// Copyright (C) 2022 Posit Software, PBC
 
 /**
  * String.prototype.replaceAll() polyfill
@@ -23,7 +23,6 @@ if (!String.prototype.replaceAll) {
   };
 }
 
-<<<<<<< HEAD
 const mermaidOpts = {
   startOnLoad: false,
 };
@@ -42,20 +41,27 @@ if (mermaidThemeEl) {
 }
 
 mermaid.initialize(mermaidOpts);
-=======
-mermaid.initialize({ startOnLoad: false });
->>>>>>> lq_structure
 
 const _quartoMermaid = {
   // NB: there's effectively a copy of this function
   // in `core/svg.ts`.
   // if you change something here, you must keep it consistent there as well.
   setSvgSize(svg) {
-    const { widthInPoints, heightInPoints } = this.resolveSize(svg);
+    const { widthInPoints, heightInPoints, explicitHeight, explicitWidth } =
+      this.resolveSize(svg);
 
-    svg.setAttribute("width", widthInPoints);
-    svg.setAttribute("height", heightInPoints);
-    svg.style.maxWidth = null; // clear preset mermaid value.
+    if (explicitWidth && explicitHeight) {
+      svg.setAttribute("width", widthInPoints);
+      svg.setAttribute("height", heightInPoints);
+      svg.style.maxWidth = null; // remove mermaid's default max-width
+    } else {
+      if (explicitWidth) {
+        svg.style.maxWidth = `${widthInPoints}px`;
+      }
+      if (explicitHeight) {
+        svg.style.maxHeight = `${heightInPoints}px`;
+      }
+    }
   },
 
   // NB: there's effectively a copy of this function
@@ -83,13 +89,13 @@ const _quartoMermaid = {
 
     switch (align) {
       case "left":
-        style = `${style} display: block; margin: auto auto auto 0`;
+        style = `${style}; display: block; margin: auto auto auto 0`;
         break;
       case "right":
-        style = `${style} display: block; margin: auto 0 auto auto`;
+        style = `${style}; display: block; margin: auto 0 auto auto`;
         break;
       case "center":
-        style = `${style} display: block; margin: auto auto auto auto`;
+        style = `${style}; display: block; margin: auto auto auto auto`;
         break;
     }
     svg.setAttribute("style", style);
@@ -192,6 +198,8 @@ const _quartoMermaid = {
       heightInInches,
       widthInPoints: Math.round(widthInInches * 96),
       heightInPoints: Math.round(heightInInches * 96),
+      explicitWidth: options?.[kFigWidth] !== undefined,
+      explicitHeight: options?.[kFigHeight] !== undefined,
     };
   },
 
@@ -209,13 +217,23 @@ const _quartoMermaid = {
     if (options["reveal"]) {
       this.fixupAlignment(svg, options["figAlign"] || "center");
     }
+
+    // forward align attributes to the correct parent dif
+    // so that the svg figure is aligned correctly
+    const div = svg.parentElement.parentElement.parentElement;
+    const align = div.parentElement.parentElement.dataset.layoutAlign;
+    if (align) {
+      div.classList.remove("quarto-figure-left");
+      div.classList.remove("quarto-figure-center");
+      div.classList.remove("quarto-figure-right");
+      div.classList.add(`quarto-figure-${align}`);
+    }
   },
 };
 
 // deno-lint-ignore no-window-prefix
 window.addEventListener(
   "load",
-<<<<<<< HEAD
   async function () {
     let i = 0;
     // we need pre because of whitespace preservation
@@ -247,12 +265,8 @@ window.addEventListener(
       parent.appendChild(svg);
       svg.classList.add("mermaid-js");
     }
-=======
-  function () {
-    mermaid.init("pre.mermaid-js");
->>>>>>> lq_structure
     for (const svgEl of Array.from(
-      document.querySelectorAll("pre.mermaid-js svg")
+      document.querySelectorAll("svg.mermaid-js")
     )) {
       _quartoMermaid.postProcess(svgEl);
     }
