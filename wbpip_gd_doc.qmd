@@ -9,7 +9,6 @@ format:
     code-summary: "Show the code"
     toc: true
     link-external-newwindow: true
-    mathjax: true
 ---
 
 ## Objective {.unnumbered}
@@ -121,7 +120,6 @@ flowchart RL
     style rtNewt fill: #50C878
 
 ```
-
 
 ## Functions
 
@@ -970,7 +968,7 @@ Note that in Datt (1998), the parameters have different letters: $$ L(p) = p - \
 
 In our code, the parameters are addressed respectively as:
 
-$$
+```{=tex}
 \begin{aligned}
 A = a = \theta \\
 
@@ -978,12 +976,10 @@ B = \alpha = \gamma \\
 
 C = \beta = \delta
 \end{aligned}
-$$
-
-
+```
 The previous equation is logged and rewritten as follows:
 
-$$
+```{=tex}
 \begin{aligned}
 L(p) = p - a p^\alpha (1-p)^\beta \\
 
@@ -996,9 +992,8 @@ Log(p - L(p)) =
 \log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)
 
 \end{aligned}
-$$
-
-### value_at_lb 
+```
+### value_at_lb
 
 *Description*: Solves for the Beta Lorenz curve.
 
@@ -1059,14 +1054,15 @@ derive_lb <- function(x, A, B, C) {
 
 As noted above, in our code, the parameters are addressed respectively as:
 
-$$\begin{aligned}
+```{=tex}
+\begin{aligned}
 A = a = \theta \\
 
 B = \alpha = \gamma \\
 
 C = \beta = \delta
-\end{aligned}$$
-
+\end{aligned}
+```
 Additionally, $p = x$ and $L(p) = y$. We will use the code notation for practicality.
 
 This function computes the first derivative of @eq-beta-gen-equation, which is derived as follows:
@@ -1076,7 +1072,6 @@ y &= x - A x^B (1-x)^C \\
 y' &= a A (1-x)^{C-1} x^B - AB(1-x)^C x^{B-1} + 1\\
  &= 1 - A (1-x)^C x^B \left[\frac{C}{1-x} - \frac{B}{x}\right]
 \end{aligned}$$
-
 
 There are a series of boundary conditions for the first derivative. The conditions are the following:
 
@@ -1371,26 +1366,30 @@ If $a$ and $b$ are both way above one, then $I_0(a, b)$ rises from near-zero to 
 
 Following the reasoning of \[6\] and the code provided (written in C), I believe that our current code does not calculate the correct incomplete beta. Here are the step to calculate the Beta correctly:
 
-$$\begin{align*}
+```{=tex}
+\begin{align*}
 I_x(a, b) &= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
 &= \frac{x^a(1 - x)^b}{a \color{blue}{B(a, b)}} \times BETAICF(.)
-\end{align*}$$ 
-
+\end{align*}
+```
 In our code, the second part of this multiplication is calculated using `BETAICF` function. Now, In order to calculate $B(a,b)$ (blue above) we need to use the relationship between the Beta and the gamma function: $$B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}$$ However, as explained in `GAMMALN`, it is faster and more reliable to calculate $log\Gamma(a,b)$, which is what our `GAMMALN` function does. Therefore, we need to calculate:
 
-$$\begin{align*}
+```{=tex}
+\begin{align*}
 I_x(a, b) &= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
 &= \frac{\color{green}{x^a(1 - x)^b}}{a \color{blue}{B(a, b)}} \times BETAICF(.) \\
 &= exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
 & \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(a, b, x) \cdot 1/a
-\end{align*}$$
+\end{align*}
+```
+However, when $x > (a + 1) / (a + b + 2)$, we need to use the symmetry property and calculate instead:
 
-However, when $x > (a + 1) / (a + b + 2)$, we need to use the symmetry property and calculate instead: 
-$$\begin{align*}
+```{=tex}
+\begin{align*}
 1 - I_{1-x}(b,a) &= 1 - exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
 & \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(b, a, 1-x) \cdot 1/b
-\end{align*}$$
-
+\end{align*}
+```
 Therefore, the correct implementation of the function should be something like:
 
 ```{r}
@@ -1783,16 +1782,16 @@ rtNewt <- function(mean, povline, A, B, C) {
 
 The first derivative of the Lorenz Beta curve evaluated at $H$ is equal to:
 
-$$\begin{aligned}
+```{=tex}
+\begin{aligned}
 L'(H) = 1 - \frac{z}{\mu} \\
 \theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] = 1 - \frac{z}{\mu}
 
-\end{aligned}$$
-
+\end{aligned}
+```
 The Newton-Raphson iteration is used to find the root of an equation. In our case, this means finding when $L'(H) = 0$ or:
 
 $$\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0$$
-
 
 *Steps:*
 

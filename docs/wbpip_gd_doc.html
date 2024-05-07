@@ -1193,7 +1193,6 @@ Important&nbsp;3: Issue:
 <p>where <span class="math inline">\(L(p)\)</span> is the vector of cumulative proportion of consumption/income and <span class="math inline">\(p\)</span> is the cumulative proportions of population. They correspond to <span class="math inline">\(y\)</span> and <span class="math inline">\(x\)</span> in the Quadratic Lorenz form.</p>
 <p>Note that in Datt (1998), the parameters have different letters: <span id="eq-beta-linear-form"><span class="math display">\[ L(p) = p - \theta p^\gamma (1-p)^\delta \tag{6}\]</span></span></p>
 <p>In our code, the parameters are addressed respectively as:</p>
-$$
 <span class="math display">\[\begin{aligned}
 A = a = \theta \\
 
@@ -1201,9 +1200,7 @@ B = \alpha = \gamma \\
 
 C = \beta = \delta
 \end{aligned}\]</span>
-<p>$$</p>
 <p>The previous equation is logged and rewritten as follows:</p>
-$$
 <span class="math display">\[\begin{aligned}
 L(p) = p - a p^\alpha (1-p)^\beta \\
 
@@ -1216,7 +1213,6 @@ Log(p - L(p)) =
 \log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)
 
 \end{aligned}\]</span>
-<p>$$</p>
 </section>
 <section id="value_at_lb" class="level3" data-number="1.16">
 <h3 data-number="1.16" class="anchored" data-anchor-id="value_at_lb"><span class="header-section-number">1.16</span> value_at_lb</h3>
@@ -1274,7 +1270,6 @@ Log(p - L(p)) =
 <p><em>References</em>: [3]</p>
 <p><em>Relevant equations</em>:</p>
 <p>As noted above, in our code, the parameters are addressed respectively as:</p>
-$$
 <span class="math display">\[\begin{aligned}
 A = a = \theta \\
 
@@ -1282,7 +1277,6 @@ B = \alpha = \gamma \\
 
 C = \beta = \delta
 \end{aligned}\]</span>
-<p>$$</p>
 <p>Additionally, <span class="math inline">\(p = x\)</span> and <span class="math inline">\(L(p) = y\)</span>. We will use the code notation for practicality.</p>
 <p>This function computes the first derivative of <a href="#eq-beta-gen-equation" class="quarto-xref">Equation&nbsp;5</a>, which is derived as follows:</p>
 <p><span class="math display">\[\begin{aligned}
@@ -1589,21 +1583,22 @@ Important&nbsp;4: Issue:
 </div>
 <div class="callout-body-container callout-body">
 <p>Following the reasoning of [6] and the code provided (written in C), I believe that our current code does not calculate the correct incomplete beta. Here are the step to calculate the Beta correctly:</p>
-<p><span class="math display">\[\begin{align*}
+<span class="math display">\[\begin{align*}
 I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
 &amp;= \frac{x^a(1 - x)^b}{a \color{blue}{B(a, b)}} \times BETAICF(.)
-\end{align*}\]</span></p>
+\end{align*}\]</span>
 <p>In our code, the second part of this multiplication is calculated using <code>BETAICF</code> function. Now, In order to calculate <span class="math inline">\(B(a,b)\)</span> (blue above) we need to use the relationship between the Beta and the gamma function: <span class="math display">\[B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}\]</span> However, as explained in <code>GAMMALN</code>, it is faster and more reliable to calculate <span class="math inline">\(log\Gamma(a,b)\)</span>, which is what our <code>GAMMALN</code> function does. Therefore, we need to calculate:</p>
-<p><span class="math display">\[\begin{align*}
+<span class="math display">\[\begin{align*}
 I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
 &amp;= \frac{\color{green}{x^a(1 - x)^b}}{a \color{blue}{B(a, b)}} \times BETAICF(.) \\
 &amp;= exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
 &amp; \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(a, b, x) \cdot 1/a
-\end{align*}\]</span></p>
-<p>However, when <span class="math inline">\(x &gt; (a + 1) / (a + b + 2)\)</span>, we need to use the symmetry property and calculate instead: <span class="math display">\[\begin{align*}
+\end{align*}\]</span>
+<p>However, when <span class="math inline">\(x &gt; (a + 1) / (a + b + 2)\)</span>, we need to use the symmetry property and calculate instead:</p>
+<span class="math display">\[\begin{align*}
 1 - I_{1-x}(b,a) &amp;= 1 - exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
 &amp; \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(b, a, 1-x) \cdot 1/b
-\end{align*}\]</span></p>
+\end{align*}\]</span>
 <p>Therefore, the correct implementation of the function should be something like:</p>
 <div class="cell">
 <details class="code-fold">
@@ -2005,13 +2000,11 @@ Important&nbsp;5: Issue:
 </div>
 <p><em>Relevant equations</em>:</p>
 <p>The first derivative of the Lorenz Beta curve evaluated at <span class="math inline">\(H\)</span> is equal to:</p>
-$$
 <span class="math display">\[\begin{aligned}
 L'(H) = 1 - \frac{z}{\mu} \\
 \theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] = 1 - \frac{z}{\mu}
 
 \end{aligned}\]</span>
-<p>$$</p>
 <p>The Newton-Raphson iteration is used to find the root of an equation. In our case, this means finding when <span class="math inline">\(L'(H) = 0\)</span> or:</p>
 <p><span class="math display">\[\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0\]</span></p>
 <p><em>Steps:</em></p>
