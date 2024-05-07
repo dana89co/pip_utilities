@@ -9,6 +9,7 @@ format:
     code-summary: "Show the code"
     toc: true
     link-external-newwindow: true
+    mathjax: true
 ---
 
 > ## Objective {.unnumbered}
@@ -1228,11 +1229,13 @@ gd_compute_poverty_stats_lb <- function(mean,
 
 ### compute_headcount_lb
 
-**Description**: This function calculates
+**Description**: This function calculates the poverty headcount $H$ using the Lorenz Beta. It also checks whether `BETAI` evaluates to NA when run with the same parameters.
 
 ```{r}
 gd_compute_headcount_lb <- function(mean, povline, A, B, C) {
   # Compute headcount
+  
+  # First, the function uses rtSafe to bracket the root and solve for H:
   headcount <- rtSafe(0.0001, 0.9999, 1e-4,
     mean = mean,
     povline = povline,
@@ -1240,27 +1243,32 @@ gd_compute_headcount_lb <- function(mean, povline, A, B, C) {
     B = B,
     C = C
   )
-  # Check headcount invalidity conditions
+  
+  # Then, it checks headcount invalidity conditions:
   if (headcount < 0 | is.na(headcount)) {
     return(NA_real_)
   }
-
+  
+  # It also checks whether the BETAI for these parameters is NA, if so it would prevent us from using it in the next calculations. 
   condition1 <- is.na(BETAI(
     a = 2 * B - 1,
     b = 2 * C + 1,
     x = headcount
   ))
+  
   condition2 <- is.na(BETAI(
     a = 2 * B,
     b = 2 * C,
     x = headcount
   ))
+  
   condition3 <- is.na(BETAI(
     a = 2 * B + 1,
     b = 2 * C - 1,
     x = headcount
   ))
-
+  
+  # If any of the conditions is NA, it returns NA altogether.
   if (condition1 | condition2 | condition3) {
     return(NA_real_)
   }
@@ -1270,9 +1278,13 @@ gd_compute_headcount_lb <- function(mean, povline, A, B, C) {
 
 ```
 
+*References*:
+
+*Relevant equations*:
+
 ### BETAI
 
-**Description**
+**Description**: `BETAI` calculates the incomplete Beta function using the continuous fraction implementation (`BETAICF`), and the gamma function (`GAMMALN`) for convergence.
 
 ```{r}
 BETAI <- function(a, b, x) {
@@ -1290,6 +1302,7 @@ BETAI <- function(a, b, x) {
     } else if (is.na(GAMMLN(a)) || is.na(GAMMLN(b)) || is.na(GAMMLN(a + b))) {
       betai <- NA_real_
     } else {
+      # I think this is wrong, it should be 1 - I_(1-x)(b,a), this is just I_(1-x)(b,a).
       betai <- exp(GAMMLN(a) + GAMMLN(b) - GAMMLN(a + b)) - (bt * BETAICF(b, a, 1 - x) / b)
     }
   } else {
@@ -1301,9 +1314,84 @@ BETAI <- function(a, b, x) {
 
 ```
 
+*References*:\[6\]
+
+*Relevant equations*:
+
+The incomplete beta function is defined by
+$$I_x(a, b) = \frac{B_x(a, b)}{B(a, b)} = \frac{1}{B(a, b)} \int_0^x t^{a-1}(1-t)^{b-1} \, dt \quad (a, b > 0)$$
+It has the limiting values:
+$$I_0(a, b) = 0 \quad I_1(a, b) = 1$$
+and the symmetry relation:
+$$I_x(a, b) = 1 - I_{1-x}(b, a)$$
+
+If $a$ and $b$ are both way above one, then $I_0(a, b)$ rises from near-zero to near-unity sharply at about $x = a/(a+b)$. The continued fraction representation of this function is better suitable than the expansion for numerical evaluation (see equation in the `BETAICF` documentation below).
+
+`BETAICF` converges rapidly for $x < (a + 1)/(a + b + 2)$, but for $x < (a + 1)/(a + b + 2)$ we can use the symmetry relation to obtain a form which will also converge quickly (the symmetric version, $1 - I_{1-x}(b, a)$)
+
+::: {#imp-betai-issue .callout-important}
+#### Issue:
+
+Following the reasoning of \[6\] and the code provided (written in C), I believe that our current code does not calculate the correct incomplete beta. Here are the step to calculate the Beta correctly:
+
+$$\begin{align*}
+I_x(a, b) &= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
+&= \frac{x^a(1 - x)^b}{a \color{blue}{B(a, b)}} \times BETAICF(.)
+\end{align*}$$
+In our code, the second part of this multiplication is calculated using `BETAICF` function. Now, In order to calculate $B(a,b)$ (blue above) we need to use the relationship between the Beta and the gamma function:
+$$B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}$$
+However, as explained in `GAMMALN`, it is faster and more reliable to calculate $log\Gamma(a,b)$, which is what our `GAMMALN` function does. Therefore, we need to calculate:
+
+$$\begin{align*}
+I_x(a, b) &= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
+&= \frac{\color{green}{x^a(1 - x)^b}}{a \color{blue}{B(a, b)}} \times BETAICF(.) \\
+&= exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
+& \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(a, b, x) \cdot 1/a
+\end{align*}$$
+
+However, when $x > (a + 1) / (a + b + 2)$, we need to use the symmetry property and calculate instead:
+$$\begin{align*}
+1 - I_{1-x}(b,a) &= 1 - exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
+& \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(b, a, 1-x) \cdot 1/b
+\end{align*}$$
+
+Therefore, the correct implementation of the function should be something like:
+
+```{r}
+BETAI <- function(a, b, x) {
+  if (!is.na(x)) {
+    bt <- betai <- 0
+
+    if (x == 0 || x == 1) {
+      bt <- 0
+    } else {
+      bt <- exp(GAMMLN(a+b) - GAMMLN(a) - GAMMLN(b) + a*log(x) + b*log(1-x)) # the term bt has already the gammaln() and it is already exp() in this version
+    }
+
+    if (x < (a + 1) / (a + b + 2)) {
+      betai <- bt * BETAICF(a, b, x) / a # here we keep the I_x(a,b)
+    } else if (is.na(GAMMLN(a)) || is.na(GAMMLN(b)) || is.na(GAMMLN(a + b))) {
+      betai <- NA_real_
+    } else {
+      betai <- 1 - bt * BETAICF(b, a, 1 - x) / b #and here we use the inverse 1-I_(1-x)(b,a)
+    }
+  } else {
+    betai <- NA_real_
+  }
+
+  return(betai)
+}
+
+
+```
+
+:::
+
+
+
 ### BETAICF
 
-**Description** This function uses the continued fraction method to calculate the Beta Incomplete function.
+**Description** Used by `BETAI`. This function evaluates continued fraction for incomplete 
 
 ```{r}
 BETAICF <- function(a, b, x) {
@@ -1339,10 +1427,16 @@ BETAICF <- function(a, b, x) {
 }
 ```
 
-*References*
+*References*: \[6\]
 
 *Relevant equations*:
-
+The incomplete beta function in continuous fraction representation is defined as:
+$$I_x(a, b) = \frac{x^a(1 - x)^b}{aB(a, b)} \color{blue}\left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right]$$
+where
+$$d_{2m+1} = -\frac{(a + m)(a + b + m)x}{(a + 2m)(a + 2m + 1)}$$
+and
+$$d_{2m} = \frac{m(b - m)x}{(a + 2m - 1)(a + 2m)}$$
+This function calculates the second part, highlighted in blue in the formula above.
 
 
 ### GAMMLN
