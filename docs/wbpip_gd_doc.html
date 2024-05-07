@@ -1490,7 +1490,7 @@ Issues:
 </section>
 <section id="compute_headcount_lb" class="level3" data-number="1.21">
 <h3 data-number="1.21" class="anchored" data-anchor-id="compute_headcount_lb"><span class="header-section-number">1.21</span> compute_headcount_lb</h3>
-<p><strong>Description</strong>: This function calculates</p>
+<p><strong>Description</strong>: This function calculates the poverty headcount <span class="math inline">\(H\)</span> using the Lorenz Beta. It also checks whether <code>BETAI</code> evaluates to NA when run with the same parameters.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
@@ -1532,10 +1532,12 @@ Issues:
 <span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p><em>References</em>:</p>
+<p><em>Relevant equations</em>:</p>
 </section>
 <section id="betai" class="level3" data-number="1.22">
 <h3 data-number="1.22" class="anchored" data-anchor-id="betai"><span class="header-section-number">1.22</span> BETAI</h3>
-<p><strong>Description</strong></p>
+<p><strong>Description</strong>: <code>BETAI</code> calculates the incomplete Beta function using the continuous fraction implementation (<code>BETAICF</code>), and the gamma function (<code>GAMMALN</code>) for convergence.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
@@ -1564,10 +1566,71 @@ Issues:
 <span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p><em>References</em>:[6]</p>
+<p><em>Relevant equations</em>:</p>
+<p>The incomplete beta function is defined by <span class="math display">\[I_x(a, b) = \frac{B_x(a, b)}{B(a, b)} = \frac{1}{B(a, b)} \int_0^x t^{a-1}(1-t)^{b-1} \, dt \quad (a, b &gt; 0)\]</span> It has the limiting values: <span class="math display">\[I_0(a, b) = 0 \quad I_1(a, b) = 1\]</span> and the symmetry relation: <span class="math display">\[I_x(a, b) = 1 - I_{1-x}(b, a)\]</span></p>
+<p>If <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> are both way above one, then <span class="math inline">\(I_0(a, b)\)</span> rises from near-zero to near-unity sharply at about <span class="math inline">\(x = a/(a+b)\)</span>. The continued fraction representation of this function is better suitable than the expansion for numerical evaluation (see equation in the <code>BETAICF</code> documentation below).</p>
+<p><code>BETAICF</code> converges rapidly for <span class="math inline">\(x &lt; (a + 1)/(a + b + 2)\)</span>, but for <span class="math inline">\(x &lt; (a + 1)/(a + b + 2)\)</span> we can use the symmetry relation to obtain a form which will also converge quickly (the symmetric version, <span class="math inline">\(1 - I_{1-x}(b, a)\)</span>)</p>
+<div id="imp-betai-issue" class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Issue:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Following the reasoning of [6] and the code provided (written in C), I believe that our current code does not calculate the correct incomplete beta. Here are the step to calculate the Beta correctly:</p>
+<p><span class="math display">\[\begin{align*}
+I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
+&amp;= \frac{x^a(1 - x)^b}{a \color{blue}{B(a, b)}} \times BETAICF(.)
+\end{align*}\]</span> In our code, the second part of this multiplication is calculated using <code>BETAICF</code> function. Now, In order to calculate <span class="math inline">\(B(a,b)\)</span> (blue above) we need to use the relationship between the Beta and the gamma function: <span class="math display">\[B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}\]</span> However, as explained in <code>GAMMALN</code>, it is faster and more reliable to calculate <span class="math inline">\(log\Gamma(a,b)\)</span>, which is what our <code>GAMMALN</code> function does. Therefore, we need to calculate:</p>
+<p><span class="math display">\[\begin{align*}
+I_x(a, b) &amp;= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
+&amp;= \frac{\color{green}{x^a(1 - x)^b}}{a \color{blue}{B(a, b)}} \times BETAICF(.) \\
+&amp;= exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
+&amp; \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(a, b, x) \cdot 1/a
+\end{align*}\]</span></p>
+<p>However, when <span class="math inline">\(x &gt; (a + 1) / (a + b + 2)\)</span>, we need to use the symmetry property and calculate instead: <span class="math display">\[\begin{align*}
+1 - I_{1-x}(b,a) &amp;= 1 - exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
+&amp; \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(b, a, 1-x) \cdot 1/b
+\end{align*}\]</span></p>
+<p>Therefore, the correct implementation of the function should be something like:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>BETAI <span class="ot">&lt;-</span> <span class="cf">function</span>(a, b, x) {</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(x)) {</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    bt <span class="ot">&lt;-</span> betai <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">==</span> <span class="dv">0</span> <span class="sc">||</span> x <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>      bt <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>      bt <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">GAMMLN</span>(a<span class="sc">+</span>b) <span class="sc">-</span> <span class="fu">GAMMLN</span>(a) <span class="sc">-</span> <span class="fu">GAMMLN</span>(b) <span class="sc">+</span> a<span class="sc">*</span><span class="fu">log</span>(x) <span class="sc">+</span> b<span class="sc">*</span><span class="fu">log</span>(<span class="dv">1</span><span class="sc">-</span>x)) <span class="co"># the term bt has already the gammaln() and it is already exp() in this version</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (x <span class="sc">&lt;</span> (a <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">/</span> (a <span class="sc">+</span> b <span class="sc">+</span> <span class="dv">2</span>)) {</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>      betai <span class="ot">&lt;-</span> bt <span class="sc">*</span> <span class="fu">BETAICF</span>(a, b, x) <span class="sc">/</span> a <span class="co"># here we keep the I_x(a,b)</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">is.na</span>(<span class="fu">GAMMLN</span>(a)) <span class="sc">||</span> <span class="fu">is.na</span>(<span class="fu">GAMMLN</span>(b)) <span class="sc">||</span> <span class="fu">is.na</span>(<span class="fu">GAMMLN</span>(a <span class="sc">+</span> b))) {</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>      betai <span class="ot">&lt;-</span> <span class="cn">NA_real_</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>      betai <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> bt <span class="sc">*</span> <span class="fu">BETAICF</span>(b, a, <span class="dv">1</span> <span class="sc">-</span> x) <span class="sc">/</span> b <span class="co">#and here we use the inverse 1-I_(1-x)(b,a)</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    betai <span class="ot">&lt;-</span> <span class="cn">NA_real_</span></span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(betai)</span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</div>
+</div>
 </section>
 <section id="betaicf" class="level3" data-number="1.23">
 <h3 data-number="1.23" class="anchored" data-anchor-id="betaicf"><span class="header-section-number">1.23</span> BETAICF</h3>
-<p><strong>Description</strong> This function uses the continued fraction method to calculate the Beta Incomplete function.</p>
+<p><strong>Description</strong> Used by <code>BETAI</code>. This function evaluates continued fraction for incomplete</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
@@ -1604,8 +1667,8 @@ Issues:
 <span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><em>References</em></p>
-<p><em>Relevant equations</em>:</p>
+<p><em>References</em>: [6]</p>
+<p><em>Relevant equations</em>: The incomplete beta function in continuous fraction representation is defined as: <span class="math display">\[I_x(a, b) = \frac{x^a(1 - x)^b}{aB(a, b)} \color{blue}\left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right]\]</span> where <span class="math display">\[d_{2m+1} = -\frac{(a + m)(a + b + m)x}{(a + 2m)(a + 2m + 1)}\]</span> and <span class="math display">\[d_{2m} = \frac{m(b - m)x}{(a + 2m - 1)(a + 2m)}\]</span> This function calculates the second part, highlighted in blue in the formula above.</p>
 </section>
 <section id="gammln" class="level3" data-number="1.24">
 <h3 data-number="1.24" class="anchored" data-anchor-id="gammln"><span class="header-section-number">1.24</span> GAMMLN</h3>
