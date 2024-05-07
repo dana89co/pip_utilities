@@ -12,29 +12,34 @@ format:
     mathjax: true
 ---
 
-> ## Objective {.unnumbered}
->
-> This document aims to describe the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
+## Objective {.unnumbered}
+
+This document aims to describe the functions used in `wbpip` to calculated the poverty and inequality statistics using group data.
 
 ## Structure {.unnumbered}
 
 ```{mermaid}
+%%| fig-width: 6.5
 
 flowchart RL
     lz(select_lorenz) --> stats[pip_stats]
     lq(pip_stats_lq) --> lz
     lb(pip_stats_lb) --> lz
+
     
     form_lq(functional_form_lq) --> lq
     est_lq(estimate_lq) --> lq
     fit_lq(fit_lq) --> lq
+    derive_lq(derive_lq) --> lq
+    
+    regres(regres) --> lq
+    regres(regres) --> lb
     
     form_lb(functional_form_lb) --> lb
     est_lb(estimate_lb) --> lb
     fit_lb(fit_lb) --> lb
     derive_lb(derive_lb) ---> lb
-    regres --> lb
-    
+
     check_val(check_curve_validity_lq) --> est_lq
     comp_dist_lq(compute_dist_stats_lq) --> est_lq
     comp_pov_lq(compute_pov_stats_lq) --> est_lq
@@ -46,23 +51,23 @@ flowchart RL
     comp_dist_lb(compute_dist_stats_lb) --> est_lb
     derive_lb --> comp_dist_lb
     value_at_lb --> comp_dist_lb
-    compute_gini_lb --> comp_dist_lb
-    value_at_lb --> compute_gini_lb
-    compute_polarization_lb --> comp_dist_lb
-    derive_lb --> compute_polarization_lb
-    value_at_lb --> compute_polarization_lb
-    compute_quantile_lb --> comp_dist_lb
+    gini_lb --> comp_dist_lb
+    value_at_lb --> gini_lb
+    polarization_lb --> comp_dist_lb
+    derive_lb --> polarization_lb
+    value_at_lb --> polarization_lb
+    quantile_lb --> comp_dist_lb
     
     comp_pov_lb(compute_pov_stats_lb) --> est_lb
-    compute_headcount_lb --> comp_pov_lb
-    rtSafe --> compute_headcount_lb
+    headcount_lb --> comp_pov_lb
+    rtSafe --> headcount_lb
     funcD --> rtSafe
     rtNewt --> rtSafe
-    BETAI --> compute_headcount_lb
+    BETAI --> headcount_lb
     BETAICF --> BETAI
     GAMMLN --> BETAI
-    compute_pov_gap_lb --> comp_pov_lb
-    compute_pov_severity_lb --> comp_pov_lb
+    pov_gap_lb --> comp_pov_lb
+    pov_severity_lb --> comp_pov_lb
     
     value_at_lb --> fit_lb
     
@@ -72,17 +77,51 @@ flowchart RL
     value_at_lq(value_at_lq) --> comp_dist_lq
     mld_lq(<b>mld_lq</b>) --> comp_dist_lq
     quantile_lq(<b>quantile_lq</b>) --> comp_dist_lq
-    derive_lq(derive_lq) --> lq
+    
+    headcount_lq --> comp_pov_lq
+    pov_gap_lq --> comp_pov_lq
+    pov_severity_lq --> comp_pov_lq
+    watts_lq --> comp_pov_lq
+
     derive_lq --> comp_dist_lq
     derive_lq --> mld_lq
     derive_lq --> polarization_lq
     value_at_lq --> quantile_lq
+    value_at_lq --> pov_gap_lq
+    value_at_lq --> pov_severity_lq
+    value_at_lq --> fit_lq
     
+    style derive_lq fill: #50C878
+    style value_at_lq fill: #50C878
+    style check_val fill: #50C878
+    style form_lq fill: #50C878
+    style regres fill: #50C878
+    style gini_lq fill: #FFF1A2
+    style polarization_lq fill: #FFF1A2
+    style quantile_lq fill: #FFA500
+    style mld_lq fill: #FFA500
+    style comp_pov_lq fill: #FFF1A2 
+    style headcount_lq fill: #FFF1A2 
+    style pov_gap_lq fill: #FFF1A2
+    style pov_severity_lq fill: #FFF1A2
+    style watts_lq fill: #FFF1A2
     
-    style quantile_lq fill:#FFF1A2
-    style mld_lq fill:#FFF1A2
+    style form_lb fill: #50C878
+    style derive_lb fill: #FFF1A2
+    style est_lb fill: #50C878
+    style check_val_lb fill: #FFF1A2 
+    style comp_pov_lb fill: #FFF1A2
+    style ddlk fill: #FFF1A2
+    style headcount_lb fill: #FFF1A2
+    style BETAI fill: #FFA500
+    style BETAICF fill: #50C878
+    style GAMMLN fill: #FFA500
+    style rtSafe fill: #50C878
+    style funcD fill: #50C878
+    style rtNewt fill: #50C878
 
 ```
+
 
 ## Functions
 
@@ -825,7 +864,7 @@ $$  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\
 
 ### pip_stats_lb
 
-*Description*: Compute poverty statistics for grouped data using the beta functional form of the Lorenz qurve.
+*Description*: Compute poverty statistics for grouped data using the beta functional form of the Lorenz curve.
 
 ```{r}
 gd_compute_pip_stats_lb <- function(welfare,
@@ -885,8 +924,6 @@ gd_compute_pip_stats_lb <- function(welfare,
 }
 ```
 
-
-
 ### functional_form_lb
 
 *Description*: Prepare data for Lorenz beta regression: $Log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)$.
@@ -925,25 +962,29 @@ create_functional_form_lb <- function(welfare, population) {
 
 *Relevant equations*:
 
-The general Beta Lorenz curve (Kakwani, 1980) form is: 
-$$ L(p) = p - a p^\alpha (1-p)^\beta$$ {#eq-beta-gen-equation}
+The general Beta Lorenz curve (Kakwani, 1980) form is: $$ L(p) = p - a p^\alpha (1-p)^\beta$$ {#eq-beta-gen-equation}
 
 where $L(p)$ is the vector of cumulative proportion of consumption/income and $p$ is the cumulative proportions of population. They correspond to $y$ and $x$ in the Quadratic Lorenz form.
 
-Note that in Datt (1998), the parameters have different letters: 
-$$ L(p) = p - \theta p^\gamma (1-p)^\delta$$ {#eq-beta-linear-form}
+Note that in Datt (1998), the parameters have different letters: $$ L(p) = p - \theta p^\gamma (1-p)^\delta$$ {#eq-beta-linear-form}
 
 In our code, the parameters are addressed respectively as:
-$$\begin{aligned}
+
+$$
+\begin{aligned}
 A = a = \theta \\
 
 B = \alpha = \gamma \\
 
 C = \beta = \delta
-\end{aligned}$$
+\end{aligned}
+$$
+
 
 The previous equation is logged and rewritten as follows:
-$$\begin{aligned}
+
+$$
+\begin{aligned}
 L(p) = p - a p^\alpha (1-p)^\beta \\
 
 L(p) - p = - a p^\alpha (1-p)^\beta \\
@@ -954,8 +995,11 @@ Log(p - L(p)) =
 
 \log(L(p) - p) = \log(a) + \alpha \log(p) + \beta \log(1 - p)
 
-\end{aligned}$$
-### value_at_lb
+\end{aligned}
+$$
+
+### value_at_lb 
+
 *Description*: Solves for the Beta Lorenz curve.
 
 ```{r}
@@ -976,8 +1020,8 @@ value_at_lb <- function(x, A, B, C) {
 
 This function calculates the value at the Beta Lorenz Curve. It solves @eq-beta-gen-equation for $L(p)$.
 
-
 ### derive_lb
+
 *Description*: returns the first derivative of the Beta Lorenz curves.
 
 ```{r}
@@ -1009,12 +1053,12 @@ derive_lb <- function(x, A, B, C) {
 
 ```
 
-
 *References*: \[3\]
 
 *Relevant equations*:
 
 As noted above, in our code, the parameters are addressed respectively as:
+
 $$\begin{aligned}
 A = a = \theta \\
 
@@ -1033,20 +1077,17 @@ y' &= a A (1-x)^{C-1} x^B - AB(1-x)^C x^{B-1} + 1\\
  &= 1 - A (1-x)^C x^B \left[\frac{C}{1-x} - \frac{B}{x}\right]
 \end{aligned}$$
 
-::: {#nte-lb-derivative .callout-note}
-#### Issues:
 
-There are a series of boundary conditions for the first derivative, but I cannot find the reason for those boundary conditions in the literature. The conditions are the following:
+There are a series of boundary conditions for the first derivative. The conditions are the following:
 
-- at $x = 0$:
-  - if $B = 1$ -> $1 - A$
-  - if $B > 1$ -> $1$
-- at $x = 1$:
-  - if $C = 1$ -> $1 + A$
-  - if $C > 1$ -> $1$
+-   at $x = 0$:
+    -   if $B = 1$ -\> $1 - A$
+    -   if $B > 1$ -\> $1$
+-   at $x = 1$:
+    -   if $C = 1$ -\> $1 + A$
+    -   if $C > 1$ -\> $1$
 
-According to Kakwani (1980) and the rest of the literature, the only condition for $L'(x) = y'$ is to be $>=0$ at $x = 0$. Now, if we follow the execution of the function, it is true that when $x=0$, $\frac{B}{X} = \frac{B}{0} = undefined$,which would cause calculation issues, but the rest of the derivative already sets $L'(x) = 1$, so it is not clear to me why we have to set it to $1-A$ or $1$. The same sort of reasoning applies at $x = 1$, but with the parameter $C$.
-:::
+According to Kakwani (1980) and the rest of the literature, the only condition for $L'(x) = y'$ is to be $>=0$ at $x = 0$. To be finished.
 
 ### estimate_lb
 
@@ -1135,7 +1176,7 @@ check_curve_validity_lb <- function(headcount, A, B, C) {
 
 *References*: \[1\], \[3\]
 
-The function tests for specific assumptions for the Lorenz Beta and relies on the formulas from Table 2 in Datt, G (1998) \[3\]. 
+The function tests for specific assumptions for the Lorenz Beta and relies on the formulas from Table 2 in Datt, G (1998) \[3\].
 
 ### DDLK
 
@@ -1144,6 +1185,7 @@ The function tests for specific assumptions for the Lorenz Beta and relies on th
 ### compute_poverty_stats_lb
 
 *Description*
+
 ```{r}
 gd_compute_poverty_stats_lb <- function(mean,
                                         povline,
@@ -1318,12 +1360,7 @@ BETAI <- function(a, b, x) {
 
 *Relevant equations*:
 
-The incomplete beta function is defined by
-$$I_x(a, b) = \frac{B_x(a, b)}{B(a, b)} = \frac{1}{B(a, b)} \int_0^x t^{a-1}(1-t)^{b-1} \, dt \quad (a, b > 0)$$
-It has the limiting values:
-$$I_0(a, b) = 0 \quad I_1(a, b) = 1$$
-and the symmetry relation:
-$$I_x(a, b) = 1 - I_{1-x}(b, a)$$
+The incomplete beta function is defined by $$I_x(a, b) = \frac{B_x(a, b)}{B(a, b)} = \frac{1}{B(a, b)} \int_0^x t^{a-1}(1-t)^{b-1} \, dt \quad (a, b > 0)$$ It has the limiting values: $$I_0(a, b) = 0 \quad I_1(a, b) = 1$$ and the symmetry relation: $$I_x(a, b) = 1 - I_{1-x}(b, a)$$
 
 If $a$ and $b$ are both way above one, then $I_0(a, b)$ rises from near-zero to near-unity sharply at about $x = a/(a+b)$. The continued fraction representation of this function is better suitable than the expansion for numerical evaluation (see equation in the `BETAICF` documentation below).
 
@@ -1337,10 +1374,9 @@ Following the reasoning of \[6\] and the code provided (written in C), I believe
 $$\begin{align*}
 I_x(a, b) &= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
 &= \frac{x^a(1 - x)^b}{a \color{blue}{B(a, b)}} \times BETAICF(.)
-\end{align*}$$
-In our code, the second part of this multiplication is calculated using `BETAICF` function. Now, In order to calculate $B(a,b)$ (blue above) we need to use the relationship between the Beta and the gamma function:
-$$B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}$$
-However, as explained in `GAMMALN`, it is faster and more reliable to calculate $log\Gamma(a,b)$, which is what our `GAMMALN` function does. Therefore, we need to calculate:
+\end{align*}$$ 
+
+In our code, the second part of this multiplication is calculated using `BETAICF` function. Now, In order to calculate $B(a,b)$ (blue above) we need to use the relationship between the Beta and the gamma function: $$B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}$$ However, as explained in `GAMMALN`, it is faster and more reliable to calculate $log\Gamma(a,b)$, which is what our `GAMMALN` function does. Therefore, we need to calculate:
 
 $$\begin{align*}
 I_x(a, b) &= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right] \\
@@ -1349,7 +1385,7 @@ I_x(a, b) &= \frac{x^a(1 - x)^b}{aB(a, b)} \left[ \frac{1}{1 + \frac{d_1}{1 + \f
 & \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(a, b, x) \cdot 1/a
 \end{align*}$$
 
-However, when $x > (a + 1) / (a + b + 2)$, we need to use the symmetry property and calculate instead:
+However, when $x > (a + 1) / (a + b + 2)$, we need to use the symmetry property and calculate instead: 
 $$\begin{align*}
 1 - I_{1-x}(b,a) &= 1 - exp(\color{blue}{GAMMALN(a+b) - GAMMALN(a) - GAMMALN(b)} \\
 & \quad + \color{green}{a \cdot log(x) + b \cdot log(1-x)}) \times BETAICF(b, a, 1-x) \cdot 1/b
@@ -1384,14 +1420,11 @@ BETAI <- function(a, b, x) {
 
 
 ```
-
 :::
-
-
 
 ### BETAICF
 
-**Description** Used by `BETAI`. This function evaluates continued fraction for incomplete 
+**Description** Used by `BETAI`. This function evaluates the continued fraction implementation part for `BETAI`.
 
 ```{r}
 BETAICF <- function(a, b, x) {
@@ -1429,15 +1462,7 @@ BETAICF <- function(a, b, x) {
 
 *References*: \[6\]
 
-*Relevant equations*:
-The incomplete beta function in continuous fraction representation is defined as:
-$$I_x(a, b) = \frac{x^a(1 - x)^b}{aB(a, b)} \color{blue}\left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right]$$
-where
-$$d_{2m+1} = -\frac{(a + m)(a + b + m)x}{(a + 2m)(a + 2m + 1)}$$
-and
-$$d_{2m} = \frac{m(b - m)x}{(a + 2m - 1)(a + 2m)}$$
-This function calculates the second part, highlighted in blue in the formula above.
-
+*Relevant equations*: The incomplete beta function in continuous fraction representation is defined as: $$I_x(a, b) = \frac{x^a(1 - x)^b}{aB(a, b)} \color{blue}\left[ \frac{1}{1 + \frac{d_1}{1 + \frac{d_2}{1 + \cdots}}} \right]$$ where $$d_{2m+1} = -\frac{(a + m)(a + b + m)x}{(a + 2m)(a + 2m + 1)}$$ and $$d_{2m} = \frac{m(b - m)x}{(a + 2m - 1)(a + 2m)}$$ This function calculates the second part, highlighted in blue in the formula above.
 
 ### GAMMLN
 
@@ -1476,6 +1501,7 @@ GAMMLN <- function(xx) {
 ```
 
 Annotated version:
+
 ```{r}
 GAMMLN <- function(xx) {
   # Coefficients for the Lanczos approximation; these are pre-computed constants
@@ -1527,11 +1553,10 @@ GAMMLN <- function(xx) {
 }
 
 ```
+
 *References*:\[6\]
 
-*Relevant equations*:
-The gamma function is defined by the integral:
-$$\Gamma(z) = \int_0^{\infty} t^{z-1} e^{-t} \, dt$$
+*Relevant equations*: The gamma function is defined by the integral: $$\Gamma(z) = \int_0^{\infty} t^{z-1} e^{-t} \, dt$$
 
 To calculate it numerically, we use an approximation. The best approximation we have is the Lanczos approximation\[6\], which we use here:
 
@@ -1553,35 +1578,29 @@ $$\begin{align*}
 
 *Steps*:
 
-1. `cof` is an array of coefficients($c_{1}, c_{2}, ... , c_{n}$) used for the series expansion. 
+1.  `cof` is an array of coefficients($c_{1}, c_{2}, ... , c_{n}$) used for the series expansion.
 
 ::: {#imp-gammaln-issue .callout-important}
 #### Issue:
 
-The coefficients chosen in the Lanczos approximation are not used anymore in the newest implementations of the C code. The newest literature suggests different coefficients (Available in the third edition of Numerical Recipes in C)
+The coefficients chosen in the Lanczos approximation are not used anymore in the newest implementations of the C code. The newest literature suggests different coefficients (Available in the third edition of Numerical Recipes in C).
 :::
 
-2. Compute the adjusted input:
-   Adjust the input value `xx` to `x` by subtracting one to align with the formulation in the Lanczos approximation, which is $\Gamma(z + 1)$.
+2.  Compute the adjusted input: Adjust the input value `xx` to `x` by subtracting one to align with the formulation in the Lanczos approximation, which is $\Gamma(z + 1)$.
 
-3. Check for non-positive input:
-   If the adjusted input is non-positive, return `NA_real_` as the computation cannot proceed with non-positive values ($z > 0$).
-   
-4. Create `fpf`: this is equivalent to $\gamma + \frac{1}{2}$, with $\gamma = 5$.
+3.  Check for non-positive input: If the adjusted input is non-positive, return `NA_real_` as the computation cannot proceed with non-positive values ($z > 0$).
 
-5. Compute the Lanczos sum:
-   Initialize the variable `ser` with 1.0 ($c_{0}$), then add the terms of the Lanczos sum using a for loop. Each term is a coefficient from the `cof` vector divided by the incremented input `x`.
+4.  Create `fpf`: this is equivalent to $\gamma + \frac{1}{2}$, with $\gamma = 5$.
 
-6. Calculate the final log-gamma value:
-   Combine the logarithm of `stp` ($\sqrt{2\pi}$) with the sum `ser` and the main part of the Lanczos approximation involving `tmp`.
+5.  Compute the Lanczos sum: Initialize the variable `ser` with 1.0 ($c_{0}$), then add the terms of the Lanczos sum using a for loop. Each term is a coefficient from the `cof` vector divided by the incremented input `x`.
 
-7. Return the result:
-   The function returns the computed value, which is the natural logarithm of the gamma function for the input `xx`.
+6.  Calculate the final log-gamma value: Combine the logarithm of `stp` ($\sqrt{2\pi}$) with the sum `ser` and the main part of the Lanczos approximation involving `tmp`.
 
+7.  Return the result: The function returns the computed value, which is the natural logarithm of the gamma function for the input `xx`.
 
 ### rtSafe
 
-*Description*: `rtSafe`is an implementation of a 'safe' version of `rtNewt`. It adds checks to ensure that the method is robust and converges correctly. 
+*Description*: `rtSafe`is an implementation of a 'safe' version of `rtNewt`. It adds checks to ensure that the method is robust and converges correctly.
 
 ```{r}
 rtSafe <- function(x1, x2, xacc, mean, povline, A, B, C) {
@@ -1662,35 +1681,31 @@ rtSafe <- function(x1, x2, xacc, mean, povline, A, B, C) {
 
 *Steps*:
 
-1. Input parameters:
-  - `x1` and `x2`: initial guesses for the root, defining a bracket within which the root lies.
-  - `xacc`: desired accuracy for the root.
-  - `mean`, `povline`, and the parameters of the Lorenz curve.
+1.  Input parameters:
 
-2. Initial Function Evaluation:
-   - Calculate the function values at `x1` and `x2`.
-   - If the function values at these points do not bracket a root (i.e., the function values are not of opposite signs), the function will revert to use `rtNewt` directly, using larger default bounds (0 and 1).
+-   `x1` and `x2`: initial guesses for the root, defining a bracket within which the root lies.
+-   `xacc`: desired accuracy for the root.
+-   `mean`, `povline`, and the parameters of the Lorenz curve.
 
-3. Bracketing the Root:
-   - Assign `xl` and `xh` to be the lower and upper bounds of the bracketing interval, respectively.
-   - Ensure that the lower bound `xl` has a function value less than zero.
-   - *Note*: According to the Intermediate Value Theorem, if a continuous function changes sign over an interval, then there must be at least one root (zero crossing) within that interval. Therefore, bracketing is a way of confirming that within the interval `[xl, xh]` there is at least one root.
-
-4. Iterative Process:
-   - Initialize the midpoint guess for the root, `rtsafe`, as halfway between `x1` and `x2`.
-   - Set up variables `dxold` and `dx` to control the iteration step size.
-
-5. Main Iteration Loop:
-   - For each iteration, calculate the function value and its derivative at `rtsafe`.
-   - Use a combination of bisection and Newton-Raphson updates to adjust `rtsafe` and home in on the root.
-   - If the function value at the new guess `rtsafe` is negative, update `xl`; otherwise, update `xh`.
-   - Check for convergence by comparing the change in `rtsafe` with the tolerance `xacc`.
-   - Repeat this process for a maximum of 99 iterations or until the root is found within the desired accuracy.
-
-6. Convergence Check:
-   - If the algorithm converges to a root within the desired accuracy, the function returns the value of `rtsafe`.
-   - If the function fails to converge within the set number of iterations, it returns `NA_real_` to indicate an unsuccessful search.
-
+2.  Initial Function Evaluation:
+    -   Calculate the function values at `x1` and `x2`.
+    -   If the function values at these points do not bracket a root (i.e., the function values are not of opposite signs), the function will revert to use `rtNewt` directly, using larger default bounds (0 and 1).
+3.  Bracketing the Root:
+    -   Assign `xl` and `xh` to be the lower and upper bounds of the bracketing interval, respectively.
+    -   Ensure that the lower bound `xl` has a function value less than zero.
+    -   *Note*: According to the Intermediate Value Theorem, if a continuous function changes sign over an interval, then there must be at least one root (zero crossing) within that interval. Therefore, bracketing is a way of confirming that within the interval `[xl, xh]` there is at least one root.
+4.  Iterative Process:
+    -   Initialize the midpoint guess for the root, `rtsafe`, as halfway between `x1` and `x2`.
+    -   Set up variables `dxold` and `dx` to control the iteration step size.
+5.  Main Iteration Loop:
+    -   For each iteration, calculate the function value and its derivative at `rtsafe`.
+    -   Use a combination of bisection and Newton-Raphson updates to adjust `rtsafe` and home in on the root.
+    -   If the function value at the new guess `rtsafe` is negative, update `xl`; otherwise, update `xh`.
+    -   Check for convergence by comparing the change in `rtsafe` with the tolerance `xacc`.
+    -   Repeat this process for a maximum of 99 iterations or until the root is found within the desired accuracy.
+6.  Convergence Check:
+    -   If the algorithm converges to a root within the desired accuracy, the function returns the value of `rtsafe`.
+    -   If the function fails to converge within the set number of iterations, it returns `NA_real_` to indicate an unsuccessful search.
 
 ### funcD
 
@@ -1711,17 +1726,16 @@ funcD <- function(x, mean, povline, A, B, C) {
 
 ```
 
-*Relevant Equations*: 
+*Relevant Equations*:
 
-- `f` is equivalent to $L'(H) + \frac{z}{\mu} - 1 = 0$
-- `df` is the derivative of `f`.
+-   `f` is equivalent to $L'(H) + \frac{z}{\mu} - 1 = 0$
+-   `df` is the derivative of `f`.
 
 See `rtNewt` for more details.
 
 ### rtNewt
 
-*Description*: `rtNewt` uses the Newton-Raphson iteration to find $H$ (the headcount) using:
-$$L'(H) + \frac{z}{\mu} - 1 = 0$$.
+*Description*: `rtNewt` uses the Newton-Raphson iteration to find $H$ (the headcount) using: $$L'(H) + \frac{z}{\mu} - 1 = 0$$.
 
 ```{r}
 rtNewt <- function(mean, povline, A, B, C) {
@@ -1777,30 +1791,36 @@ L'(H) = 1 - \frac{z}{\mu} \\
 
 The Newton-Raphson iteration is used to find the root of an equation. In our case, this means finding when $L'(H) = 0$ or:
 
-$$
-\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0
-$$
+$$\theta H^\gamma (1-H)^\delta [\frac{\gamma}{H} - \frac{\delta}{1-H}] + \frac{z}{\mu} - 1 = 0$$
+
 
 *Steps:*
 
-- Initialize the algorithm:
-  - `x1` and `x2` are the initial boundaries of the search interval
-  - `xacc` is the accuracy tolerance for the solution
-  - `rtnewt` is the initial guess for the root, taken as the midpoint of the interval `[x1, x2]`
-- Begin the Iterative process:
-  - Each iteration consists of:
-    - `v1` calculates a part of the function we need to solve for $f(x) = L'(H)$, $x^B (1-x)^C = H^\gamma (1-H)^\delta$.
-    - `f` sets up the function $f(x) = L'(H)$ as defined above.
-    - `df` sets up the derivative $f'(x) = L''(H)$.
-- Update the Guess for the Root
-  - `dx` calculates the Newton-Raphson step size (`dx = f/df` = $\frac{f(x_{old})}{f'(x_{old})}$)
-  - `rtnewt` updates the current guess by subtracting `dx` from it. This step is based on the Newton-Raphson update rule:
-  
-  $$x_{new} = x_{old} - \frac{f(x_{old})}{f'(x_{old})}$$
-- Check for interval boundaries and convergence: after each iteration, the algorithm checks whether the new guess `rtnewt` is within the initial interval `[x1, x2]`. If it is not, the interval is adjusted. If the guess is within the desired accuracy, the function returns the root `rtnewt`.
+-   Initialize the algorithm:
+
+    -   `x1` and `x2` are the initial boundaries of the search interval
+    -   `xacc` is the accuracy tolerance for the solution
+    -   `rtnewt` is the initial guess for the root, taken as the midpoint of the interval `[x1, x2]`
+
+-   Begin the Iterative process:
+
+    -   Each iteration consists of:
+        -   `v1` calculates a part of the function we need to solve for $f(x) = L'(H)$, $x^B (1-x)^C = H^\gamma (1-H)^\delta$.
+        -   `f` sets up the function $f(x) = L'(H)$ as defined above.
+        -   `df` sets up the derivative $f'(x) = L''(H)$.
+
+-   Update the Guess for the Root
+
+    -   `dx` calculates the Newton-Raphson step size (`dx = f/df` = $\frac{f(x_{old})}{f'(x_{old})}$)
+    -   `rtnewt` updates the current guess by subtracting `dx` from it. This step is based on the Newton-Raphson update rule:
+
+    $$
+    x_{new} = x_{old} - \frac{f(x_{old})}{f'(x_{old})}
+    $$
+
+-   Check for interval boundaries and convergence: after each iteration, the algorithm checks whether the new guess `rtnewt` is within the initial interval `[x1, x2]`. If it is not, the interval is adjusted. If the guess is within the desired accuracy, the function returns the root `rtnewt`.
 
 ...
-
 
 ## References
 
@@ -1814,7 +1834,7 @@ $$
 
 5.  Kakwani, N. 1980. "[On a Class of Poverty Measures](https://EconPapers.repec.org/RePEc:ecm:emetrp:v:48:y:1980:i:2:p:437-46)". *Econometrica 48* (2): 437-46.
 
-6. Press, W. H. et al. 1992. "[Gamma Function, Beta Function, Factorials, Binomial Coefficients](https://s3.amazonaws.com/nrbook.com/book_C210.html), Section 6.1, page 213 in *Numerical recipes in C: the art of scientific computing* (2nd edition, Cambridge Univeristy Press.
+6.  Press, W. H. et al. 1992. "[Gamma Function, Beta Function, Factorials, Binomial Coefficients](https://s3.amazonaws.com/nrbook.com/book_C210.html), Section 6.1, page 213 in *Numerical recipes in C: the art of scientific computing* (2nd edition, Cambridge Univeristy Press.
 
 ## Appendix
 
