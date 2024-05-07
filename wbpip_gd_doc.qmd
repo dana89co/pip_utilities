@@ -70,8 +70,8 @@ flowchart RL
     
     value_at_lb --> fit_lb
     
-    polarization_lq(polarization_lq) --> comp_dist_lq
-    gini_lq(gini_lq) --> comp_dist_lq
+    polarization_lq(<b>polarization_lq</b>) --> comp_dist_lq
+    gini_lq(<b>gini_lq</b>) --> comp_dist_lq
     value_at_lq --> polarization_lq
     value_at_lq(value_at_lq) --> comp_dist_lq
     mld_lq(<b>mld_lq</b>) --> comp_dist_lq
@@ -95,10 +95,11 @@ flowchart RL
     style check_val fill: #50C878
     style form_lq fill: #50C878
     style regres fill: #50C878
-    style gini_lq fill: #FFF1A2
-    style polarization_lq fill: #FFF1A2
+    style gini_lq fill: #FFA500
+    style polarization_lq fill: #FFA500
     style quantile_lq fill: #FFA500
     style mld_lq fill: #FFA500
+    style comp_dist_lq fill: #FFF1A2
     style comp_pov_lq fill: #FFF1A2 
     style headcount_lq fill: #FFF1A2 
     style pov_gap_lq fill: #FFF1A2
@@ -837,14 +838,38 @@ $$ \frac{e}{2} - \frac{n (b+2)}{4m} + \frac{r^2}{8m\sqrt{-m}}\left[ \sin^{-1} \f
 -   if $m>0$:
 
 $$  \frac{e}{2} - \frac{n (b+2)}{4m} - \frac{r^2}{8m\sqrt{m}} \ln \left[\left|{\frac{2m+n+2\sqrt{m} (a+c-1)}{n-2e\sqrt{m}}}\right| \right] $$
+::: {#imp-gini-gd-issue .callout-important}
+#### Issue:
+
+The formula does not match the Datt paper Gini formula as mentioned previously by Tony.
+
+:::
+
 
 ### polarization_lq
 
 *Description*: Computes polarization index from parametric Lorenz fit
 
-*References*: ...
+```{r}
+gd_compute_polarization_lq <- function(mean,
+                                       p0,
+                                       dcm,
+                                       A, B, C,
+                                       key_values) {
+  pol <- 2 - (1 / p0) +
+    (dcm - (2 * value_at_lq(p0, A, B, C, key_values) * mean)) /
+      (p0 * mean * derive_lq(p0, A, B, C, key_values))
 
-*Relevant equations*: ...
+  return(pol)
+}
+
+```
+
+*References*: None
+
+*Relevant equations*: None
+
+*Questions*: What is p0?
 
 ### pip_stats_lb
 
